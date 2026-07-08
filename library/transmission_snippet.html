@@ -1,0 +1,13 @@
+// Each GUV acts as a node on the network
+const guvChannel = new BroadcastChannel('guv_transmission');
+
+// To send a "packet" of work (e.g., to AWD)
+function broadcastPacket(type, payload) {
+  guvChannel.postMessage({ type, payload, timestamp: Date.now() });
+}
+
+// To listen for "gear shifts"
+guvChannel.onmessage = (event) => {
+  console.log("Received packet:", event.data);
+  // Handle specific routing logic here
+};

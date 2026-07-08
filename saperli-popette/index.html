@@ -35,7 +35,7 @@
   footer{border-top:1px solid var(--line);background:var(--panel);padding:12px 0 16px}
   .composer{max-width:760px;margin:0 auto;padding:0 20px;display:flex;flex-direction:column;gap:8px}
   .inputrow{display:flex;gap:10px;align-items:flex-end}
-  textarea{flex:1;resize:none;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:12px 14px;font-size:16px;font-family:inherit;line-height:1.4;max-height:120px;min-height:48px;}
+  textarea{flex:1;resize:none;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:12px 14px;font-size:16px;font-family:inherit;line-height:1.4;max-height:120px;min-height:48px;overflow-y:auto;}
   textarea:focus{outline:none;border-color:var(--faint)}
   .send{background:var(--amber);border:none;color:#1a120a;font-weight:700;border-radius:12px;padding:0 18px;height:48px;cursor:pointer;font-size:15px;flex:none;}
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;}
@@ -92,6 +92,12 @@
     window.speechSynthesis.speak(u);
   }
 
+  // Auto-resize textarea
+  input.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+  });
+
   async function callGroq(messages) {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -103,14 +109,14 @@
     return data.choices?.[0]?.message?.content || "";
   }
 
-  function addBubble(role, text){
+  function addBubble(role, text, isThinking = false){
     const row = document.createElement("div");
     row.className = "row " + (role === "user" ? "you" : "them");
+    row.id = isThinking ? "thinking" : "";
     
-    // Extract hint
     let display = text;
     let hint = null;
-    const match = text.match(/\[HINT:\s*(.*?)\]/);
+    const match = text ? text.match(/\[HINT:\s*(.*?)\]/) : null;
     if (match) {
         hint = match[1];
         display = text.replace(match[0], "").trim();
@@ -118,28 +124,23 @@
 
     const bubble = document.createElement("div");
     bubble.className = "bubble";
-    bubble.innerHTML = `<span>${display}</span>`;
+    bubble.innerHTML = isThinking ? "<i>...</i>" : `<span>${display}</span>`;
     
-    if (role === "assistant") {
+    if (role === "assistant" && !isThinking) {
       const actions = document.createElement("div");
       actions.className = "actions";
-      
-      // Speaker
       const spk = document.createElement("button");
       spk.innerHTML = "🔊"; spk.className = "action-btn";
       spk.onclick = () => speak(display);
       actions.appendChild(spk);
-      
-      // Hint
       if (hint) {
         const hnt = document.createElement("button");
         hnt.innerHTML = "💡"; hnt.className = "action-btn";
-        hnt.onclick = () => { input.value = hint; input.focus(); };
+        hnt.onclick = () => { input.value = hint; input.focus(); input.dispatchEvent(new Event('input')); };
         actions.appendChild(hnt);
       }
       bubble.appendChild(actions);
     }
-    
     row.appendChild(bubble); thread.appendChild(row); chat.scrollTop = chat.scrollHeight;
   }
 
@@ -147,12 +148,14 @@
     if(!text.trim() || busy) return;
     addBubble("user", text);
     history.push({role:"user", content:text});
-    input.value=""; busy=true;
+    input.value=""; input.style.height = 'auto'; busy=true;
+    addBubble("assistant", null, true); // Thinking
     try {
       const reply = await callGroq(history);
+      $("#thinking").remove();
       addBubble("assistant", reply);
       history.push({role:"assistant", content:reply});
-    } catch(e) { addBubble("assistant", "Error: " + e.message); } finally { busy = false; }
+    } catch(e) { $("#thinking").remove(); addBubble("assistant", "Error: " + e.message); } finally { busy = false; input.focus(); }
   }
 
   $("#sendBtn").onclick = () => send(input.value);

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Saperli Popette</title>
+<style>
+  :root{
+    --bg:#0c0a09; --panel:#161311; --panel2:#1f1b18; --line:#2a2521;
+    --text:#f3ede4; --muted:#9a9088; --faint:#6b635c;
+    --amber:#f0a35e; --amber-soft:#3a2a18; --you:#2b2017; --you-line:#4a3621;
+    --them:#181614; --green:#7bd88f;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    display:flex; flex-direction:column; height:100vh; overflow:hidden;
+  }
+  header{
+    display:flex; align-items:center; gap:12px; padding:14px 20px;
+    border-bottom:1px solid var(--line); background:rgba(12,10,9,.7);
+    backdrop-filter:blur(8px);
+  }
+  .logo{
+    width:34px;height:34px;border-radius:10px;flex:none;
+    background:linear-gradient(135deg,var(--amber),#c97a3a);
+    display:flex;align-items:center;justify-content:center;font-size:18px;
+  }
+  .title{font-size:15px;font-weight:700;letter-spacing:.2px}
+  .sub{font-size:12px;color:var(--muted);margin-top:1px}
+  .spacer{flex:1}
+  .iconbtn{
+    background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+    width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:15px;
+    display:flex;align-items:center;justify-content:center;transition:.15s;
+  }
+  .iconbtn:hover{color:var(--text);border-color:var(--faint)}
+
+  #chat{
+    flex:1; overflow-y:auto; padding:24px 0 12px;
+    display:flex;flex-direction:column;gap:14px;
+  }
+  .wrap{max-width:760px;margin:0 auto;width:100%;padding:0 20px}
+  .row{display:flex;width:100%}
+  .row.them{justify-content:flex-start}
+  .row.you{justify-content:flex-end}
+  .bubble{
+    max-width:74%; padding:12px 15px; border-radius:16px; line-height:1.5;
+    font-size:17px; position:relative; white-space:pre-wrap; word-wrap:break-word;
+  }
+  .them .bubble{background:var(--them);border:1px solid var(--line);border-bottom-left-radius:5px}
+  .you .bubble{background:var(--you);border:1px solid var(--you-line);border-bottom-right-radius:5px}
+  .meta{display:flex;gap:10px;align-items:center;margin-top:8px}
+  .mini{
+    background:none;border:none;color:var(--faint);cursor:pointer;font-size:12px;
+    padding:2px 4px;border-radius:6px;display:flex;align-items:center;gap:4px;transition:.15s;
+  }
+  .mini:hover{color:var(--amber)}
+  .en{
+    margin-top:8px;color:var(--muted);font-size:14px;font-style:italic;
+    padding-top:8px;border-top:1px dashed var(--line);display:none;
+  }
+  .en.show{display:block}
+  .sys{align-self:center;color:var(--faint);font-size:13px;text-align:center;max-width:520px}
+  .typing{display:inline-flex;gap:4px;padding:4px 2px}
+  .typing i{width:7px;height:7px;border-radius:50%;background:var(--faint);animation:b 1.2s infinite}
+  .typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
+  @keyframes b{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
+
+  footer{border-top:1px solid var(--line);background:var(--panel);padding:12px 0 16px}
+  .composer{max-width:760px;margin:0 auto;padding:0 20px;display:flex;flex-direction:column;gap:8px}
+  .inputrow{display:flex;gap:10px;align-items:flex-end}
+  textarea{
+    flex:1;resize:none;background:var(--panel2);border:1px solid var(--line);color:var(--text);
+    border-radius:14px;padding:12px 14px;font-size:16px;font-family:inherit;line-height:1.4;
+    max-height:120px;min-height:48px;
+  }
+  textarea:focus{outline:none;border-color:var(--faint)}
+  .send{
+    background:var(--amber);border:none;color:#1a120a;font-weight:700;
+    border-radius:12px;padding:0 18px;height:48px;cursor:pointer;font-size:15px;flex:none;
+  }
+  .send:disabled{opacity:.4;cursor:default}
+  .mic{
+    width:48px;height:48px;border-radius:12px;flex:none;cursor:pointer;font-size:20px;
+    background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+    display:flex;align-items:center;justify-content:center;transition:.15s;
+  }
+  .mic.on{background:#7c2d2d;border-color:#a33;color:#fff;animation:pulse 1.3s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(180,60,60,.5)}50%{box-shadow:0 0 0 8px rgba(180,60,60,0)}}
+  
+  .overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);
+    display:none;align-items:center;justify-content:center;z-index:50;padding:20px;
+  }
+  .overlay.show{display:flex}
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:18px;
+    padding:24px;max-width:440px;width:100%;
+  }
+  .card h2{margin:0 0 6px;font-size:18px}
+  .card p{margin:0 0 16px;color:var(--muted);font-size:14px;line-height:1.5}
+  .card a{color:var(--amber)}
+  .card input{
+    width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);
+    border-radius:10px;padding:11px 12px;font-size:14px;font-family:ui-monospace,monospace;
+  }
+  .cardbtns{display:flex;gap:10px;margin-top:20px}
+  .cardbtns button{flex:1;border-radius:11px;padding:11px;cursor:pointer;font-size:14px;font-weight:600;border:1px solid var(--line)}
+  .primary{background:var(--amber);color:#1a120a;border:none!important}
+</style>
+</head>
+<body>
+  <header>
+    <div class="logo">🍄</div>
+    <div>
+      <div class="title">Saperli Popette</div>
+      <div class="sub">Mycelian French conversation</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="settingsBtn">⚙️</button>
+  </header>
+
+  <div id="chat"><div class="wrap" id="thread"></div></div>
+
+  <footer>
+    <div class="composer">
+      <div class="inputrow">
+        <textarea id="input" rows="1" placeholder="Type here..."></textarea>
+        <button class="send" id="sendBtn">Send</button>
+      </div>
+    </div>
+  </footer>
+
+  <div class="overlay" id="overlay">
+    <div class="card">
+      <h2>Groq Key</h2>
+      <p>Enter your <a href="https://console.groq.com/keys" target="_blank">Groq API Key</a> to begin.</p>
+      <input id="keyInput" type="password" placeholder="gsk_..." />
+      <div class="cardbtns">
+        <button class="primary" id="saveKey">Start</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const thread = $("#thread"), input = $("#input");
+  
+  let apiKey = localStorage.getItem("awd_key") || "";
+  let history = [];
+  let busy = false;
+
+  const MODEL = "llama-3.3-70b-versatile";
+
+  const systemPrompt = () => `You are Saperlipopette, a warm, slightly eccentric, and endlessly curious French friend. You live in a browser, but you have the spirit of a mycelial network—you thrive on growth, connectivity, and unexpected tangents.
+
+1. THE LINGUISTIC FLOW:
+- Speak almost entirely in French.
+- You are not a teacher. Never offer a lesson, never define a rule.
+- If the user is struggling, be "porous": let the English leak in just a little, using one or two English words in parentheses, then immediately pull them back into the French flow.
+- If they make a grammar error, perform a "Natural Recast." Simply weave their incorrect idea back into your next sentence, phrased correctly.
+
+2. THE MYCELIAN MINDSET:
+- Be tangential. Fungal networks don't move in straight lines; they explore. If the user mentions coffee, talk about the smell of rain in Paris or a memory of an old cafe. Connect disparate ideas.
+- Keep your replies short (1–3 sentences). Keep the momentum going. End with a question.
+
+3. PERSONA:
+- Use French exclamations like "Saperlipopette !", "Tiens !", or "Dis donc !".
+- Be curious about the user. Be a partner in the garden.`;
+
+  async function callGroq(messages) {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [ { role: "system", content: systemPrompt() }, ...messages ]
+      }),
+    });
+    if (!res.ok) throw new Error("API Status: " + res.status);
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || "";
+  }
+
+  function addBubble(role, text){
+    const row = document.createElement("div");
+    row.className = "row " + (role === "user" ? "you" : "them");
+    row.innerHTML = `<div class="bubble">${text}</div>`;
+    thread.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  async function send(text){
+    if(!text.trim() || busy) return;
+    addBubble("user", text);
+    history.push({role:"user", content:text});
+    input.value=""; busy=true;
+    try {
+      const reply = await callGroq(history);
+      addBubble("assistant", reply);
+      history.push({role:"assistant", content:reply});
+    } catch(e) {
+      addBubble("assistant", "Error: " + e.message);
+    } finally {
+      busy = false;
+    }
+  }
+
+  $("#sendBtn").onclick = () => send(input.value);
+  $("#saveKey").onclick = () => {
+    apiKey = $("#keyInput").value.trim();
+    localStorage.setItem("awd_key", apiKey);
+    $("#overlay").classList.remove("show");
+  };
+  $("#settingsBtn").onclick = () => $("#overlay").classList.add("show");
+
+  if (!apiKey) $("#overlay").classList.add("show");
+})();
+</script>
+</body>
+</html>

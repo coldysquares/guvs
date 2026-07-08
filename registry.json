@@ -71,5 +71,16 @@
     "status": "working",
     "path": "fungi-cell-map/",
     "description": "Protocellular-Mycelian Internals Monitor"
+  },
+  {
+    "title": "Saperli Popette",
+    "fullName": "Saperli Popette",
+    "slug": "saperli-popette",
+    "type": [
+      "GUV"
+    ],
+    "status": "working",
+    "path": "saperli-popette/",
+    "description": "A weird, unpredictable French conversation partner. Mon ami, bienvenue!"
   }
 ]

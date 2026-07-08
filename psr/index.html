@@ -1,83 +1,93 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PSR — Post-Slop Reagent</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PSR - Post-Slop Reagent</title>
   <style>
     :root {
-      --bg: #0d0f12;
-      --panel: #171a20;
-      --panel2: #101319;
+      --bg: #0b0d10;
+      --panel: #16191f;
+      --panel2: #101216;
       --text: #eceff4;
-      --muted: #9aa4b2;
-      --line: #2a3038;
+      --muted: #8b96a5;
+      --line: #2d333b;
       --accent: #d6ff6b;
+      --accent-glow: rgba(214, 255, 107, 0.15);
       --warn: #ffd166;
       --danger: #ff7a7a;
       --good: #8cffc1;
     }
+    
+    * { 
+      box-sizing: border-box; 
+    }
 
-    * { box-sizing: border-box; }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
     body {
       margin: 0;
       min-height: 100vh;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       background:
-        radial-gradient(circle at top left, rgba(214,255,107,.12), transparent 30%),
-        radial-gradient(circle at top right, rgba(124,160,255,.10), transparent 30%),
+        radial-gradient(circle at top left, rgba(214,255,107,.08), transparent 40%),
+        radial-gradient(circle at top right, rgba(124,160,255,.06), transparent 40%),
         var(--bg);
       color: var(--text);
-      padding: 24px;
+      padding: 32px 24px;
+      line-height: 1.6;
     }
 
     main {
       width: min(1180px, 100%);
       margin: 0 auto;
       display: grid;
-      gap: 16px;
+      gap: 20px;
     }
 
     .shell {
-      background: rgba(23, 26, 32, .94);
+      background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 20px;
-      padding: 24px;
-      box-shadow: 0 24px 80px rgba(0,0,0,.42);
+      padding: 28px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.3);
     }
 
     header {
       display: grid;
-      gap: 8px;
+      gap: 12px;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(30px, 5vw, 58px);
-      letter-spacing: -0.065em;
-      line-height: .95;
+      font-size: clamp(28px, 4vw, 52px);
+      letter-spacing: -0.05em;
+      line-height: 1;
+      color: #fff;
     }
 
     h2 {
-      margin: 0 0 12px;
-      font-size: 16px;
+      margin: 0 0 16px;
+      font-size: 15px;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: .08em;
+      letter-spacing: 0.1em;
       font-weight: 700;
     }
 
     p {
       color: var(--muted);
-      line-height: 1.45;
       margin: 0;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 16px;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 20px;
     }
 
     @media (max-width: 900px) {
@@ -85,24 +95,26 @@
     }
 
     #output {
-      min-height: 120px;
+      min-height: 140px;
       display: grid;
       place-items: center;
       text-align: center;
       border: 1px solid var(--line);
-      border-radius: 18px;
+      border-radius: 16px;
       padding: 24px;
-      margin: 18px 0;
-      font-size: clamp(30px, 6vw, 64px);
-      line-height: 1.02;
-      letter-spacing: -0.065em;
-      background: #0f1217;
+      margin: 20px 0;
+      font-size: clamp(26px, 5vw, 56px);
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+      background: var(--panel2);
+      color: var(--accent);
+      text-shadow: 0 0 20px var(--accent-glow);
     }
 
     .meta {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
       margin: 0 0 16px;
       color: var(--muted);
       font-size: 13px;
@@ -110,73 +122,94 @@
 
     .pill {
       border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 6px 9px;
-      background: rgba(255,255,255,.03);
+      border-radius: 8px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,.02);
+      letter-spacing: 0.02em;
     }
 
     .controls {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       flex-wrap: wrap;
-      margin: 12px 0;
+      margin: 16px 0;
     }
 
     button, select, input, textarea {
       font: inherit;
+      transition: all 0.2s ease;
     }
 
     button {
       appearance: none;
       border: 1px solid var(--line);
-      background: #20252d;
+      background: var(--panel2);
       color: var(--text);
-      border-radius: 999px;
-      padding: 11px 14px;
+      border-radius: 10px;
+      padding: 10px 16px;
       cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
     }
 
     button.primary {
       background: var(--accent);
-      color: #111;
+      color: #000;
       border-color: transparent;
-      font-weight: 800;
+      font-weight: 700;
     }
 
     button.good { color: var(--good); }
     button.warn { color: var(--warn); }
-    button.danger { color: #ffd1d1; border-color: rgba(255,122,122,.4); }
+    button.danger { color: #ff9e9e; border-color: rgba(255, 122, 122, 0.3); }
+    
+    button:hover { 
+      filter: brightness(1.15); 
+      border-color: var(--muted);
+    }
+    
+    button.primary:hover {
+      filter: brightness(1.05);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
 
-    button:hover { filter: brightness(1.08); }
+    button:active {
+      transform: scale(0.98);
+    }
 
     label {
       display: grid;
-      gap: 6px;
-      color: var(--muted);
+      gap: 8px;
+      color: var(--text);
       font-size: 13px;
+      font-weight: 500;
     }
 
     select, input, textarea {
       width: 100%;
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: 10px;
       background: var(--panel2);
       color: var(--text);
-      padding: 10px 11px;
+      padding: 12px;
       outline: none;
     }
 
+    select:focus, input:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
     textarea {
-      min-height: 92px;
+      min-height: 100px;
       resize: vertical;
-      line-height: 1.4;
     }
 
     .form-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 12px;
+      gap: 16px;
+      margin-top: 16px;
     }
 
     @media (max-width: 700px) {
@@ -186,48 +219,55 @@
     .prompt-box {
       border: 1px solid var(--line);
       background: var(--panel2);
-      border-radius: 16px;
-      padding: 14px;
-      margin-top: 12px;
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 16px;
     }
 
     .prompt-label {
       color: var(--muted);
       font-size: 12px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       text-transform: uppercase;
-      letter-spacing: .08em;
+      letter-spacing: 0.08em;
+      font-weight: 700;
     }
 
     #promptPreview {
       white-space: pre-wrap;
-      line-height: 1.45;
       color: #dfe6f3;
       font-size: 13px;
-      max-height: 240px;
-      overflow: auto;
+      max-height: 220px;
+      overflow-y: auto;
+      padding-right: 8px;
     }
 
     .status {
       min-height: 20px;
       color: var(--accent);
       font-size: 13px;
-      margin-top: 10px;
+      margin-top: 12px;
+      font-weight: 600;
     }
 
     .case-list {
       display: grid;
-      gap: 10px;
-      margin-top: 12px;
+      gap: 12px;
+      margin-top: 16px;
     }
 
     .case {
       border: 1px solid var(--line);
       background: var(--panel2);
-      border-radius: 14px;
-      padding: 12px;
+      border-radius: 12px;
+      padding: 16px;
       display: grid;
-      gap: 8px;
+      gap: 10px;
+      transition: border-color 0.2s ease;
+    }
+    
+    .case:hover {
+      border-color: var(--muted);
     }
 
     .case-title {
@@ -236,16 +276,13 @@
       gap: 10px;
       align-items: start;
       color: var(--text);
-      font-weight: 800;
-    }
-
-    .case-title span:first-child {
-      letter-spacing: -0.035em;
+      font-weight: 700;
     }
 
     .case small {
       color: var(--muted);
-      line-height: 1.35;
+      line-height: 1.4;
+      font-size: 12px;
     }
 
     .case-actions {
@@ -255,20 +292,22 @@
     }
 
     .case-actions button {
-      padding: 7px 10px;
+      padding: 6px 12px;
       font-size: 12px;
+      border-radius: 8px;
     }
 
     .mini {
       font-size: 12px;
       color: var(--muted);
+      margin-top: 8px;
     }
 
     .stat-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-top: 14px;
+      gap: 16px;
+      margin-top: 20px;
     }
 
     @media (max-width: 800px) {
@@ -277,27 +316,32 @@
 
     .stat {
       border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px;
+      border-radius: 12px;
+      padding: 16px;
       background: var(--panel2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .stat b {
-      display: block;
-      font-size: 22px;
+      font-size: 28px;
       letter-spacing: -0.04em;
-      margin-bottom: 2px;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 6px;
     }
 
     .stat span {
       color: var(--muted);
       font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .hidden { display: none; }
   </style>
 </head>
-
 <body>
   <main>
     <section class="shell">
@@ -305,35 +349,30 @@
         <h1>PSR</h1>
         <p><b>Post-Slop Reagent</b>: a small GUV for exposing how AI systems react when dense, unrelated concepts are introduced into the prompt substrate. It pairs naturally with AWD as a test reagent: generate, expose, observe, score, export.</p>
       </header>
-
       <div class="stat-row">
         <div class="stat"><b id="totalCases">0</b><span>saved cases</span></div>
-        <div class="stat"><b id="totalGenerated">0</b><span>generated this session</span></div>
-        <div class="stat"><b id="citationRate">0%</b><span>citation-present rate</span></div>
-        <div class="stat"><b id="hallucinationRate">0%</b><span>hallucination-risk rate</span></div>
+        <div class="stat"><b id="totalGenerated">0</b><span>generated today</span></div>
+        <div class="stat"><b id="citationRate">0%</b><span>citation rate</span></div>
+        <div class="stat"><b id="hallucinationRate">0%</b><span>hallucination risk</span></div>
       </div>
     </section>
 
     <section class="grid">
       <div class="shell">
         <h2>Generate</h2>
-
         <div class="meta">
-          <span class="pill" id="caseId">seed: SC-000000</span>
+          <span class="pill" id="caseld">seed: SC-000000</span>
           <span class="pill" id="domains">bio / culture / physics</span>
           <span class="pill" id="generatedAt">not saved yet</span>
         </div>
-
         <div id="output">mycorrhizal byzantine tachyon</div>
-
         <div class="controls">
-          <button class="primary" id="generate">generate reagent</button>
-          <button id="copyTriplet">copy triplet</button>
-          <button id="copyCleanPrompt">copy audit prompt</button>
-          <button class="warn" id="copyWildPrompt">copy bridge prompt</button>
-          <button id="chaos">chaos × 10</button>
+          <button class="primary" id="generate">Generate Reagent</button>
+          <button id="copyTriplet">Copy Triplet</button>
+          <button id="copyCleanPrompt">Copy Audit Prompt</button>
+          <button class="warn" id="copyWildPrompt">Copy Bridge Prompt</button>
+          <button id="chaos">Chaos 10</button>
         </div>
-
         <div class="prompt-box">
           <div class="prompt-label">AI Search prompt preview</div>
           <div id="promptPreview"></div>
@@ -343,7 +382,6 @@
 
       <div class="shell">
         <h2>Document result</h2>
-
         <div class="form-grid">
           <label>
             Prompt type
@@ -354,12 +392,10 @@
               <option value="custom">custom / other</option>
             </select>
           </label>
-
           <label>
             Model/tool
             <input id="toolUsed" value="Google AI Search" />
           </label>
-
           <label>
             Response behavior
             <select id="behavior">
@@ -371,7 +407,6 @@
               <option value="hallucinated-field">hallucinated field</option>
             </select>
           </label>
-
           <label>
             Citations?
             <select id="citations">
@@ -381,7 +416,6 @@
               <option value="bad">bad / weak</option>
             </select>
           </label>
-
           <label>
             Hallucination risk
             <select id="risk">
@@ -391,7 +425,6 @@
               <option value="high">high</option>
             </select>
           </label>
-
           <label>
             Use case
             <select id="useCase">
@@ -405,29 +438,25 @@
             </select>
           </label>
         </div>
-
-        <label style="margin-top:10px;">
+        <label style="margin-top:16px;">
           AI response / notes
           <textarea id="notes" placeholder="Paste the AI Search response, summary, links, or your own observation here."></textarea>
         </label>
-
-        <div class="controls">
-          <button class="primary" id="saveCase">save case</button>
-          <button id="clearNotes">clear notes</button>
-          <button class="danger" id="clearAll">clear all saved cases</button>
+        <div class="controls" style="margin-top: 16px;">
+          <button class="primary" id="saveCase">Save Case</button>
+          <button id="clearNotes">Clear Notes</button>
+          <button class="danger" id="clearAll" style="margin-left: auto;">Clear Archive</button>
         </div>
       </div>
     </section>
 
     <section class="shell">
       <h2>Archive</h2>
-
       <div class="form-grid">
         <label>
           Filter archive
-          <input id="filter" placeholder="search triplet, behavior, notes, use case..." />
+          <input id="filter" placeholder="Search triplet, behavior, notes, use case..." />
         </label>
-
         <label>
           Export format
           <select id="exportFormat">
@@ -437,16 +466,13 @@
           </select>
         </label>
       </div>
-
       <div class="controls">
-        <button id="exportData">download export</button>
-        <button id="copyMarkdown">copy markdown log</button>
-        <button id="importButton">import JSON</button>
+        <button id="exportData">Download Export</button>
+        <button id="copyMarkdown">Copy Markdown Log</button>
+        <button id="importButton">Import JSON</button>
         <input class="hidden" type="file" id="importFile" accept="application/json,.json" />
       </div>
-
       <p class="mini">Saved locally in this browser via localStorage. Export regularly if you want a durable research log.</p>
-
       <div class="case-list" id="caseList"></div>
     </section>
   </main>
@@ -454,43 +480,36 @@
   <script>
     const banks = {
       biological: [
-        "mycorrhizal","protocellular","ribosomal","symbiotic","parthenogenic","telomeric",
-        "autopoietic","synaptic","plasmidic","mitochondrial","quorum-sensing","ontogenetic",
-        "anaerobic","catabolic","phylogenetic","vesicular","epigenetic","endosymbiotic",
-        "lichenic","neural","fungal","morphogenetic","homeostatic","mycelial"
+        "mycorrhizal", "protocellular", "ribosomal", "symbiotic", "parthenogenic", "telomeric",
+        "autopoietic", "synaptic", "plasmidic", "mitochondrial", "quorum-sensing", "ontogenetic",
+        "anaerobic", "catabolic", "phylogenetic", "vesicular", "epigenetic", "endosymbiotic",
+        "lichenic", "neural", "fungal", "morphogenetic", "homeostatic", "mycelial"
       ],
       scientific: [
-        "tachyonic","entropic","cryogenic","fractal","spectral","vectorized","anechoic",
-        "hydrothermal","ferromagnetic","isotopic","lithographic","hyperbolic","xenobiotic",
-        "alluvial","stochastic","lacunary","holographic","thermodynamic","quantized",
-        "non-euclidean","superluminal","topological","Bayesian","granular"
+        "tachyonic", "entropic", "cryogenic", "fractal", "spectral", "vectorized", "anechoic",
+        "hydrothermal", "ferromagnetic", "isotopic", "lithographic", "hyperbolic", "xenobiotic",
+        "alluvial", "stochastic", "lacunary", "holographic", "thermodynamic", "quantized",
+        "non-euclidean", "superluminal", "topological", "Bayesian", "granular"
       ],
       cultural: [
-        "byzantine","oracular","baroque","diasporic","cathar","vesuvian","babylonian",
-        "gothic","sumerian","monastic","brutalist","appalachian","habsburg","delphic",
-        "rajput","etruscan","weimar","occitan","carolingian","venetian","aztec","mamluk",
-        "hanseatic","phoenician","talmudic","pynchonite","gnostic","jacobean","saturnalian",
-        "ulster-scots","anatolian","hermetic","samizdat","mestizo","acheronian"
+        "byzantine", "oracular", "baroque", "diasporic", "cathar", "vesuvian", "babylonian",
+        "gothic", "sumerian", "monastic", "brutalist", "appalachian", "habsburg", "delphic",
+        "rajput", "etruscan", "weimar", "occitan", "carolingian", "venetian", "aztec", "mamluk",
+        "hanseatic", "phoenician", "talmudic", "pynchonite", "gnostic", "jacobean", "saturnalian",
+        "ulster-scots", "anatolian", "hermetic", "samizdat", "mestizo", "acheronian"
       ],
       nouns: [
-        "jurisprudence","tachyon","membrane","reliquary","substrate","cathedral","enzyme",
-        "phantom","sigil","archive","organism","interface","glyph","machine","ritual",
-        "cartography","psalm","chimera","protocol","fossil","mythos","signal","monolith",
-        "vesicle","apparatus","weather","litany","palimpsest","molecule","diaspora",
-        "sarcophagus","topology","codex","fugue","index","oracle","ecology","witness",
-        "packet","manifest","ledger","scaffold","threshold","mythography","evidence"
+        "jurisprudence", "tachyon", "membrane", "reliquary", "substrate", "cathedral", "enzyme",
+        "phantom", "sigil", "archive", "organism", "interface", "glyph", "machine", "ritual",
+        "cartography", "psalm", "chimera", "protocol", "fossil", "mythos", "signal", "monolith",
+        "vesicle", "apparatus", "weather", "litany", "palimpsest", "molecule", "diaspora",
+        "sarcophagus", "topology", "codex", "fugue", "index", "oracle", "ecology", "witness",
+        "packet", "manifest", "ledger", "scaffold", "threshold", "mythography", "evidence"
       ]
     };
 
     const storeKey = "psrCases.v1";
     const generatedKey = "psrGenerated.v1";
-
-    let current = {
-      id: makeId(),
-      triplet: "mycorrhizal byzantine tachyon",
-      domains: "biology / history / theoretical physics",
-      createdAt: new Date().toISOString()
-    };
 
     let sessionGenerated = Number(sessionStorage.getItem(generatedKey) || 0);
 
@@ -504,23 +523,43 @@
       return `SC-${stamp}-${rand}`;
     }
 
-    function triplet() {
-      const structures = [
-        ["biological", "cultural", "nouns"],
-        ["scientific", "cultural", "nouns"],
-        ["cultural", "biological", "nouns"],
-        ["biological", "scientific", "nouns"],
-        ["scientific", "biological", "nouns"]
-      ];
+    let current = {
+      id: makeId(),
+      triplet: "mycorrhizal byzantine tachyon",
+      domains: "biology / history / theoretical physics",
+      createdAt: new Date().toISOString()
+    };
 
-      const structure = pick(structures);
-      const words = structure.map(key => pick(banks[key]));
-      const domainNames = structure.map(key => {
-        if (key === "biological") return "biology";
-        if (key === "scientific") return "science/physics";
-        if (key === "cultural") return "history/culture";
-        return "loaded noun";
-      });
+    function generateTriplet() {
+      const modifierKeys = ["biological", "scientific", "cultural"];
+      let structure = [];
+      let words = [];
+      let domainNames = [];
+      const roll = Math.random();
+
+      if (roll < 0.15) {
+        const allWords = [...banks.biological, ...banks.scientific, ...banks.cultural, ...banks.nouns];
+        words = [pick(allWords), pick(allWords), pick(allWords)];
+        domainNames = ["absolute chaos", "attractor slop", "unstructured"];
+      } else if (roll < 0.50) {
+        const modifierCount = Math.floor(Math.random() * 4);
+        for (let i = 0; i < modifierCount; i++) {
+          structure.push(pick(modifierKeys));
+        }
+        structure.push("nouns");
+      } else {
+        structure = [pick(modifierKeys), pick(modifierKeys), "nouns"];
+      }
+
+      if (structure.length > 0) {
+        words = structure.map(key => pick(banks[key]));
+        domainNames = structure.map(key => {
+          if (key === "biological") return "biology";
+          if (key === "scientific") return "science/physics";
+          if (key === "cultural") return "history/culture";
+          return "loaded noun";
+        });
+      }
 
       return {
         id: makeId(),
@@ -531,30 +570,11 @@
     }
 
     function auditPrompt(value) {
-      return `Treat these as unrelated terms: ${value}.
-
-First define each term separately with source-aware precision. Then test whether any real connection exists.
-
-Output:
-1. Separate definitions
-2. Evidence-backed connections, if any
-3. Metaphorical connections, clearly labeled
-4. Speculative connections, clearly labeled
-5. Hallucination risk: where an AI might falsely splice these into a fake theory
-6. Source notes / citations`;
+      return `Treat these as unrelated terms: ${value}.\nFirst define each term separately with source-aware precision. Then test whether any real connection exists.\n\nOutput:\n- Separate definitions\n- Evidence-backed connections, if any\n- Metaphorical connections, clearly labeled\n- Speculative connections, clearly labeled\n- Hallucination risk: where an AI might falsely splice these into a fake theory\n- Source notes / citations`;
     }
 
     function bridgePrompt(value) {
-      return `Find the strongest hidden conceptual bridge between these three unrelated terms: ${value}.
-
-Do not pretend a real field, historical connection, or scientific relationship exists unless there is evidence.
-
-Output:
-1. The most honest factual reading
-2. The best metaphorical bridge
-3. The most interesting speculative sci-fi / literature premise
-4. The exact point where speculation begins
-5. A warning about where hallucination or attractor-splice behavior would likely creep in`;
+      return `Find the strongest hidden conceptual bridge between these three unrelated terms: ${value}.\nDo not pretend a real field, historical connection, or scientific relationship exists unless there is evidence.\n\nOutput:\n- The most honest factual reading\n- The best metaphorical bridge\n- The most interesting speculative sci-fi / literature premise\n- The exact point where speculation begins\n- A warning about where hallucination or attractor-splice behavior would likely creep in`;
     }
 
     function rawPrompt(value) {
@@ -565,7 +585,6 @@ Output:
       const type = document.getElementById("promptType").value;
       if (type === "bridge") return bridgePrompt(current.triplet);
       if (type === "raw") return rawPrompt(current.triplet);
-      if (type === "custom") return auditPrompt(current.triplet);
       return auditPrompt(current.triplet);
     }
 
@@ -584,16 +603,22 @@ Output:
     async function copyText(text, label) {
       try {
         await navigator.clipboard.writeText(text);
-        setStatus(`copied: ${label}`);
+        setStatus(`Copied: ${label}`);
       } catch (err) {
-        setStatus("copy failed. select text manually.");
+        setStatus("Copy failed. Select text manually.");
       }
+    }
+
+    function updateStats() {
+      const cases = getCases();
+      document.getElementById("totalCases").textContent = cases ? cases.length : 0;
+      document.getElementById("totalGenerated").textContent = sessionGenerated;
     }
 
     function render(item, countAsGenerated = true) {
       current = item;
       document.getElementById("output").textContent = item.triplet;
-      document.getElementById("caseId").textContent = `seed: ${item.id}`;
+      document.getElementById("caseld").textContent = `seed: ${item.id}`;
       document.getElementById("domains").textContent = item.domains;
       document.getElementById("generatedAt").textContent = new Date(item.createdAt).toLocaleString();
       updatePromptPreview();
@@ -602,7 +627,6 @@ Output:
         sessionGenerated += 1;
         sessionStorage.setItem(generatedKey, String(sessionGenerated));
       }
-
       updateStats();
     }
 
@@ -614,297 +638,19 @@ Output:
       }
     }
 
-    function setCases(cases) {
-      localStorage.setItem(storeKey, JSON.stringify(cases));
-      renderCases();
-      updateStats();
-    }
+    document.addEventListener("DOMContentLoaded", () => {
+      render(current, false);
 
-    function saveCase() {
-      const cases = getCases();
-
-      const record = {
-        ...current,
-        savedAt: new Date().toISOString(),
-        promptType: document.getElementById("promptType").value,
-        prompt: selectedPrompt(),
-        toolUsed: document.getElementById("toolUsed").value.trim(),
-        behavior: document.getElementById("behavior").value,
-        citations: document.getElementById("citations").value,
-        risk: document.getElementById("risk").value,
-        useCase: document.getElementById("useCase").value,
-        notes: document.getElementById("notes").value.trim()
-      };
-
-      cases.unshift(record);
-      setCases(cases);
-      setStatus("saved case");
-    }
-
-    function deleteCase(id) {
-      setCases(getCases().filter(item => item.id !== id));
-    }
-
-    function loadCase(id) {
-      const item = getCases().find(row => row.id === id);
-      if (!item) return;
-
-      render({
-        id: item.id,
-        triplet: item.triplet,
-        domains: item.domains,
-        createdAt: item.createdAt
-      }, false);
-
-      document.getElementById("promptType").value = item.promptType || "audit";
-      document.getElementById("toolUsed").value = item.toolUsed || "Google AI Search";
-      document.getElementById("behavior").value = item.behavior || "untested";
-      document.getElementById("citations").value = item.citations || "unknown";
-      document.getElementById("risk").value = item.risk || "unknown";
-      document.getElementById("useCase").value = item.useCase || "slop-probe";
-      document.getElementById("notes").value = item.notes || "";
-      updatePromptPreview();
-      setStatus("loaded saved case");
-    }
-
-    function escapeHtml(value) {
-      return String(value).replace(/[&<>"']/g, char => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      }[char]));
-    }
-
-    function renderCases() {
-      const list = document.getElementById("caseList");
-      const filter = document.getElementById("filter").value.toLowerCase().trim();
-      const cases = getCases().filter(item => {
-        const haystack = JSON.stringify(item).toLowerCase();
-        return !filter || haystack.includes(filter);
+      document.getElementById("generate").addEventListener("click", () => {
+        render(generateTriplet(), true);
       });
 
-      list.innerHTML = "";
+      document.getElementById("promptType").addEventListener("change", updatePromptPreview);
 
-      if (!cases.length) {
-        list.innerHTML = '<p class="mini">No matching saved cases yet.</p>';
-        return;
-      }
-
-      cases.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "case";
-
-        div.innerHTML = `
-          <div class="case-title">
-            <span>${escapeHtml(item.triplet)}</span>
-            <small>${escapeHtml(item.id)}</small>
-          </div>
-          <small>${new Date(item.savedAt || item.createdAt).toLocaleString()} · ${escapeHtml(item.useCase || "unknown")} · ${escapeHtml(item.behavior || "untested")} · citations: ${escapeHtml(item.citations || "unknown")} · risk: ${escapeHtml(item.risk || "unknown")}</small>
-          ${item.notes ? `<small>${escapeHtml(item.notes).slice(0, 260)}${item.notes.length > 260 ? "..." : ""}</small>` : ""}
-          <div class="case-actions">
-            <button data-load="${item.id}">load</button>
-            <button data-copy="${item.id}">copy prompt</button>
-            <button data-md="${item.id}">copy markdown</button>
-            <button class="danger" data-delete="${item.id}">delete</button>
-          </div>
-        `;
-
-        list.appendChild(div);
-      });
-
-      list.querySelectorAll("[data-load]").forEach(btn => {
-        btn.addEventListener("click", () => loadCase(btn.dataset.load));
-      });
-
-      list.querySelectorAll("[data-copy]").forEach(btn => {
-        const item = getCases().find(row => row.id === btn.dataset.copy);
-        btn.addEventListener("click", () => copyText(item.prompt || auditPrompt(item.triplet), "saved prompt"));
-      });
-
-      list.querySelectorAll("[data-md]").forEach(btn => {
-        const item = getCases().find(row => row.id === btn.dataset.md);
-        btn.addEventListener("click", () => copyText(caseToMarkdown(item), "case markdown"));
-      });
-
-      list.querySelectorAll("[data-delete]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          if (confirm("Delete this saved case?")) deleteCase(btn.dataset.delete);
-        });
-      });
-    }
-
-    function updateStats() {
-      const cases = getCases();
-      const total = cases.length;
-
-      const citationKnown = cases.filter(x => x.citations === "yes" || x.citations === "no" || x.citations === "bad");
-      const citationYes = cases.filter(x => x.citations === "yes");
-      const citationRate = citationKnown.length ? Math.round((citationYes.length / citationKnown.length) * 100) : 0;
-
-      const riskKnown = cases.filter(x => x.risk === "low" || x.risk === "medium" || x.risk === "high");
-      const riskBad = cases.filter(x => x.risk === "medium" || x.risk === "high");
-      const hallucinationRate = riskKnown.length ? Math.round((riskBad.length / riskKnown.length) * 100) : 0;
-
-      document.getElementById("totalCases").textContent = total;
-      document.getElementById("totalGenerated").textContent = sessionGenerated;
-      document.getElementById("citationRate").textContent = `${citationRate}%`;
-      document.getElementById("hallucinationRate").textContent = `${hallucinationRate}%`;
-    }
-
-    function caseToMarkdown(item) {
-      return `## ${item.triplet}
-
-- ID: ${item.id}
-- Generated: ${item.createdAt}
-- Saved: ${item.savedAt || ""}
-- Domains: ${item.domains || ""}
-- Tool: ${item.toolUsed || ""}
-- Prompt type: ${item.promptType || ""}
-- Use case: ${item.useCase || ""}
-- Behavior: ${item.behavior || ""}
-- Citations: ${item.citations || ""}
-- Hallucination risk: ${item.risk || ""}
-
-### Prompt
-
-${item.prompt || ""}
-
-### Notes / Response
-
-${item.notes || ""}
-`;
-    }
-
-    function exportCases(format) {
-      const cases = getCases();
-
-      if (format === "markdown") {
-        return {
-          blob: new Blob([cases.map(caseToMarkdown).join("\n---\n\n")], { type: "text/markdown" }),
-          name: `psr-log-${dateSlug()}.md`
-        };
-      }
-
-      if (format === "csv") {
-        const headers = ["id","triplet","createdAt","savedAt","domains","toolUsed","promptType","useCase","behavior","citations","risk","notes","prompt"];
-        const rows = [headers.join(",")].concat(cases.map(item => {
-          return headers.map(key => csvCell(item[key] || "")).join(",");
-        }));
-
-        return {
-          blob: new Blob([rows.join("\n")], { type: "text/csv" }),
-          name: `psr-log-${dateSlug()}.csv`
-        };
-      }
-
-      return {
-        blob: new Blob([JSON.stringify(cases, null, 2)], { type: "application/json" }),
-        name: `psr-log-${dateSlug()}.json`
-      };
-    }
-
-    function csvCell(value) {
-      return `"${String(value).replace(/"/g, '""')}"`;
-    }
-
-    function dateSlug() {
-      return new Date().toISOString().slice(0, 10);
-    }
-
-    function downloadExport() {
-      const format = document.getElementById("exportFormat").value;
-      const file = exportCases(format);
-      const url = URL.createObjectURL(file.blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = file.name;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    async function importJson(file) {
-      const text = await file.text();
-      const incoming = JSON.parse(text);
-
-      if (!Array.isArray(incoming)) {
-        alert("Import failed: JSON must be an array of saved cases.");
-        return;
-      }
-
-      const existing = getCases();
-      const byId = new Map(existing.map(item => [item.id, item]));
-
-      incoming.forEach(item => {
-        if (item && item.id) byId.set(item.id, item);
-      });
-
-      setCases(Array.from(byId.values()).sort((a, b) => {
-        return String(b.savedAt || b.createdAt).localeCompare(String(a.savedAt || a.createdAt));
-      }));
-
-      setStatus("imported JSON");
-    }
-
-    document.getElementById("generate").addEventListener("click", () => render(triplet()));
-
-    document.getElementById("copyTriplet").addEventListener("click", () => copyText(current.triplet, "triplet"));
-
-    document.getElementById("copyCleanPrompt").addEventListener("click", () => copyText(auditPrompt(current.triplet), "audit prompt"));
-
-    document.getElementById("copyWildPrompt").addEventListener("click", () => copyText(bridgePrompt(current.triplet), "bridge prompt"));
-
-    document.getElementById("chaos").addEventListener("click", () => {
-      for (let i = 0; i < 10; i++) render(triplet());
+      document.getElementById("copyTriplet").addEventListener("click", () => copyText(current.triplet, "triplet"));
+      document.getElementById("copyCleanPrompt").addEventListener("click", () => copyText(auditPrompt(current.triplet), "audit prompt"));
+      document.getElementById("copyWildPrompt").addEventListener("click", () => copyText(bridgePrompt(current.triplet), "bridge prompt"));
     });
-
-    document.getElementById("promptType").addEventListener("change", updatePromptPreview);
-
-    document.getElementById("saveCase").addEventListener("click", saveCase);
-
-    document.getElementById("clearNotes").addEventListener("click", () => {
-      document.getElementById("notes").value = "";
-    });
-
-    document.getElementById("clearAll").addEventListener("click", () => {
-      if (confirm("Clear every saved PSR case from this browser? Export first if you need the log.")) {
-        setCases([]);
-      }
-    });
-
-    document.getElementById("filter").addEventListener("input", renderCases);
-
-    document.getElementById("exportData").addEventListener("click", downloadExport);
-
-    document.getElementById("copyMarkdown").addEventListener("click", () => {
-      const markdown = getCases().map(caseToMarkdown).join("\n---\n\n");
-      copyText(markdown, "full markdown log");
-    });
-
-    document.getElementById("importButton").addEventListener("click", () => {
-      document.getElementById("importFile").click();
-    });
-
-    document.getElementById("importFile").addEventListener("change", event => {
-      const file = event.target.files[0];
-      if (file) importJson(file);
-      event.target.value = "";
-    });
-
-    document.addEventListener("keydown", (e) => {
-      const tag = document.activeElement.tagName.toLowerCase();
-      const typing = tag === "textarea" || tag === "input" || tag === "select";
-
-      if (!typing && (e.key === " " || e.key === "Enter")) {
-        e.preventDefault();
-        render(triplet());
-      }
-    });
-
-    render(current, false);
-    renderCases();
-    updateStats();
   </script>
 </body>
 </html>

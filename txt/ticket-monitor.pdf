@@ -1,0 +1,219 @@
+import requests
+from bs4 import BeautifulSoup
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import time
+from datetime import datetime
+
+# Configuration
+SENDER_EMAIL = "nicholasberghane@gmail.com"
+SENDER_PASSWORD = "kevz bbim vzne hlvj"
+RECEIVER_EMAIL = "nickberghane@gmail.com"
+PRICE_THRESHOLD = 200
+CHECK_INTERVAL = 3600  # 1 hour in seconds
+
+# Event details
+ARTIST = "Cameron Winter"
+VENUE = "Paradise Rock Club"
+DATE = "November 14"
+
+def send_email(subject, body):
+    """Send email alert"""
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SENDER_EMAIL
+        msg['To'] = RECEIVER_EMAIL
+        msg['Subject'] = subject
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        text = msg.as_string()
+        server.sendmail(SENDER_EMAIL, RECEIVER_EMAIL, text)
+        server.quit()
+        
+        print(f"✓ Email sent successfully at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        return True
+    except Exception as e:
+        print(f"✗ Error sending email: {str(e)}")
+        return False
+
+def test_email():
+    """Test email functionality"""
+    print("\n=== TESTING EMAIL ===")
+    subject = "Ticket Monitor Test"
+    body = "This is a test email from your Cameron Winter ticket monitor. If you're reading this, email alerts are working!"
+    return send_email(subject, body)
+
+def check_seatgeek():
+    """Check SeatGeek for tickets"""
+    print(f"\n[{datetime.now().strftime('%H:%M:%S')}] Checking SeatGeek...")
+    
+    try:
+        # Search URL for Cameron Winter at Paradise Rock Club
+        url = "https://seatgeek.com/geese-tickets/boston-massachusetts-paradise-rock-club-2025-11-14-8-pm/concert/6583944"
+        
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        }
+        
+        response = requests.get(url, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # Look for price elements (this is a basic scraper, may need adjustment)
+            price_elements = soup.find_all(class_=['price', 'listing-price'])
+            
+            if price_elements:
+                prices = []
+                for elem in price_elements:
+                    try:
+                        price_text = elem.get_text().strip()
+                        # Extract numbers from price text
+                        price = int(''.join(filter(str.isdigit, price_text)))
+                        if price > 0:
+                            prices.append(price)
+                    except:
+                        continue
+                
+                if prices:
+                    min_price = min(prices)
+                    print(f"  Found {len(prices)} tickets, lowest: ${min_price}")
+                    return min_price
+                else:
+                    print(f"  No valid prices found")
+                    return None
+            else:
+                print(f"  No price elements found on page")
+                return None
+        else:
+            print(f"  Error: Status code {response.status_code}")
+            return None
+            
+    except Exception as e:
+        print(f"  Error checking SeatGeek: {str(e)}")
+        return None
+
+def check_stubhub():
+    """Check StubHub for tickets"""
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Checking StubHub...")
+    
+    try:
+        # StubHub search (you may need to find the exact event URL)
+        url = "https://www.stubhub.com/geese-boston-tickets-11-14-2025/event/152583944/"
+        
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        }
+        
+        response = requests.get(url, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # Look for price elements
+            price_elements = soup.find_all(class_=['price', 'ticket-price'])
+            
+            if price_elements:
+                prices = []
+                for elem in price_elements:
+                    try:
+                        price_text = elem.get_text().strip()
+                        price = int(''.join(filter(str.isdigit, price_text)))
+                        if price > 0:
+                            prices.append(price)
+                    except:
+                        continue
+                
+                if prices:
+                    min_price = min(prices)
+                    print(f"  Found {len(prices)} tickets, lowest: ${min_price}")
+                    return min_price
+                else:
+                    print(f"  No valid prices found")
+                    return None
+            else:
+                print(f"  No price elements found on page")
+                return None
+        else:
+            print(f"  Error: Status code {response.status_code}")
+            return None
+            
+    except Exception as e:
+        print(f"  Error checking StubHub: {str(e)}")
+        return None
+
+def check_tickets():
+    """Check both sites and send alert if price is below threshold"""
+    print(f"\n{'='*50}")
+    print(f"Checking tickets at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"{'='*50}")
+    
+    seatgeek_price = check_seatgeek()
+    stubhub_price = check_stubhub()
+    
+    # Check if any price is below threshold
+    alert_prices = []
+    if seatgeek_price and seatgeek_price <= PRICE_THRESHOLD:
+        alert_prices.append(('SeatGeek', seatgeek_price))
+    if stubhub_price and stubhub_price <= PRICE_THRESHOLD:
+        alert_prices.append(('StubHub', stubhub_price))
+    
+    if alert_prices:
+        subject = f"🎫 TICKET ALERT: {ARTIST} under ${PRICE_THRESHOLD}!"
+        body = f"Tickets found for {ARTIST} at {VENUE} on {DATE}:\n\n"
+        for site, price in alert_prices:
+            body += f"  • {site}: ${price}\n"
+        body += f"\nGo get them NOW!\n"
+        
+        send_email(subject, body)
+    else:
+        print(f"\n✗ No tickets found under ${PRICE_THRESHOLD}")
+        if seatgeek_price:
+            print(f"  SeatGeek lowest: ${seatgeek_price}")
+        if stubhub_price:
+            print(f"  StubHub lowest: ${stubhub_price}")
+
+def main():
+    """Main monitoring loop"""
+    print("\n" + "="*50)
+    print("CAMERON WINTER TICKET MONITOR")
+    print("="*50)
+    print(f"Monitoring for: {ARTIST}")
+    print(f"Venue: {VENUE}")
+    print(f"Date: {DATE}")
+    print(f"Price threshold: ${PRICE_THRESHOLD}")
+    print(f"Check interval: {CHECK_INTERVAL/60} minutes")
+    print(f"Alerts sent to: {RECEIVER_EMAIL}")
+    print("="*50)
+    
+    # Ask user what to do
+    print("\nOptions:")
+    print("1. Test email")
+    print("2. Check tickets once (test scraping)")
+    print("3. Start monitoring (check every hour)")
+    
+    choice = input("\nEnter choice (1/2/3): ").strip()
+    
+    if choice == "1":
+        test_email()
+    elif choice == "2":
+        check_tickets()
+    elif choice == "3":
+        print("\nStarting monitoring... (Press Ctrl+C to stop)\n")
+        try:
+            while True:
+                check_tickets()
+                print(f"\nNext check in {CHECK_INTERVAL/60} minutes...")
+                time.sleep(CHECK_INTERVAL)
+        except KeyboardInterrupt:
+            print("\n\nMonitoring stopped by user.")
+    else:
+        print("Invalid choice. Exiting.")
+
+if __name__ == "__main__":
+    main()

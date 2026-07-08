@@ -18,19 +18,21 @@
     "description": "Browser-native tool for identifying or deleting AI waste."
   },
   {
-    "title": "Substrate 001",
-    "slug": "substrate-001",
-    "type": ["GUV", "artifact"],
-    "status": "unknown",
-    "path": "substrate-001/",
-    "description": "Early substrate experiment."
+    "title": "Zero-Waste Router",
+    "fullName": "Zero-Waste Router",
+    "slug": "router",
+    "type": ["GUV", "router", "workbench"],
+    "status": "working",
+    "path": "router/",
+    "description": "Routes messy AI/browser work into cleaner downstream output paths."
   },
   {
-    "title": "Ticket Monitor",
-    "slug": "ticket-monitor",
-    "type": ["GUV", "workbench"],
-    "status": "unknown",
-    "path": "ticket-monitor/",
-    "description": "Ticket monitoring tool."
+    "title": "Substrate 001",
+    "fullName": "Issue 001",
+    "slug": "substrate-001",
+    "type": ["GUV", "artifact", "journal"],
+    "status": "working",
+    "path": "substrate-001/",
+    "description": "Early substrate journal/artifact experiment."
   }
 ]

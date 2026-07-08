@@ -6,53 +6,48 @@
 <title>Fam Star Map</title>
 <style>
   :root {
-    --bg: #090d17;
-    --bg-2: #0e1526;
-    --panel: rgba(12, 18, 34, 0.92);
-    --panel-2: rgba(10, 15, 28, 0.94);
-    --line: rgba(108, 133, 204, 0.22);
+    --bg: #080c16;
+    --bg-2: #0c1324;
+    --panel: rgba(12, 18, 34, 0.94);
+    --panel-2: rgba(8, 12, 22, 0.88);
+    --line: rgba(124, 92, 255, 0.22);
+    --line-2: rgba(146, 168, 230, 0.18);
     --ink: #eef3ff;
-    --muted: #9ca8c4;
+    --muted: #a2acc7;
+    --faint: #73809d;
 
     --accent: #7c5cff;
-    --accent-soft: rgba(124, 92, 255, 0.24);
-    --accent-soft-2: rgba(124, 92, 255, 0.12);
-    --gold: #f4ce73;
-    --teal: #7ee4d2;
-    --rose: #ff9eb2;
-    --lav: #c8b0ff;
-    --blue: #77b4ff;
+    --accent-2: #9a7cff;
+    --gold: #f4d67c;
+    --cyan: #82dcff;
+    --teal: #85eadb;
+    --rose: #ff9fb4;
+    --violet: #9878ff;
+    --lav: #cbb7ff;
 
-    --rel-parent: rgba(105, 166, 255, 0.78);
-    --rel-partner: rgba(244, 206, 115, 0.72);
-    --rel-sibling: rgba(126, 228, 210, 0.62);
-    --rel-half: rgba(162, 123, 255, 0.72);
-
-    --glow-accent: 0 0 0 1px rgba(124, 92, 255, 0.28), 0 0 24px rgba(124, 92, 255, 0.16);
-    --shadow-panel: 0 20px 60px rgba(0, 0, 0, 0.34);
+    --shadow-panel: 0 18px 70px rgba(0, 0, 0, 0.36);
   }
 
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
 
   html,
   body {
     margin: 0;
     height: 100%;
     background:
-      radial-gradient(circle at 20% 0%, rgba(68, 102, 194, 0.18), transparent 34%),
-      radial-gradient(circle at 85% 18%, rgba(124, 92, 255, 0.14), transparent 28%),
-      linear-gradient(180deg, #0b1120 0%, #090d17 100%);
+      radial-gradient(circle at 18% 0%, rgba(124, 92, 255, 0.16), transparent 34%),
+      radial-gradient(circle at 88% 22%, rgba(82, 132, 255, 0.12), transparent 30%),
+      linear-gradient(180deg, #0a1020 0%, #080c16 100%);
     color: var(--ink);
     font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
   #app {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 340px;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-rows: 60px minmax(0, 1fr);
     height: 100%;
+    overflow: hidden;
   }
 
   header {
@@ -60,32 +55,33 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--line);
-    background: linear-gradient(180deg, rgba(17, 25, 46, 0.92), rgba(12, 18, 34, 0.92));
-    backdrop-filter: blur(14px);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line-2);
+    background: rgba(10, 15, 29, 0.92);
+    backdrop-filter: blur(16px);
   }
 
   h1 {
     margin: 0;
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
     display: flex;
     align-items: center;
     gap: 8px;
+    font-size: 17px;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
   }
 
   .spark {
     color: var(--gold);
-    filter: drop-shadow(0 0 10px rgba(244, 206, 115, 0.3));
+    filter: drop-shadow(0 0 10px rgba(244, 214, 124, 0.32));
   }
 
   .tag {
     color: var(--muted);
     border: 1px solid var(--line);
-    background: rgba(124, 92, 255, 0.06);
-    padding: 5px 12px;
+    background: rgba(124, 92, 255, 0.07);
+    padding: 4px 11px;
     border-radius: 999px;
     font-size: 11px;
     white-space: nowrap;
@@ -94,62 +90,58 @@
   .controls {
     margin-left: auto;
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
     min-width: 0;
   }
 
   #search {
-    width: 300px;
-    max-width: 36vw;
-    padding: 11px 14px;
-    border-radius: 14px;
-    border: 1px solid rgba(124, 92, 255, 0.22);
-    background: rgba(7, 11, 20, 0.78);
+    width: min(300px, 30vw);
+    padding: 10px 13px;
+    border-radius: 13px;
+    border: 1px solid rgba(124, 92, 255, 0.24);
+    background: rgba(6, 10, 19, 0.72);
     color: var(--ink);
     outline: none;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
   }
 
-  #search::placeholder {
-    color: #7f8ca9;
-  }
+  #search::placeholder { color: #7d89a8; }
 
   #search:focus {
-    border-color: rgba(124, 92, 255, 0.5);
+    border-color: rgba(124, 92, 255, 0.58);
     box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.14);
   }
 
   .btn {
-    border: 1px solid rgba(124, 92, 255, 0.28);
-    background: rgba(9, 13, 23, 0.86);
+    border: 1px solid rgba(124, 92, 255, 0.30);
+    background: rgba(8, 12, 22, 0.84);
     color: var(--ink);
-    padding: 10px 14px;
-    border-radius: 14px;
+    padding: 10px 13px;
+    border-radius: 13px;
     cursor: pointer;
     font-size: 13px;
+    line-height: 1;
     transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
-    box-shadow: var(--glow-accent);
   }
 
   .btn:hover {
     transform: translateY(-1px);
-    border-color: rgba(124, 92, 255, 0.48);
-    background: rgba(15, 21, 38, 0.94);
+    border-color: rgba(124, 92, 255, 0.56);
+    background: rgba(18, 25, 46, 0.94);
   }
 
   .btn.active {
-    background: linear-gradient(180deg, rgba(124, 92, 255, 0.24), rgba(124, 92, 255, 0.14));
-    border-color: rgba(124, 92, 255, 0.54);
+    background: linear-gradient(180deg, rgba(124, 92, 255, 0.27), rgba(124, 92, 255, 0.14));
+    border-color: rgba(124, 92, 255, 0.62);
   }
 
   #stage {
     position: relative;
     overflow: hidden;
     background:
-      radial-gradient(circle at 50% 40%, rgba(95, 121, 191, 0.16), transparent 36%),
-      radial-gradient(circle at 20% 15%, rgba(124, 92, 255, 0.11), transparent 24%),
-      linear-gradient(180deg, #0b1120 0%, #0a1020 100%);
+      radial-gradient(circle at 48% 44%, rgba(124, 92, 255, 0.14), transparent 35%),
+      radial-gradient(circle at 42% 52%, rgba(96, 139, 255, 0.13), transparent 28%),
+      linear-gradient(180deg, #0a1020 0%, #080d19 100%);
   }
 
   canvas {
@@ -160,9 +152,7 @@
     touch-action: none;
   }
 
-  canvas.dragging {
-    cursor: grabbing;
-  }
+  canvas.dragging { cursor: grabbing; }
 
   .hint {
     position: absolute;
@@ -172,15 +162,44 @@
     border-radius: 12px;
     font-size: 11px;
     color: var(--muted);
-    background: rgba(6, 9, 17, 0.6);
-    border: 1px solid rgba(124, 92, 255, 0.14);
+    background: rgba(6, 9, 17, 0.64);
+    border: 1px solid rgba(124, 92, 255, 0.16);
     backdrop-filter: blur(10px);
     pointer-events: none;
   }
 
+  .zoomDock {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    display: flex;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 15px;
+    background: rgba(6, 9, 17, 0.62);
+    border: 1px solid rgba(124, 92, 255, 0.16);
+    backdrop-filter: blur(10px);
+  }
+
+  .miniBtn {
+    width: 34px;
+    height: 32px;
+    border-radius: 11px;
+    border: 1px solid rgba(124, 92, 255, 0.24);
+    background: rgba(16, 23, 42, 0.84);
+    color: var(--ink);
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  .miniBtn:hover {
+    border-color: rgba(124, 92, 255, 0.58);
+    background: rgba(124, 92, 255, 0.12);
+  }
+
   aside {
-    border-left: 1px solid var(--line);
-    background: linear-gradient(180deg, rgba(12, 18, 34, 0.95), rgba(10, 15, 29, 0.95));
+    border-left: 1px solid var(--line-2);
+    background: rgba(9, 14, 27, 0.94);
     backdrop-filter: blur(16px);
     padding: 18px;
     overflow: auto;
@@ -203,8 +222,8 @@
   .person-name {
     margin: 0 0 2px;
     font-size: 22px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-weight: 760;
+    letter-spacing: -0.03em;
   }
 
   .person-meta {
@@ -213,9 +232,7 @@
     margin-bottom: 14px;
   }
 
-  .field {
-    margin-bottom: 14px;
-  }
+  .field { margin-bottom: 14px; }
 
   .field b {
     display: block;
@@ -226,9 +243,7 @@
     letter-spacing: 0.08em;
   }
 
-  .rels {
-    margin-top: 6px;
-  }
+  .rels { margin-top: 6px; }
 
   .rel {
     display: flex;
@@ -241,9 +256,7 @@
     transition: background 120ms ease;
   }
 
-  .rel:hover {
-    background: rgba(124, 92, 255, 0.08);
-  }
+  .rel:hover { background: rgba(124, 92, 255, 0.09); }
 
   .dot {
     width: 9px;
@@ -260,7 +273,7 @@
 
   .legend {
     margin-top: 22px;
-    border-top: 1px solid var(--line);
+    border-top: 1px solid var(--line-2);
     padding-top: 14px;
   }
 
@@ -281,16 +294,16 @@
     margin-bottom: 6px;
   }
 
-  @media (max-width: 980px) {
+  @media (max-width: 940px) {
     #app {
       grid-template-columns: 1fr;
-      grid-template-rows: auto minmax(56vh, 1fr) 280px;
+      grid-template-rows: auto minmax(60vh, 1fr) 270px;
     }
 
     header {
       grid-column: 1;
       flex-wrap: wrap;
-      align-items: stretch;
+      height: auto;
     }
 
     .controls {
@@ -307,7 +320,7 @@
 
     aside {
       border-left: 0;
-      border-top: 1px solid var(--line);
+      border-top: 1px solid var(--line-2);
     }
   }
 </style>
@@ -321,13 +334,17 @@
     <div class="controls">
       <input id="search" placeholder="Search the constellation…" autocomplete="off" />
       <button class="btn" id="freeze">Freeze</button>
-      <button class="btn" id="reset">Re-center</button>
+      <button class="btn" id="fit">Fit</button>
     </div>
   </header>
 
   <div id="stage">
     <canvas id="c"></canvas>
-    <div class="hint">drag stars · scroll to zoom · click to inspect · freeze to hold the sky still</div>
+    <div class="hint">drag stars · scroll/pinch to zoom · click to inspect · fit returns to the full constellation</div>
+    <div class="zoomDock" aria-label="Zoom controls">
+      <button class="miniBtn" id="zoomOut" title="Zoom out">−</button>
+      <button class="miniBtn" id="zoomIn" title="Zoom in">+</button>
+    </div>
   </div>
 
   <aside id="panel">
@@ -342,54 +359,40 @@ const DATA = {
     { id: "tantalus", name: "Tantalus", gen: 0, role: "Origin node", note: "Mythic origin point of the cursed line." },
     { id: "pelops", name: "Pelops", gen: 1, role: "Dynastic node", note: "Central ancestor whose descendants define the House of Atreus." },
     { id: "hippodamia", name: "Hippodamia", gen: 1, role: "Partner node", note: "Paired with Pelops in the founding branch." },
-
     { id: "atreus", name: "Atreus", gen: 2, role: "Primary branch", note: "One of the two defining brothers in the central rupture." },
     { id: "thyestes", name: "Thyestes", gen: 2, role: "Counter-branch", note: "Sibling rival to Atreus. A core fracture point in the constellation." },
-
     { id: "aerope", name: "Aerope", gen: 3, role: "Partner node", note: "Connected to Atreus; entangled in the line’s instability." },
     { id: "pelopia", name: "Pelopia", gen: 3, role: "Partner node", note: "Linked to Thyestes and the shadow branch below." },
-
     { id: "agamemnon", name: "Agamemnon", gen: 4, role: "Descendant node", note: "One of Atreus’s most famous descendants." },
     { id: "menelaus", name: "Menelaus", gen: 4, role: "Descendant node", note: "Brother of Agamemnon; another highly visible branch." },
     { id: "aegisthus", name: "Aegisthus", gen: 4, role: "Shadow descendant", note: "A destabilizing line emerging from the counter-branch." },
     { id: "helen", name: "Helen", gen: 4, role: "Partner node", note: "Paired here as the Menelaus branch’s most recognizable counterpart." },
-
     { id: "clytemnestra", name: "Clytemnestra", gen: 5, role: "Partner node", note: "Partner of Agamemnon and a major node in the tragic continuation." },
     { id: "orestes", name: "Orestes", gen: 6, role: "Descendant node", note: "A continuation point where the family curse remains legible." },
     { id: "electra", name: "Electra", gen: 6, role: "Descendant node", note: "Sibling branch tied tightly to the Orestes line." },
     { id: "hermione", name: "Hermione", gen: 5, role: "Descendant node", note: "A child branch extending from Menelaus and Helen." }
   ],
-
   links: [
     { source: "tantalus", target: "pelops", type: "parent" },
-
     { source: "pelops", target: "hippodamia", type: "partner" },
-
     { source: "pelops", target: "atreus", type: "parent" },
     { source: "hippodamia", target: "atreus", type: "parent" },
     { source: "pelops", target: "thyestes", type: "parent" },
     { source: "hippodamia", target: "thyestes", type: "parent" },
-
     { source: "atreus", target: "aerope", type: "partner" },
     { source: "thyestes", target: "pelopia", type: "partner" },
-
     { source: "atreus", target: "agamemnon", type: "parent" },
     { source: "aerope", target: "agamemnon", type: "parent" },
     { source: "atreus", target: "menelaus", type: "parent" },
     { source: "aerope", target: "menelaus", type: "parent" },
-
     { source: "thyestes", target: "aegisthus", type: "parent" },
     { source: "pelopia", target: "aegisthus", type: "parent" },
-
     { source: "menelaus", target: "helen", type: "partner" },
-
     { source: "agamemnon", target: "clytemnestra", type: "partner" },
-
     { source: "agamemnon", target: "orestes", type: "parent" },
     { source: "clytemnestra", target: "orestes", type: "parent" },
     { source: "agamemnon", target: "electra", type: "parent" },
     { source: "clytemnestra", target: "electra", type: "parent" },
-
     { source: "menelaus", target: "hermione", type: "parent" },
     { source: "helen", target: "hermione", type: "parent" }
   ]
@@ -403,39 +406,34 @@ const REL_LABEL = {
   half: "partial sibling line"
 };
 
-const STARS = [];
 const cv = document.getElementById("c");
 const ctx = cv.getContext("2d");
 const panel = document.getElementById("panel");
+const stage = document.getElementById("stage");
 
-const nodePalette = ["#7ee4d2", "#75b8ff", "#f4ce73", "#ff9eb2", "#c8b0ff", "#8d72ff", "#89d8ff"];
-
+const nodePalette = ["#85eadb", "#78b8ff", "#f4d67c", "#ff9fb4", "#cbb7ff", "#9878ff", "#82dcff"];
 const byId = {};
-const nodes = DATA.people.map((person) => {
-  const node = { ...person, x: 0, y: 0, vx: 0, vy: 0, r: 23 };
+const nodes = DATA.people.map(person => {
+  const node = { ...person, x: 0, y: 0, vx: 0, vy: 0, r: 22 };
   byId[node.id] = node;
   return node;
 });
 
 const directLinks = DATA.links
   .filter(link => byId[link.source] && byId[link.target])
-  .map(link => ({
-    source: byId[link.source],
-    target: byId[link.target],
-    type: link.type
-  }));
+  .map(link => ({ source: byId[link.source], target: byId[link.target], type: link.type }));
 
 positionNodesByGeneration();
 const siblingLinks = deriveSiblingLinks();
 const visualLinks = [...directLinks, ...siblingLinks];
 
+const STARS = [];
 let W = 0;
 let H = 0;
 let DPR = Math.max(1, window.devicePixelRatio || 1);
 
 let view = { x: 0, y: 0, k: 1 };
 let targetView = { x: 0, y: 0, k: 1 };
-
 let selected = null;
 let hover = null;
 let query = "";
@@ -445,6 +443,7 @@ let moved = false;
 let last = { x: 0, y: 0 };
 let firstFitDone = false;
 let physicsFrozen = false;
+let userCameraActive = false;
 
 function positionNodesByGeneration() {
   const groups = new Map();
@@ -456,30 +455,31 @@ function positionNodesByGeneration() {
 
   for (const [gen, group] of groups.entries()) {
     group.forEach((node, index) => {
-      const spread = 170;
-      node.x = (index - (group.length - 1) / 2) * spread;
-      node.y = (gen - 2.2) * 140;
+      node.x = (index - (group.length - 1) / 2) * 132;
+      node.y = (gen - 2.55) * 108;
     });
   }
 
-  if (byId.agamemnon) byId.agamemnon.x -= 50;
-  if (byId.menelaus) byId.menelaus.x += 50;
-  if (byId.aegisthus) byId.aegisthus.x -= 130;
+  if (byId.tantalus) byId.tantalus.y -= 18;
+  if (byId.hippodamia) byId.hippodamia.x += 44;
+  if (byId.thyestes) byId.thyestes.x += 16;
+  if (byId.aerope) byId.aerope.x -= 70;
+  if (byId.pelopia) byId.pelopia.x += 74;
+  if (byId.agamemnon) byId.agamemnon.x -= 58;
+  if (byId.menelaus) byId.menelaus.x += 58;
+  if (byId.aegisthus) byId.aegisthus.x += 40;
   if (byId.helen) byId.helen.x += 120;
   if (byId.hermione) byId.hermione.x += 120;
-  if (byId.clytemnestra) byId.clytemnestra.x -= 60;
+  if (byId.clytemnestra) byId.clytemnestra.x -= 100;
+  if (byId.orestes) byId.orestes.x -= 128;
 }
 
 function parentsOf(node) {
-  return directLinks
-    .filter(link => link.type === "parent" && link.target === node)
-    .map(link => link.source);
+  return directLinks.filter(link => link.type === "parent" && link.target === node).map(link => link.source);
 }
 
 function childrenOf(node) {
-  return directLinks
-    .filter(link => link.type === "parent" && link.source === node)
-    .map(link => link.target);
+  return directLinks.filter(link => link.type === "parent" && link.source === node).map(link => link.target);
 }
 
 function partnersOf(node) {
@@ -509,12 +509,8 @@ function deriveSiblingLinks() {
       const a = nodes[i];
       const b = nodes[j];
       const shared = sharedParents(a, b);
-
       if (!shared.length) continue;
-
-      const aParents = parentsOf(a);
-      const bParents = parentsOf(b);
-      const type = sameSet(aParents, bParents) ? "sibling" : "half";
+      const type = sameSet(parentsOf(a), parentsOf(b)) ? "sibling" : "half";
       links.push({ source: a, target: b, type });
     }
   }
@@ -539,14 +535,14 @@ function relationsOf(node) {
 
 function makeStars() {
   STARS.length = 0;
-  const count = Math.max(90, Math.floor((W * H) / 14000));
+  const count = Math.max(110, Math.floor((W * H) / 11000));
 
   for (let i = 0; i < count; i++) {
     STARS.push({
       x: Math.random() * W,
       y: Math.random() * H,
-      r: Math.random() * 1.8 + 0.3,
-      a: Math.random() * 0.65 + 0.15
+      r: Math.random() * 1.45 + 0.25,
+      a: Math.random() * 0.60 + 0.14
     });
   }
 }
@@ -564,59 +560,53 @@ function resize() {
   makeStars();
 
   if (!firstFitDone) {
-    fitToGraph(true);
+    fitGraph(true);
     firstFitDone = true;
-  } else {
-    fitToGraph(true);
+  } else if (!userCameraActive) {
+    fitGraph(true);
   }
 }
 
 window.addEventListener("resize", resize);
 
-function fitToGraph(immediate = false) {
+function graphBounds() {
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
   let maxY = -Infinity;
 
   for (const node of nodes) {
-    minX = Math.min(minX, node.x - node.r - 28);
-    maxX = Math.max(maxX, node.x + node.r + 28);
-    minY = Math.min(minY, node.y - node.r - 28);
-    maxY = Math.max(maxY, node.y + node.r + 34);
+    minX = Math.min(minX, node.x - node.r - 48);
+    maxX = Math.max(maxX, node.x + node.r + 48);
+    minY = Math.min(minY, node.y - node.r - 48);
+    maxY = Math.max(maxY, node.y + node.r + 56);
   }
 
-  const graphW = Math.max(1, maxX - minX);
-  const graphH = Math.max(1, maxY - minY);
-  const padding = Math.min(110, Math.max(44, Math.min(W, H) * 0.09));
+  return { minX, minY, maxX, maxY };
+}
 
-  const k = clamp(
-    Math.min((W - padding * 2) / graphW, (H - padding * 2) / graphH),
-    0.36,
-    1.18
-  );
+function fitGraph(immediate = false) {
+  const b = graphBounds();
+  const graphW = Math.max(1, b.maxX - b.minX);
+  const graphH = Math.max(1, b.maxY - b.minY);
+  const padding = clamp(Math.min(W, H) * 0.12, 38, 92);
+  const k = clamp(Math.min((W - padding * 2) / graphW, (H - padding * 2) / graphH) * 1.08, 0.52, 1.46);
+  const cx = (b.minX + b.maxX) / 2;
+  const cy = (b.minY + b.maxY) / 2;
 
-  const cx = (minX + maxX) / 2;
-  const cy = (minY + maxY) / 2;
+  setCamera({ x: W / 2 - cx * k, y: H / 2 - cy * k, k }, immediate);
+  userCameraActive = false;
+}
 
-  const next = {
-    x: W / 2 - cx * k,
-    y: H / 2 - cy * k,
-    k
-  };
-
+function setCamera(next, immediate = false) {
   targetView = { ...next };
-
   if (immediate) view = { ...next };
 }
 
-function flyToNode(node, preferredZoom = null) {
-  const k = preferredZoom || clamp(Math.max(view.k, 0.9), 0.72, 1.35);
-  targetView = {
-    x: W / 2 - node.x * k,
-    y: H / 2 - node.y * k,
-    k
-  };
+function flyToNode(node) {
+  const k = clamp(Math.max(targetView.k, 1.04), 0.78, 1.42);
+  setCamera({ x: W / 2 - node.x * k, y: H / 2 - node.y * k, k });
+  userCameraActive = true;
 }
 
 function clamp(v, min, max) {
@@ -632,7 +622,7 @@ function tickPhysics() {
       let dy = b.y - a.y;
       let d2 = dx * dx + dy * dy || 0.01;
       let d = Math.sqrt(d2);
-      let force = 2400 / d2;
+      let force = 2050 / d2;
       let ux = dx / d;
       let uy = dy / d;
 
@@ -649,13 +639,8 @@ function tickPhysics() {
     let dx = b.x - a.x;
     let dy = b.y - a.y;
     let d = Math.sqrt(dx * dx + dy * dy) || 0.01;
-    let rest =
-      link.type === "partner" ? 96 :
-      link.type === "sibling" ? 144 :
-      link.type === "half" ? 160 : 118;
-    let stiffness =
-      link.type === "half" ? 0.008 :
-      link.type === "sibling" ? 0.011 : 0.021;
+    let rest = link.type === "partner" ? 86 : link.type === "sibling" ? 125 : link.type === "half" ? 148 : 104;
+    let stiffness = link.type === "half" ? 0.007 : link.type === "sibling" ? 0.009 : 0.020;
     let force = (d - rest) * stiffness;
     let ux = dx / d;
     let uy = dy / d;
@@ -667,23 +652,23 @@ function tickPhysics() {
   }
 
   for (const node of nodes) {
-    const targetY = (node.gen - 2.2) * 140;
-    node.vy += (targetY - node.y) * 0.0033;
-    node.vx += (0 - node.x) * 0.0018;
+    const targetY = (node.gen - 2.55) * 108;
+    node.vy += (targetY - node.y) * 0.003;
+    node.vx += (0 - node.x) * 0.0013;
 
     if (node !== dragNode) {
-      node.vx *= 0.87;
-      node.vy *= 0.87;
+      node.vx *= 0.875;
+      node.vy *= 0.875;
       node.x += node.vx;
       node.y += node.vy;
     }
   }
 }
 
-function tickView() {
-  view.x += (targetView.x - view.x) * 0.14;
-  view.y += (targetView.y - view.y) * 0.14;
-  view.k += (targetView.k - view.k) * 0.16;
+function tickCamera() {
+  view.x += (targetView.x - view.x) * 0.22;
+  view.y += (targetView.y - view.y) * 0.22;
+  view.k += (targetView.k - view.k) * 0.24;
 }
 
 function drawBackground() {
@@ -696,10 +681,10 @@ function drawBackground() {
 }
 
 function relationColor(type) {
-  if (type === "parent") return "rgba(105, 166, 255, 0.78)";
-  if (type === "partner") return "rgba(244, 206, 115, 0.72)";
-  if (type === "sibling") return "rgba(126, 228, 210, 0.58)";
-  if (type === "half") return "rgba(162, 123, 255, 0.72)";
+  if (type === "parent") return "rgba(112, 170, 255, 0.78)";
+  if (type === "partner") return "rgba(244, 214, 124, 0.72)";
+  if (type === "sibling") return "rgba(133, 234, 219, 0.56)";
+  if (type === "half") return "rgba(154, 124, 255, 0.72)";
   return "rgba(150, 170, 220, 0.45)";
 }
 
@@ -712,12 +697,11 @@ function matches(node) {
 }
 
 function initials(name) {
-  return name
-    .split(/\s+/)
-    .map(part => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  return name.split(/\s+/).map(part => part[0]).join("").slice(0, 2).toUpperCase();
+}
+
+function screenRadius(value) {
+  return value / Math.sqrt(view.k);
 }
 
 function draw() {
@@ -736,14 +720,14 @@ function draw() {
     ctx.lineTo(link.target.x, link.target.y);
 
     ctx.strokeStyle = relationColor(link.type);
-    ctx.lineWidth = link.type === "half" ? 2.2 : link.type === "partner" ? 1.8 : 1.6;
-    ctx.globalAlpha = dim ? 0.08 : link.type === "half" ? 0.46 : 0.62;
+    ctx.lineWidth = link.type === "half" ? 1.9 : link.type === "partner" ? 1.6 : 1.3;
+    ctx.globalAlpha = dim ? 0.08 : link.type === "half" ? 0.42 : 0.56;
 
-    if (link.type === "half") ctx.setLineDash([5, 8]);
+    if (link.type === "half") ctx.setLineDash([4, 8]);
     else if (link.type === "sibling") ctx.setLineDash([2, 9]);
     else ctx.setLineDash([]);
 
-    ctx.shadowBlur = link.type === "partner" ? 10 : 16;
+    ctx.shadowBlur = link.type === "partner" ? 8 : 13;
     ctx.shadowColor = relationColor(link.type);
     ctx.stroke();
   }
@@ -755,37 +739,38 @@ function draw() {
   for (const node of nodes) {
     const dim = query && !matches(node);
     const fill = nodePalette[node.gen % nodePalette.length];
+    const r = screenRadius(node.r);
 
     ctx.globalAlpha = dim ? 0.18 : 1;
 
     ctx.beginPath();
-    ctx.arc(node.x, node.y, node.r + 8, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(124, 92, 255, 0.08)";
-    ctx.shadowBlur = node === selected ? 34 : 20;
-    ctx.shadowColor = node === selected ? "rgba(124, 92, 255, 0.42)" : fill;
+    ctx.arc(node.x, node.y, r + 8 / view.k, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(124, 92, 255, 0.075)";
+    ctx.shadowBlur = node === selected ? 34 : 18;
+    ctx.shadowColor = node === selected ? "rgba(154, 124, 255, 0.56)" : fill;
     ctx.fill();
 
     ctx.beginPath();
-    ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
+    ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
     ctx.fillStyle = fill;
     ctx.fill();
 
-    ctx.lineWidth = node === selected ? 3 : node === hover ? 2.4 : 1.2;
-    ctx.strokeStyle = node === selected ? "#ffffff" : "rgba(255,255,255,0.18)";
+    ctx.lineWidth = node === selected ? 3 / view.k : node === hover ? 2.3 / view.k : 1.15 / view.k;
+    ctx.strokeStyle = node === selected ? "#ffffff" : "rgba(255,255,255,0.20)";
     ctx.stroke();
-
     ctx.shadowBlur = 0;
 
-    ctx.fillStyle = "#0c1020";
-    ctx.font = "700 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    ctx.fillStyle = "#0b1020";
+    ctx.font = `${Math.max(10, 12 / Math.sqrt(view.k))}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+    ctx.font = `750 ${Math.max(10, 12 / Math.sqrt(view.k))}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(initials(node.name), node.x, node.y);
 
-    ctx.fillStyle = "#edf2ff";
-    ctx.font = "12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    ctx.fillStyle = "rgba(238, 243, 255, 0.94)";
+    ctx.font = `600 ${Math.max(10, 12 / Math.sqrt(view.k))}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
     ctx.textBaseline = "top";
-    ctx.fillText(node.name, node.x, node.y + node.r + 6);
+    ctx.fillText(node.name, node.x, node.y + r + 6 / view.k);
   }
 
   ctx.restore();
@@ -794,25 +779,18 @@ function draw() {
 
 function loop() {
   if (!physicsFrozen) tickPhysics();
-  tickView();
+  tickCamera();
   draw();
   requestAnimationFrame(loop);
 }
 
 function pointFromEvent(event) {
   const rect = cv.getBoundingClientRect();
-  return {
-    x: event.clientX - rect.left,
-    y: event.clientY - rect.top
-  };
+  return { x: event.clientX - rect.left, y: event.clientY - rect.top };
 }
 
-function toWorld(x, y, useTarget = false) {
-  const v = useTarget ? targetView : view;
-  return {
-    x: (x - v.x) / v.k,
-    y: (y - v.y) / v.k
-  };
+function toWorld(x, y, v = view) {
+  return { x: (x - v.x) / v.k, y: (y - v.y) / v.k };
 }
 
 function pick(x, y) {
@@ -820,15 +798,31 @@ function pick(x, y) {
 
   for (let i = nodes.length - 1; i >= 0; i--) {
     const node = nodes[i];
+    const r = screenRadius(node.r);
     const dx = world.x - node.x;
     const dy = world.y - node.y;
-    if (dx * dx + dy * dy <= node.r * node.r) return node;
+    if (dx * dx + dy * dy <= r * r) return node;
   }
 
   return null;
 }
 
-cv.addEventListener("pointerdown", (event) => {
+function zoomAt(screenX, screenY, factor) {
+  const old = { ...view };
+  const world = toWorld(screenX, screenY, old);
+  const k = clamp(old.k * factor, 0.42, 2.65);
+  const next = {
+    x: screenX - world.x * k,
+    y: screenY - world.y * k,
+    k
+  };
+
+  view = { ...next };
+  targetView = { ...next };
+  userCameraActive = true;
+}
+
+cv.addEventListener("pointerdown", event => {
   const p = pointFromEvent(event);
   const node = pick(p.x, p.y);
 
@@ -845,7 +839,7 @@ cv.addEventListener("pointerdown", (event) => {
   }
 });
 
-cv.addEventListener("pointermove", (event) => {
+cv.addEventListener("pointermove", event => {
   const p = pointFromEvent(event);
 
   if (dragNode) {
@@ -855,6 +849,7 @@ cv.addEventListener("pointermove", (event) => {
     dragNode.vx = 0;
     dragNode.vy = 0;
     moved = true;
+    userCameraActive = true;
     return;
   }
 
@@ -867,6 +862,7 @@ cv.addEventListener("pointermove", (event) => {
     targetView.y += dy;
     last = p;
     moved = true;
+    userCameraActive = true;
     return;
   }
 
@@ -874,13 +870,13 @@ cv.addEventListener("pointermove", (event) => {
   cv.style.cursor = hover ? "pointer" : "grab";
 });
 
-cv.addEventListener("pointerup", (event) => {
+cv.addEventListener("pointerup", event => {
   const p = pointFromEvent(event);
 
   if (dragNode && !moved) {
-    select(dragNode);
+    select(dragNode, true);
   } else if (!dragNode && !panning && !moved) {
-    select(pick(p.x, p.y));
+    select(pick(p.x, p.y), true);
   }
 
   dragNode = null;
@@ -888,16 +884,11 @@ cv.addEventListener("pointerup", (event) => {
   cv.classList.remove("dragging");
 });
 
-cv.addEventListener("wheel", (event) => {
+cv.addEventListener("wheel", event => {
   event.preventDefault();
-
-  const zoomFactor = Math.exp(-event.deltaY * 0.0012);
-  const nextK = clamp(targetView.k * zoomFactor, 0.32, 2.2);
-
-  const world = toWorld(event.offsetX, event.offsetY, true);
-  targetView.k = nextK;
-  targetView.x = event.offsetX - world.x * targetView.k;
-  targetView.y = event.offsetY - world.y * targetView.k;
+  const raw = Math.exp(-event.deltaY * 0.0018);
+  const factor = clamp(raw, 0.82, 1.22);
+  zoomAt(event.offsetX, event.offsetY, factor);
 }, { passive: false });
 
 function escapeHtml(value) {
@@ -909,7 +900,7 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function select(node) {
+function select(node, moveCamera = false) {
   selected = node;
 
   if (!node) {
@@ -922,16 +913,13 @@ function select(node) {
 
   const relations = relationsOf(node);
   const relationHtml = relations.length
-    ? relations.map(relation => {
-        const color = relationColor(relation.type);
-        return `
-          <div class="rel" data-id="${escapeHtml(relation.other.id)}">
-            <span class="dot" style="background:${color}"></span>
-            <span>${escapeHtml(relation.other.name)}</span>
-            <small>${escapeHtml(REL_LABEL[relation.type] || relation.type)}</small>
-          </div>
-        `;
-      }).join("")
+    ? relations.map(relation => `
+        <div class="rel" data-id="${escapeHtml(relation.other.id)}">
+          <span class="dot" style="background:${relationColor(relation.type)}"></span>
+          <span>${escapeHtml(relation.other.name)}</span>
+          <small>${escapeHtml(REL_LABEL[relation.type] || relation.type)}</small>
+        </div>
+      `).join("")
     : '<div class="empty">No recorded connections.</div>';
 
   panel.innerHTML = `
@@ -962,23 +950,23 @@ function select(node) {
     element.addEventListener("click", () => {
       const target = byId[element.dataset.id];
       if (!target) return;
-      select(target);
-      flyToNode(target, clamp(view.k * 1.04, 0.82, 1.28));
+      select(target, true);
     });
   });
 
-  flyToNode(node, clamp(view.k * 1.03, 0.82, 1.22));
+  if (moveCamera) flyToNode(node);
 }
 
-document.getElementById("search").addEventListener("input", (event) => {
+document.getElementById("search").addEventListener("input", event => {
   query = event.target.value.trim().toLowerCase();
 });
 
-document.getElementById("reset").addEventListener("click", () => {
-  fitToGraph(false);
-});
+document.getElementById("fit").addEventListener("click", () => fitGraph(false));
 
-document.getElementById("freeze").addEventListener("click", (event) => {
+document.getElementById("zoomIn").addEventListener("click", () => zoomAt(W / 2, H / 2, 1.18));
+document.getElementById("zoomOut").addEventListener("click", () => zoomAt(W / 2, H / 2, 0.84));
+
+document.getElementById("freeze").addEventListener("click", event => {
   physicsFrozen = !physicsFrozen;
   event.currentTarget.classList.toggle("active", physicsFrozen);
   event.currentTarget.textContent = physicsFrozen ? "Unfreeze" : "Freeze";

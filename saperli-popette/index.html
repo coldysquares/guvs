@@ -92,7 +92,6 @@
     window.speechSynthesis.speak(u);
   }
 
-  // Auto-resize textarea
   input.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = (this.scrollHeight) + 'px';
@@ -149,7 +148,7 @@
     addBubble("user", text);
     history.push({role:"user", content:text});
     input.value=""; input.style.height = 'auto'; busy=true;
-    addBubble("assistant", null, true); // Thinking
+    addBubble("assistant", null, true);
     try {
       const reply = await callGroq(history);
       $("#thinking").remove();
@@ -160,7 +159,15 @@
 
   $("#sendBtn").onclick = () => send(input.value);
   input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input.value); } });
-  $("#saveKey").onclick = () => { apiKey = $("#keyInput").value.trim(); localStorage.setItem("saperli_key", apiKey); $("#overlay").classList.remove("show"); };
+  
+  $("#saveKey").onclick = () => { 
+    apiKey = $("#keyInput").value.trim(); 
+    localStorage.setItem("saperli_key", apiKey); 
+    $("#overlay").classList.remove("show"); 
+    // Immediate greeting so you see the buttons:
+    addBubble("assistant", "Bonjour! Je suis Saperlipopette. Je suis prête à discuter. Qu'est-ce qu'on fait aujourd'hui? [HINT: Salut Saperli!]");
+  };
+  
   $("#settingsBtn").onclick = () => $("#overlay").classList.add("show");
   if (!apiKey) $("#overlay").classList.add("show");
 })();

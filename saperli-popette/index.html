@@ -44,6 +44,9 @@
   .mic.active{background:var(--amber-soft);border-color:var(--amber);color:var(--amber)}
   .mic:disabled{opacity:.45;cursor:not-allowed}
   .status{font-size:12px;color:var(--muted);min-height:16px;padding-left:2px}
+  .toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);max-width:min(560px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--line);box-shadow:0 10px 35px rgba(0,0,0,.35);border-radius:14px;padding:13px 15px;z-index:70;color:var(--text);display:none;line-height:1.45;font-size:15px}
+  .toast.show{display:block}
+  .toast strong{color:var(--amber)}
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;}
   .overlay.show{display:flex}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:440px;width:100%;}
@@ -75,13 +78,15 @@
   <footer>
     <div class="composer">
       <div class="inputrow">
-        <button class="mic" id="micBtn" type="button" title="Start voice conversation">🎙️</button>
-        <textarea id="input" rows="1" placeholder="Speak or type here..."></textarea>
+        <button class="mic" id="micBtn" type="button" title="Start dictation">🎙️</button>
+        <textarea id="input" rows="1" placeholder="Speak, edit, then send..."></textarea>
         <button class="send" id="sendBtn" type="button">Send</button>
       </div>
       <div class="status" id="status"></div>
     </div>
   </footer>
+
+  <div class="toast" id="hintToast"></div>
 
   <div class="overlay" id="overlay">
     <div class="card">
@@ -104,6 +109,7 @@
   const keyInput = $("#keyInput");
   const micBtn = $("#micBtn");
   const status = $("#status");
+  const hintToast = $("#hintToast");
 
   const STORAGE_KEY = "saperli_key";
   const MODEL = "llama-3.3-70b-versatile";
@@ -113,13 +119,17 @@
   let busy = false;
 
   let recognition = null;
-  let voiceMode = false;
+  let dictating = false;
   let listening = false;
-  let speaking = false;
-  let suppressNextRestart = false;
+  let baseDictationText = "";
+  let finalDictationText = "";
+  let toastTimer = null;
 
   function systemPrompt() {
-    return `You are Saperlipopette, a warm, slightly eccentric, and endlessly curious French friend. Speak almost entirely in French. Never be a teacher. If the user is struggling, let English leak in via parentheses but pull them back to French. Perform "Natural Recast" for corrections. Be tangential, whimsical, and curious. Keep replies brief, natural, and conversational, usually 1-4 sentences. End with a question. ALWAYS append a short conversational hint for the user at the very end of your message in this format: [HINT: short French phrase]`;
+    return `You are Saperlipopette, a warm, slightly eccentric, and endlessly curious French friend. Speak mostly in French, but keep the conversation accessible for a beginner. Never be a formal teacher. If the user is struggling, let a little English leak in naturally. Perform "Natural Recast" for corrections. Be tangential, whimsical, and curious. Keep replies brief, natural, and conversational, usually 1-3 sentences. End with one simple question.
+
+At the very end, append a hidden plain-English comprehension hint in this exact format:
+[HINT: Saperli Popette is trying to say: one short English explanation of the message.]`;
   }
 
   function setStatus(text) {
@@ -142,6 +152,16 @@
     sendBtn.textContent = value ? "..." : "Send";
   }
 
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, (m) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    }[m]));
+  }
+
   function splitHint(text) {
     const match = String(text || "").match(/\s*\[HINT:\s*([^\]]+)\]\s*$/i);
 
@@ -153,6 +173,18 @@
       display: String(text || "").replace(match[0], "").trim(),
       hint: match[1].trim()
     };
+  }
+
+  function showHint(hint) {
+    if (!hint) return;
+
+    hintToast.innerHTML = "<strong>Hint:</strong> " + escapeHtml(hint);
+    hintToast.classList.add("show");
+
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      hintToast.classList.remove("show");
+    }, 7000);
   }
 
   function addBubble(role, text = "", isThinking = false) {
@@ -184,7 +216,7 @@
         spk.textContent = "🔊";
         spk.className = "action-btn";
         spk.title = "Speak";
-        spk.onclick = () => speak(display, false);
+        spk.onclick = () => speak(display);
         actions.appendChild(spk);
 
         if (hint) {
@@ -192,12 +224,8 @@
           hnt.type = "button";
           hnt.textContent = "💡";
           hnt.className = "action-btn";
-          hnt.title = "Use hint";
-          hnt.onclick = () => {
-            input.value = hint;
-            input.focus();
-            input.dispatchEvent(new Event("input"));
-          };
+          hnt.title = "Show hint";
+          hnt.onclick = () => showHint(hint);
           actions.appendChild(hnt);
         }
 
@@ -215,25 +243,7 @@
     if (thinking) thinking.remove();
   }
 
-  function stopListening() {
-    if (recognition && listening) {
-      suppressNextRestart = true;
-      recognition.stop();
-    }
-  }
-
-  function startListening() {
-    if (!voiceMode || busy || speaking || !recognition) return;
-
-    try {
-      suppressNextRestart = false;
-      recognition.start();
-    } catch {
-      // Chrome throws if recognition is already starting.
-    }
-  }
-
-  function speak(text, continueConversation = voiceMode) {
+  function speak(text) {
     if (!("speechSynthesis" in window)) {
       setStatus("Speech output is not supported in this browser.");
       return;
@@ -249,26 +259,60 @@
     utterance.pitch = 1;
 
     utterance.onstart = () => {
-      speaking = true;
-      stopListening();
+      stopDictation(false);
       setStatus("Saperli is speaking...");
     };
 
-    utterance.onend = () => {
-      speaking = false;
-      setStatus(continueConversation ? "Listening will resume..." : "");
-
-      if (continueConversation) {
-        setTimeout(startListening, 450);
-      }
-    };
-
-    utterance.onerror = () => {
-      speaking = false;
-      setStatus("");
-    };
+    utterance.onend = () => setStatus("");
+    utterance.onerror = () => setStatus("");
 
     window.speechSynthesis.speak(utterance);
+  }
+
+  function updateInputFromDictation(interimText = "") {
+    const parts = [];
+
+    if (baseDictationText.trim()) parts.push(baseDictationText.trim());
+    if (finalDictationText.trim()) parts.push(finalDictationText.trim());
+    if (interimText.trim()) parts.push(interimText.trim());
+
+    input.value = parts.join(" ").replace(/\s+/g, " ").trim();
+    input.dispatchEvent(new Event("input"));
+  }
+
+  function startDictation() {
+    if (!recognition || busy) return;
+
+    dictating = true;
+    baseDictationText = input.value.trim();
+    finalDictationText = "";
+
+    micBtn.classList.add("active");
+    micBtn.textContent = "🛑";
+    micBtn.title = "Stop dictation";
+    input.placeholder = "Listening... pause whenever you want. Nothing sends until you press Send.";
+    setStatus("Listening. Press the mic again to stop. Nothing will send automatically.");
+
+    try {
+      recognition.start();
+    } catch {
+      // Ignore already-starting browser error.
+    }
+  }
+
+  function stopDictation(clearStatus = true) {
+    dictating = false;
+
+    micBtn.classList.remove("active");
+    micBtn.textContent = "🎙️";
+    micBtn.title = "Start dictation";
+    input.placeholder = "Speak, edit, then send...";
+
+    if (clearStatus) setStatus("");
+
+    if (recognition && listening) {
+      try { recognition.stop(); } catch {}
+    }
   }
 
   function setupSpeechInput() {
@@ -285,40 +329,23 @@
     recognition = new SpeechRecognition();
     recognition.lang = "fr-FR";
     recognition.interimResults = true;
-    recognition.continuous = false;
+    recognition.continuous = true;
 
     recognition.onstart = () => {
       listening = true;
-      micBtn.classList.add("active");
-      micBtn.textContent = "🛑";
-      input.placeholder = "Listening...";
-      setStatus("Listening...");
     };
 
     recognition.onend = () => {
       listening = false;
 
-      if (!voiceMode) {
-        micBtn.classList.remove("active");
-        micBtn.textContent = "🎙️";
-        micBtn.title = "Start voice conversation";
-        input.placeholder = "Speak or type here...";
-        setStatus("");
-        return;
-      }
-
-      micBtn.classList.add("active");
-      micBtn.textContent = "🎙️";
-      micBtn.title = "Stop voice conversation";
-      input.placeholder = "Pause... then speak again";
-
-      if (suppressNextRestart) {
-        suppressNextRestart = false;
-        return;
-      }
-
-      if (voiceMode && !busy && !speaking) {
-        setTimeout(startListening, 500);
+      if (dictating) {
+        // Some browsers end recognition after a pause even in continuous mode.
+        // Restart it, but never submit anything automatically.
+        setTimeout(() => {
+          if (dictating && !busy) {
+            try { recognition.start(); } catch {}
+          }
+        }, 350);
       }
     };
 
@@ -326,44 +353,34 @@
       listening = false;
 
       if (event.error === "no-speech") {
-        setStatus("No speech heard. Listening again...");
+        setStatus("No speech heard. Still dictating...");
         return;
       }
 
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-        voiceMode = false;
-        micBtn.classList.remove("active");
-        micBtn.textContent = "🎙️";
+        stopDictation(false);
         setStatus("Microphone permission was blocked.");
         addBubble("assistant", "Mic permission was blocked. Allow microphone access in your browser, then try again.");
         return;
       }
 
       setStatus("Mic error: " + event.error);
-      addBubble("assistant", "Mic error: " + event.error);
     };
 
     recognition.onresult = (event) => {
-      let finalText = "";
       let interimText = "";
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
 
         if (event.results[i].isFinal) {
-          finalText += transcript;
+          finalDictationText += " " + transcript;
         } else {
-          interimText += transcript;
+          interimText += " " + transcript;
         }
       }
 
-      input.value = (finalText || interimText).trim();
-      input.dispatchEvent(new Event("input"));
-
-      if (finalText.trim()) {
-        stopListening();
-        send(finalText.trim(), true);
-      }
+      updateInputFromDictation(interimText);
     };
   }
 
@@ -422,7 +439,7 @@
     return data.choices?.[0]?.message?.content?.trim() || "";
   }
 
-  async function send(text, fromVoice = false) {
+  async function send(text) {
     const clean = String(text || "").trim();
 
     if (!clean || busy) return;
@@ -431,6 +448,9 @@
       showOverlay();
       return;
     }
+
+    stopDictation(false);
+    window.speechSynthesis.cancel();
 
     addBubble("user", clean);
     history.push({ role: "user", content: clean });
@@ -448,19 +468,14 @@
       removeThinking();
 
       if (!reply) {
-        addBubble("assistant", "Je n’ai rien reçu. Une petite brume technique. Tu veux réessayer ? [HINT: On réessaie ?]");
+        addBubble("assistant", "Je n’ai rien reçu. Une petite brume technique. Tu veux réessayer ? [HINT: Saperli Popette is trying to say: Something technical went wrong and she wants to try again.]");
         setStatus("");
         return;
       }
 
       addBubble("assistant", reply);
       history.push({ role: "assistant", content: reply });
-
-      if (voiceMode || fromVoice) {
-        speak(reply, true);
-      } else {
-        setStatus("");
-      }
+      speak(reply);
     } catch (e) {
       removeThinking();
       addBubble("assistant", "Error: " + e.message);
@@ -477,12 +492,12 @@
     this.style.height = Math.min(this.scrollHeight, 120) + "px";
   });
 
-  sendBtn.onclick = () => send(input.value, false);
+  sendBtn.onclick = () => send(input.value);
 
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      send(input.value, false);
+      send(input.value);
     }
   });
 
@@ -492,23 +507,10 @@
       return;
     }
 
-    voiceMode = !voiceMode;
-
-    if (voiceMode) {
-      micBtn.classList.add("active");
-      micBtn.textContent = "🎙️";
-      micBtn.title = "Stop voice conversation";
-      setStatus("Voice conversation on. Start speaking...");
-      startListening();
+    if (dictating) {
+      stopDictation();
     } else {
-      micBtn.classList.remove("active");
-      micBtn.textContent = "🎙️";
-      micBtn.title = "Start voice conversation";
-      stopListening();
-      window.speechSynthesis.cancel();
-      speaking = false;
-      setStatus("");
-      input.placeholder = "Speak or type here...";
+      startDictation();
     }
   };
 
@@ -526,7 +528,7 @@
 
     addBubble(
       "assistant",
-      "Bonjour! Je suis Saperlipopette. Je suis prête à discuter. Qu'est-ce qu'on fait aujourd'hui? [HINT: Salut Saperli!]"
+      "Bonjour! Je suis Saperlipopette. Je suis prête à discuter. Qu'est-ce qu'on fait aujourd'hui? [HINT: Saperli Popette is trying to say: Hello, she is ready to talk and wants to know what you want to discuss.]"
     );
 
     input.focus();
@@ -547,7 +549,7 @@
   } else {
     addBubble(
       "assistant",
-      "Bonjour! Je suis déjà réveillée dans le petit sous-bois numérique. On parle de quoi? [HINT: Salut, comment ça va ?]"
+      "Bonjour! Je suis déjà réveillée dans le petit sous-bois numérique. On parle de quoi? [HINT: Saperli Popette is trying to say: She is awake and ready to chat.]"
     );
   }
 })();

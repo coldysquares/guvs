@@ -1,1 +1,181 @@
-<html><head><meta content="text/html; charset=UTF-8" http-equiv="content-type"><style type="text/css">ol{margin:0;padding:0}table td,table th{padding:0}.c0{padding-top:0pt;padding-bottom:0pt;line-height:1.15;orphans:2;widows:2;text-align:left;height:11pt}.c2{color:#000000;font-weight:400;text-decoration:none;vertical-align:baseline;font-size:11pt;font-family:"Arial";font-style:normal}.c1{padding-top:0pt;padding-bottom:0pt;line-height:1.15;orphans:2;widows:2;text-align:left}.c3{background-color:#ffffff;max-width:468pt;padding:72pt 72pt 72pt 72pt}.title{padding-top:0pt;color:#000000;font-size:26pt;padding-bottom:3pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}.subtitle{padding-top:0pt;color:#666666;font-size:15pt;padding-bottom:16pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}li{color:#000000;font-size:11pt;font-family:"Arial"}p{margin:0;color:#000000;font-size:11pt;font-family:"Arial"}h1{padding-top:20pt;color:#000000;font-size:20pt;padding-bottom:6pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h2{padding-top:18pt;color:#000000;font-size:16pt;padding-bottom:6pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h3{padding-top:16pt;color:#434343;font-size:14pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h4{padding-top:14pt;color:#666666;font-size:12pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h5{padding-top:12pt;color:#666666;font-size:11pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h6{padding-top:12pt;color:#666666;font-size:11pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;font-style:italic;orphans:2;widows:2;text-align:left}</style></head><body class="c3 doc-content"><p class="c1"><span class="c2">&nbsp; &lt;script&gt;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // -------------------------------------------------------------------------</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // 1. DATA SEEDING (Protocellular Coacervate Compartments &amp; Hyphal Flux Paths)</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // -------------------------------------------------------------------------</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; const compartments = [</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; { id: 0, name: &quot;Source-Compiler-Core&quot;, type: &quot;Fluid-Dense&quot;, tokens: &quot;42,500&quot;, volume: &quot;0.425&quot;, valency: &quot;7.842&quot;, entropy: &quot;1.214&quot;, desc: &quot;Houses core architecture scripts, abstract syntax tree rules, and python layer mappings.&quot; },</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; { id: 1, name: &quot;Regulatory-Compliance-Tax&quot;, type: &quot;Fluid-Isolated&quot;, tokens: &quot;15,000&quot;, volume: &quot;0.150&quot;, valency: &quot;2.104&quot;, entropy: &quot;4.812&quot;, desc: &quot;Corporate auditing profiles, structural compliance layers, and localized legal texts.&quot; },</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; { id: 2, name: &quot;Mathematical-Proof-Lib&quot;, type: &quot;Ostwald-Ripened&quot;, tokens: &quot;6,700&quot;, volume: &quot;0.067&quot;, valency: &quot;6.118&quot;, entropy: &quot;0.925&quot;, desc: &quot;Fused semantic equations, complex Eulerian amplitudes, and matrix validation logic arrays.&quot; },</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; { id: 3, name: &quot;Temporal-Context-Droplet&quot;, type: &quot;Porous-Nucleating&quot;, tokens: &quot;1,200&quot;, volume: &quot;0.012&quot;, valency: &quot;4.551&quot;, entropy: &quot;2.314&quot;, desc: &quot;Volatile conversational inputs and immediate environmental runtime adjustments.&quot; }</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; ];</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // 1.27 Mycelian Hyphal Interconnectivity Matrix (Flux coefficients)</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; const hyphalLinks = [</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; { source: 0, target: 2, flux: &quot;0.941&quot;, type: &quot;high&quot; },</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; { source: 0, target: 3, flux: &quot;0.684&quot;, type: &quot;mid&quot; },</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; { source: 2, target: 3, flux: &quot;0.412&quot;, type: &quot;low&quot; },</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; { source: 1, target: 3, flux: &quot;0.104&quot;, type: &quot;low&quot; }</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; ];</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // -------------------------------------------------------------------------</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // 2. SIMULATION &amp; SPRING PHYSICS RENDER ENGINE</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // -------------------------------------------------------------------------</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; const canvas = document.getElementById(&quot;constellation&quot;);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; const ctx = canvas.getContext(&quot;2d&quot;);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; </span></p><p class="c1"><span class="c2">&nbsp; &nbsp; let width = canvas.width = canvas.offsetWidth;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; let height = canvas.height = canvas.offsetHeight;</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // Node spatial instantiation configurations</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; const nodes = compartments.map((c, i) =&gt; ({</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; ...c,</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; x: width / 2 + (Math.cos(i * 1.5) * 120),</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; y: height / 2 + (Math.sin(i * 1.5) * 120),</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; vx: 0,</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; vy: 0,</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; radius: parseFloat(c.volume) * 40 + 20</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; }));</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; let selectedNodeId = null;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; let dragNode = null;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; let panX = 0, panY = 0;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; let isPanning = false;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; let startX, startY;</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // Window adjustment tracker</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; window.addEventListener(&quot;resize&quot;, () =&gt; {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; width = canvas.width = canvas.offsetWidth;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; height = canvas.height = canvas.offsetHeight;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; });</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // -------------------------------------------------------------------------</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // 3. EVENT ROUTING &amp; GRAPH SELECTION INTERACTION INTERFACE</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // -------------------------------------------------------------------------</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; canvas.addEventListener(&quot;mousedown&quot;, (e) =&gt; {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; const rect = canvas.getBoundingClientRect();</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; const mouseX = e.clientX - rect.left - panX;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; const mouseY = e.clientY - rect.top - panY;</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; // Intersection Check: Did the operator click a protocellular node?</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; dragNode = nodes.find(n =&gt; {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const dx = n.x - mouseX;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const dy = n.y - mouseY;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; return Math.sqrt(dx * dx + dy * dy) &lt; n.radius;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; });</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; if (dragNode) {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; selectedNodeId = dragNode.id;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; updateInspector(dragNode.id);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; canvas.classList.add(&quot;dragging&quot;);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; } else {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; isPanning = true;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; startX = e.clientX - panX;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; startY = e.clientY - panY;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; }</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; });</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; canvas.addEventListener(&quot;mousemove&quot;, (e) =&gt; {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; if (dragNode) {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const rect = canvas.getBoundingClientRect();</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; dragNode.x = e.clientX - rect.left - panX;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; dragNode.y = e.clientY - rect.top - panY;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; } else if (isPanning) {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; panX = e.clientX - startX;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; panY = e.clientY - startY;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; }</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; });</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; canvas.addEventListener(&quot;mouseup&quot;, () =&gt; {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; dragNode = null;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; isPanning = false;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; canvas.classList.remove(&quot;dragging&quot;);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; });</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // Tap-to-traverse connector action function</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; window.navigateToNode = function(id) {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; selectedNodeId = id;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; updateInspector(id);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; };</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; function updateInspector(id) {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; const node = nodes.find(n =&gt; n.id === id);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; const content = document.getElementById(&quot;inspector-content&quot;);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; </span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; // Filter the 1.27 Mycelian connections corresponding to this segment</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; const activeLinks = hyphalLinks.filter(l =&gt; l.source === id || l.target === id);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; </span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; let linksHTML = activeLinks.map(l =&gt; {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const targetId = l.source === id ? l.target : l.source;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const targetNode = nodes.find(n =&gt; n.id === targetId);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; let colorClass = `var(--flux-${l.type})`;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; return `</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=&quot;hyphal-link&quot; onclick=&quot;navigateToNode(${targetId})&quot;&gt;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=&quot;dot&quot; style=&quot;background: ${colorClass}&quot;&gt;&lt;/div&gt;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;span&gt;${targetNode.name}&lt;/span&gt;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;small&gt;&Psi;: ${l.flux}&lt;/small&gt;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; `;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; }).join(&quot;&quot;);</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; content.innerHTML = `</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=&quot;eyebrow&quot;&gt;Active Compartment Profile&lt;/div&gt;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &lt;h2 class=&quot;compartment-name&quot;&gt;${node.name}&lt;/h2&gt;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=&quot;compartment-status&quot;&gt;// Phase State: ${node.type}&lt;/div&gt;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; </span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=&quot;field&quot;&gt;&lt;b&gt;Token Volume Fraction (&Phi;)&lt;/b&gt;&lt;span&gt;${node.volume} (${node.tokens} tokens)&lt;/span&gt;&lt;/div&gt;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=&quot;field&quot;&gt;&lt;b&gt;Structural Valency (V_p)&lt;/b&gt;&lt;span&gt;${node.valency} active heads&lt;/span&gt;&lt;/div&gt;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=&quot;field&quot;&gt;&lt;b&gt;Localized Functional Entropy&lt;/b&gt;&lt;span&gt;${node.entropy} nats&lt;/span&gt;&lt;/div&gt;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=&quot;field&quot;&gt;&lt;b&gt;Droplet Matrix Substrate Profile&lt;/b&gt;&lt;div style=&quot;font-size:12px; color:var(--muted); margin-top:4px;&quot;&gt;${node.desc}&lt;/div&gt;&lt;/div&gt;</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=&quot;eyebrow&quot; style=&quot;margin-top:20px;&quot;&gt;Hyphal Links (+27% Expansion)&lt;/div&gt;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=&quot;hyphal-conns&quot;&gt;${linksHTML || &#39;&lt;div class=&quot;empty&quot;&gt;No active structural hypha links.&lt;/div&gt;&#39;}&lt;/div&gt;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; `;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; }</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // -------------------------------------------------------------------------</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // 4. ANIMATION TICK &amp; LAYER FUSION DRAW ENGINE</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // -------------------------------------------------------------------------</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; function step() {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; ctx.clearRect(0, 0, width, height);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; ctx.save();</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; ctx.translate(panX, panY);</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; // Physics Loop: Apply network spring constraints and node damping variables</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; hyphalLinks.forEach(link =&gt; {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const s = nodes[link.source];</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const t = nodes[link.target];</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const dx = t.x - s.x;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const dy = t.y - s.y;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const dist = Math.sqrt(dx * dx + dy * dy) || 1;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const targetDist = 180;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; </span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; // 1.27 Mycelian interconnectivity factor adjustments applied to edge tension calculation</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const kSpring = 0.015 * parseFloat(link.flux) * 1.27; </span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const force = (dist - targetDist) * kSpring;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; </span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const fx = (dx / dist) * force;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const fy = (dy / dist) * force;</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; if (s !== dragNode) { s.vx += fx; s.vy += fy; }</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; if (t !== dragNode) { t.vx -= fx; t.vy -= fy; }</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; });</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; // Compute centralized push forces to secure components cleanly on the grid screen</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; nodes.forEach(n =&gt; {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; if (n !== dragNode) {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; n.x += n.vx;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; n.y += n.vy;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; n.vx *= 0.85;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; n.vy *= 0.85;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; }</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; });</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; // Render Structural Channels: Drawing the mycelian tracking pathways</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; hyphalLinks.forEach(link =&gt; {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const s = nodes[link.source];</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; const t = nodes[link.target];</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.beginPath();</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.moveTo(s.x, s.y);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.lineTo(t.x, t.y);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; </span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; let strokeColor = &quot;rgba(124, 92, 255, 0.2)&quot;;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; if (link.type === &#39;high&#39;) strokeColor = &quot;rgba(126, 228, 210, 0.45)&quot;;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; if (link.type === &#39;mid&#39;) strokeColor = &quot;rgba(124, 92, 255, 0.35)&quot;;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; </span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.strokeStyle = strokeColor;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.lineWidth = parseFloat(link.flux) * 3 * 1.27; // Augmented via the 1.27 scaling coefficient</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.stroke();</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; });</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; // Render Coacervates: Drawing the porous protocellular lipid boundary rings</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; nodes.forEach(n =&gt; {</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; // Draw porous outer diffuse matrix layer rings</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.beginPath();</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.arc(n.x, n.y, n.radius + 6, 0, Math.pi * 2);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.strokeStyle = (n.id === selectedNodeId) ? &quot;rgba(126, 228, 210, 0.8)&quot; : &quot;rgba(108, 133, 204, 0.15)&quot;;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.lineWidth = (n.id === selectedNodeId) ? 2 : 1;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.stroke();</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; // Core coacervate particle fill representation</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.beginPath();</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.arc(n.x, n.y, n.radius, 0, Math.pi * 2);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; </span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; let gradient = ctx.createRadialGradient(n.x, n.y, 2, n.x, n.y, n.radius);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; gradient.addColorStop(0, &#39;rgba(14, 25, 48, 0.95)&#39;);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; gradient.addColorStop(1, &#39;rgba(9, 13, 24, 0.9)&#39;);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.fillStyle = gradient;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.fill();</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; </span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.strokeStyle = (n.id === selectedNodeId) ? &quot;var(--teal)&quot; : &quot;rgba(124, 92, 255, 0.4)&quot;;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.lineWidth = (n.id === selectedNodeId) ? 2 : 1.5;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.stroke();</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; // Structural label details layer inside the nodes</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.fillStyle = &quot;var(--ink)&quot;;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.font = &quot;11px monospace&quot;;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.textAlign = &quot;center&quot;;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.fillText(n.name, n.x, n.y - 2);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; </span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.fillStyle = &quot;var(--gold)&quot;;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.font = &quot;9px -apple-system&quot;;</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; &nbsp; ctx.fillText(`V_p: ${n.valency}`, n.x, n.y + 12);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; });</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; ctx.restore();</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; &nbsp; requestAnimationFrame(step);</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; }</span></p><p class="c0"><span class="c2"></span></p><p class="c1"><span class="c2">&nbsp; &nbsp; // Initialize System Loop Runtime Pipeline execution</span></p><p class="c1"><span class="c2">&nbsp; &nbsp; requestAnimationFrame(step);</span></p><p class="c1"><span class="c2">&nbsp; &lt;/script&gt;</span></p><p class="c1"><span class="c2">&lt;/body&gt;</span></p><p class="c1"><span class="c2">&lt;/html&gt;</span></p><p class="c0"><span class="c2"></span></p><p class="c0"><span class="c2"></span></p></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fungi Cell Map</title>
+    <style>
+        :root {
+            --bg-deep: #090d18;
+            --panel-bg: rgba(14, 25, 48, 0.85);
+            --border-glow: rgba(124, 92, 255, 0.4);
+            --ink: #e0e6ed;
+            --muted: #8892b0;
+            --teal: #7ee4d2;
+            --gold: #f4c430;
+            --flux-high: #7ee4d2;
+            --flux-mid: #7c5cff;
+            --flux-low: #4a5d8c;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html {
+            width: 100%; height: 100%; background-color: var(--bg-deep);
+            color: var(--ink); font-family: -apple-system, monospace;
+            overflow: hidden; display: flex;
+        }
+        #canvas-wrapper { position: relative; flex: 1; height: 100%; }
+        canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+        canvas.dragging { cursor: grabbing; }
+        #inspector {
+            width: 380px; height: 100%; background: var(--panel-bg);
+            border-left: 1px solid var(--border-glow); backdrop-filter: blur(12px);
+            padding: 24px; overflow-y: auto; display: flex; flex-direction: column;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+        .eyebrow {
+            font-family: monospace; font-size: 11px; text-transform: uppercase;
+            letter-spacing: 1.5px; color: var(--muted); margin-bottom: 8px;
+        }
+        .compartment-name { font-size: 22px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+        .compartment-status { font-family: monospace; font-size: 12px; color: var(--teal); margin-bottom: 24px; }
+        .field { border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 12px 0; font-size: 13px; }
+        .field b { display: block; color: var(--muted); font-weight: 500; margin-bottom: 4px; }
+        .hyphal-conns { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+        .hyphal-link {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 10px 14px; border-radius: 6px; display: flex; align-items: center;
+            gap: 12px; cursor: pointer; transition: all 0.2s ease;
+        }
+        .hyphal-link:hover { background: rgba(124, 92, 255, 0.15); border-color: var(--border-glow); }
+        .hyphal-link .dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+        .hyphal-link span { font-size: 13px; flex: 1; }
+        .hyphal-link small { font-family: monospace; color: var(--muted); }
+        .empty { font-size: 13px; color: var(--muted); font-style: italic; padding: 12px 0; }
+    </style>
+</head>
+<body>
+    <div id="canvas-wrapper"><canvas id="constellation"></canvas></div>
+    <div id="inspector">
+        <div id="inspector-content">
+            <div class="eyebrow">System Live Runtime</div>
+            <h2 class="compartment-name" style="color: var(--muted);">No Selection</h2>
+            <div class="compartment-status">// Target a Coacervate node to open its structural profile.</div>
+        </div>
+    </div>
+    <script>
+        const compartments = [
+            { id: 0, name: "Source-Compiler-Core", type: "Fluid-Dense", tokens: "42,500", volume: "0.425", valency: "7.842", entropy: "1.214", desc: "Houses core architecture scripts." },
+            { id: 1, name: "Regulatory-Compliance-Tax", type: "Fluid-Isolated", tokens: "15,000", volume: "0.150", valency: "2.104", entropy: "4.812", desc: "Corporate auditing profiles." },
+            { id: 2, name: "Mathematical-Proof-Lib", type: "Ostwald-Ripened", tokens: "6,700", volume: "0.067", valency: "6.118", entropy: "0.925", desc: "Fused semantic equations." },
+            { id: 3, name: "Temporal-Context-Droplet", type: "Porous-Nucleating", tokens: "1,200", volume: "0.012", valency: "4.551", entropy: "2.314", desc: "Volatile conversational inputs." }
+        ];
+
+        const hyphalLinks = [
+            { source: 0, target: 2, flux: "0.941", type: "high" },
+            { source: 0, target: 3, flux: "0.684", type: "mid" },
+            { source: 2, target: 3, flux: "0.412", type: "low" },
+            { source: 1, target: 3, flux: "0.104", type: "low" }
+        ];
+
+        const canvas = document.getElementById("constellation");
+        const ctx = canvas.getContext("2d");
+        let width = canvas.width = canvas.parentElement.offsetWidth;
+        let height = canvas.height = canvas.parentElement.offsetHeight;
+
+        const nodes = compartments.map((c, i) => ({
+            ...c, x: width/2 + (Math.cos(i*1.5)*120), y: height/2 + (Math.sin(i*1.5)*120),
+            vx: 0, vy: 0, radius: parseFloat(c.volume)*40 + 20
+        }));
+
+        let selectedNodeId = null, dragNode = null, panX = 0, panY = 0, isPanning = false, startX, startY;
+
+        window.addEventListener("resize", () => {
+            width = canvas.width = canvas.parentElement.offsetWidth;
+            height = canvas.height = canvas.parentElement.offsetHeight;
+        });
+
+        canvas.addEventListener("mousedown", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left - panX;
+            const my = e.clientY - rect.top - panY;
+            dragNode = nodes.find(n => Math.sqrt((n.x-mx)**2 + (n.y-my)**2) < n.radius);
+            if(dragNode) { selectedNodeId = dragNode.id; updateInspector(dragNode.id); canvas.classList.add("dragging"); }
+            else { isPanning = true; startX = e.clientX - panX; startY = e.clientY - panY; }
+        });
+
+        canvas.addEventListener("mousemove", (e) => {
+            if(dragNode) { const r = canvas.getBoundingClientRect(); dragNode.x = e.clientX - r.left - panX; dragNode.y = e.clientY - r.top - panY; }
+            else if(isPanning) { panX = e.clientX - startX; panY = e.clientY - startY; }
+        });
+
+        canvas.addEventListener("mouseup", () => { dragNode = null; isPanning = false; canvas.classList.remove("dragging"); });
+
+        window.navigateToNode = function(id) { selectedNodeId = id; updateInspector(id); };
+
+        function updateInspector(id) {
+            const node = nodes.find(n => n.id === id);
+            const activeLinks = hyphalLinks.filter(l => l.source === id || l.target === id);
+            let linksHTML = activeLinks.map(l => {
+                const targetId = l.source === id ? l.target : l.source;
+                const targetNode = nodes.find(n => n.id === targetId);
+                let colorClass = `var(--flux-${l.type})`;
+                return `<div class="hyphal-link" onclick="navigateToNode(${targetId})">
+                        <div class="dot" style="background: ${colorClass}"></div>
+                        <span>${targetNode.name}</span><small>Ψ: ${l.flux}</small></div>`;
+            }).join("");
+            
+            document.getElementById("inspector-content").innerHTML = `
+                <div class="eyebrow">Active Compartment Profile</div>
+                <h2 class="compartment-name">${node.name}</h2>
+                <div class="compartment-status">// Phase State: ${node.type}</div>
+                <div class="field"><b>Token Volume (Φ)</b><span>${node.volume}</span></div>
+                <div class="field"><b>Valency (V_p)</b><span>${node.valency}</span></div>
+                <div class="field"><b>Entropy</b><span>${node.entropy}</span></div>
+                <div class="field"><b>Substrate Profile</b><div style="font-size:12px; color:var(--muted); margin-top:4px;">${node.desc}</div></div>
+                <div class="eyebrow" style="margin-top:20px;">Hyphal Links</div>
+                <div class="hyphal-conns">${linksHTML || '<div class="empty">No active links.</div>'}</div>
+            `;
+        }
+
+        function step() {
+            ctx.clearRect(0, 0, width, height); ctx.save(); ctx.translate(panX, panY);
+            
+            // Physics
+            hyphalLinks.forEach(l => {
+                const s = nodes[l.source], t = nodes[l.target];
+                const dx = t.x - s.x, dy = t.y - s.y, dist = Math.sqrt(dx*dx + dy*dy) || 1;
+                const f = (dist - 180) * (0.015 * parseFloat(l.flux));
+                if(s !== dragNode) { s.vx += (dx/dist)*f; s.vy += (dy/dist)*f; }
+                if(t !== dragNode) { t.vx -= (dx/dist)*f; t.vy -= (dy/dist)*f; }
+            });
+
+            nodes.forEach(n => {
+                if(n !== dragNode) { n.x += n.vx; n.y += n.vy; n.vx *= 0.85; n.vy *= 0.85; }
+                
+                // Draw Connections
+                hyphalLinks.forEach(l => {
+                   if(nodes[l.source] === n || nodes[l.target] === n) {
+                       const t = nodes[l.source] === n ? nodes[l.target] : nodes[l.source];
+                       ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(t.x, t.y);
+                       ctx.strokeStyle = l.type === 'high' ? "rgba(126,228,210,0.4)" : "rgba(124,92,255,0.2)";
+                       ctx.lineWidth = parseFloat(l.flux) * 3; ctx.stroke();
+                   }
+                });
+
+                // Draw Nodes
+                ctx.beginPath(); ctx.arc(n.x, n.y, n.radius, 0, Math.PI*2);
+                let g = ctx.createRadialGradient(n.x, n.y, 2, n.x, n.y, n.radius);
+                g.addColorStop(0, 'rgba(14,25,48,0.95)'); g.addColorStop(1, 'rgba(9,13,24,0.9)');
+                ctx.fillStyle = g; ctx.fill();
+                ctx.strokeStyle = (n.id === selectedNodeId) ? "#7ee4d2" : "rgba(124,92,255,0.4)";
+                ctx.lineWidth = 2; ctx.stroke();
+                
+                ctx.fillStyle = "#e0e6ed"; ctx.font = "11px monospace"; ctx.textAlign = "center";
+                ctx.fillText(n.name, n.x, n.y - 2);
+            });
+            ctx.restore(); requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    </script>
+</body>
+</html>

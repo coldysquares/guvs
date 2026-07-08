@@ -3,7 +3,11 @@
     "title": "PSR",
     "fullName": "Post-Slop Reagent",
     "slug": "psr",
-    "type": ["GUV", "probe", "reagent"],
+    "type": [
+      "GUV",
+      "probe",
+      "reagent"
+    ],
     "status": "working",
     "path": "psr/",
     "description": "Generates dense unrelated concept triplets and logs how AI systems define, bridge, cite, splice, or hallucinate."
@@ -12,7 +16,10 @@
     "title": "AWD",
     "fullName": "AI Waste Deleter",
     "slug": "awd",
-    "type": ["GUV", "workbench"],
+    "type": [
+      "GUV",
+      "workbench"
+    ],
     "status": "working",
     "path": "awd/",
     "description": "Browser-native tool for identifying or deleting AI waste."
@@ -21,7 +28,11 @@
     "title": "Zero-Waste Router",
     "fullName": "Zero-Waste Router",
     "slug": "router",
-    "type": ["GUV", "router", "workbench"],
+    "type": [
+      "GUV",
+      "router",
+      "workbench"
+    ],
     "status": "working",
     "path": "router/",
     "description": "Routes messy AI/browser work into cleaner downstream output paths."
@@ -30,9 +41,24 @@
     "title": "Substrate 001",
     "fullName": "Issue 001",
     "slug": "substrate-001",
-    "type": ["GUV", "artifact", "journal"],
+    "type": [
+      "GUV",
+      "artifact",
+      "journal"
+    ],
     "status": "working",
     "path": "substrate-001/",
     "description": "Early substrate journal/artifact experiment."
+  },
+  {
+    "title": "Fam Star Map",
+    "fullName": "Fam Star Map",
+    "slug": "fam-star-map",
+    "type": [
+      "GUV"
+    ],
+    "status": "draft",
+    "path": "fam-star-map/",
+    "description": "See your family lines in a whole new starlight."
   }
 ]

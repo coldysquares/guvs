@@ -3,53 +3,55 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Fam Star Map — House of Atreus</title>
+<title>Fam Star Map</title>
 <style>
   :root {
-    --bg: #080a10;
-    --bg-2: #0d0f18;
-    --panel: #141925;
-    --panel-2: #0c1019;
-    --line: #243044;
-    --ink: #edf3ff;
-    --muted: #8f9cb4;
-    --soft: #bdc8dc;
-    --accent: #8bb8ff;
-    --accent-2: #ffd479;
-    --danger: #ff8a9a;
+    --bg: #090d17;
+    --bg-2: #0e1526;
+    --panel: rgba(12, 18, 34, 0.92);
+    --panel-2: rgba(10, 15, 28, 0.94);
+    --line: rgba(108, 133, 204, 0.22);
+    --ink: #eef3ff;
+    --muted: #9ca8c4;
 
-    --g0: #8bb8ff;
-    --g1: #7ee0c9;
-    --g2: #ffd479;
-    --g3: #ff9aa2;
-    --g4: #c8a8ff;
+    --accent: #7c5cff;
+    --accent-soft: rgba(124, 92, 255, 0.24);
+    --accent-soft-2: rgba(124, 92, 255, 0.12);
+    --gold: #f4ce73;
+    --teal: #7ee4d2;
+    --rose: #ff9eb2;
+    --lav: #c8b0ff;
+    --blue: #77b4ff;
 
-    --rel-parent: #4f75b4;
-    --rel-partner: #c89446;
-    --rel-sibling: #6f819b;
-    --rel-half: #9b70de;
-    --rel-curse: #ff708d;
+    --rel-parent: rgba(105, 166, 255, 0.78);
+    --rel-partner: rgba(244, 206, 115, 0.72);
+    --rel-sibling: rgba(126, 228, 210, 0.62);
+    --rel-half: rgba(162, 123, 255, 0.72);
+
+    --glow-accent: 0 0 0 1px rgba(124, 92, 255, 0.28), 0 0 24px rgba(124, 92, 255, 0.16);
+    --shadow-panel: 0 20px 60px rgba(0, 0, 0, 0.34);
   }
 
-  * { box-sizing: border-box; }
+  * {
+    box-sizing: border-box;
+  }
 
   html,
   body {
     margin: 0;
     height: 100%;
     background:
-      radial-gradient(circle at 20% 10%, rgba(91, 128, 202, 0.22), transparent 32rem),
-      radial-gradient(circle at 78% 18%, rgba(255, 212, 121, 0.10), transparent 28rem),
-      linear-gradient(180deg, var(--bg-2), var(--bg));
+      radial-gradient(circle at 20% 0%, rgba(68, 102, 194, 0.18), transparent 34%),
+      radial-gradient(circle at 85% 18%, rgba(124, 92, 255, 0.14), transparent 28%),
+      linear-gradient(180deg, #0b1120 0%, #090d17 100%);
     color: var(--ink);
     font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    overflow: hidden;
   }
 
   #app {
     display: grid;
-    grid-template-columns: 1fr 330px;
-    grid-template-rows: 58px 1fr;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-rows: auto minmax(0, 1fr);
     height: 100%;
   }
 
@@ -58,64 +60,96 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 0 16px;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--line);
-    background: rgba(20, 25, 37, 0.92);
-    backdrop-filter: blur(12px);
+    background: linear-gradient(180deg, rgba(17, 25, 46, 0.92), rgba(12, 18, 34, 0.92));
+    backdrop-filter: blur(14px);
   }
 
-  header h1 {
-    font-size: 15px;
+  h1 {
     margin: 0;
-    letter-spacing: 0.3px;
+    font-size: 18px;
     font-weight: 700;
-    white-space: nowrap;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
-  header h1 span { color: var(--accent-2); }
+  .spark {
+    color: var(--gold);
+    filter: drop-shadow(0 0 10px rgba(244, 206, 115, 0.3));
+  }
 
   .tag {
-    font-size: 11px;
     color: var(--muted);
     border: 1px solid var(--line);
-    padding: 2px 8px;
-    border-radius: 20px;
+    background: rgba(124, 92, 255, 0.06);
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 11px;
     white-space: nowrap;
+  }
+
+  .controls {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    min-width: 0;
   }
 
   #search {
-    margin-left: auto;
-    background: var(--panel-2);
-    border: 1px solid var(--line);
+    width: 300px;
+    max-width: 36vw;
+    padding: 11px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(124, 92, 255, 0.22);
+    background: rgba(7, 11, 20, 0.78);
     color: var(--ink);
-    padding: 8px 12px;
-    border-radius: 8px;
-    width: 220px;
     outline: none;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
   }
 
-  #search:focus { border-color: var(--accent); }
+  #search::placeholder {
+    color: #7f8ca9;
+  }
+
+  #search:focus {
+    border-color: rgba(124, 92, 255, 0.5);
+    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.14);
+  }
 
   .btn {
-    background: var(--panel-2);
-    border: 1px solid var(--line);
-    color: var(--muted);
-    padding: 8px 10px;
-    border-radius: 8px;
+    border: 1px solid rgba(124, 92, 255, 0.28);
+    background: rgba(9, 13, 23, 0.86);
+    color: var(--ink);
+    padding: 10px 14px;
+    border-radius: 14px;
     cursor: pointer;
-    font-size: 12px;
-    white-space: nowrap;
+    font-size: 13px;
+    transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+    box-shadow: var(--glow-accent);
   }
 
-  .btn:hover,
+  .btn:hover {
+    transform: translateY(-1px);
+    border-color: rgba(124, 92, 255, 0.48);
+    background: rgba(15, 21, 38, 0.94);
+  }
+
   .btn.active {
-    color: var(--ink);
-    border-color: var(--accent);
+    background: linear-gradient(180deg, rgba(124, 92, 255, 0.24), rgba(124, 92, 255, 0.14));
+    border-color: rgba(124, 92, 255, 0.54);
   }
 
   #stage {
     position: relative;
     overflow: hidden;
+    background:
+      radial-gradient(circle at 50% 40%, rgba(95, 121, 191, 0.16), transparent 36%),
+      radial-gradient(circle at 20% 15%, rgba(124, 92, 255, 0.11), transparent 24%),
+      linear-gradient(180deg, #0b1120 0%, #0a1020 100%);
   }
 
   canvas {
@@ -126,35 +160,51 @@
     touch-action: none;
   }
 
-  canvas.dragging { cursor: grabbing; }
+  canvas.dragging {
+    cursor: grabbing;
+  }
+
+  .hint {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    color: var(--muted);
+    background: rgba(6, 9, 17, 0.6);
+    border: 1px solid rgba(124, 92, 255, 0.14);
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+  }
 
   aside {
-    background: rgba(20, 25, 37, 0.94);
     border-left: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(12, 18, 34, 0.95), rgba(10, 15, 29, 0.95));
+    backdrop-filter: blur(16px);
     padding: 18px;
     overflow: auto;
-    backdrop-filter: blur(12px);
+  }
+
+  .eyebrow {
+    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
   }
 
   .empty {
     color: var(--muted);
     font-size: 13px;
-    margin-top: 8px;
-  }
-
-  .panel-kicker {
-    color: var(--accent-2);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 8px;
+    margin-top: 6px;
   }
 
   .person-name {
-    font-size: 21px;
+    margin: 0 0 2px;
+    font-size: 22px;
     font-weight: 700;
-    margin: 0 0 3px;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
   }
 
   .person-meta {
@@ -163,50 +213,49 @@
     margin-bottom: 14px;
   }
 
-  .field { margin-bottom: 12px; }
+  .field {
+    margin-bottom: 14px;
+  }
 
   .field b {
     display: block;
+    margin-bottom: 4px;
+    color: var(--muted);
     font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--muted);
-    margin-bottom: 3px;
+    letter-spacing: 0.08em;
   }
 
-  .field span,
-  .field p {
-    margin: 0;
-    color: var(--soft);
+  .rels {
+    margin-top: 6px;
   }
-
-  .rels { margin-top: 6px; }
 
   .rel {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 7px 8px;
-    border-radius: 8px;
+    gap: 9px;
+    padding: 8px 10px;
+    border-radius: 10px;
     cursor: pointer;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
+    transition: background 120ms ease;
   }
 
-  .rel:hover { background: var(--panel-2); }
+  .rel:hover {
+    background: rgba(124, 92, 255, 0.08);
+  }
 
   .dot {
     width: 9px;
     height: 9px;
     border-radius: 50%;
     flex: 0 0 auto;
-    box-shadow: 0 0 12px currentColor;
   }
 
   .rel small {
     color: var(--muted);
     margin-left: auto;
     text-align: right;
-    font-size: 11px;
   }
 
   .legend {
@@ -217,53 +266,43 @@
 
   .legend h3 {
     font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
     color: var(--muted);
-    margin: 0 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 10px;
   }
 
   .leg-row {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 6px;
     font-size: 12px;
     color: var(--muted);
+    margin-bottom: 6px;
   }
 
-  .hint {
-    position: absolute;
-    bottom: 12px;
-    left: 14px;
-    color: var(--muted);
-    font-size: 11px;
-    background: rgba(8, 10, 16, 0.72);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 7px 10px;
-    border-radius: 8px;
-    pointer-events: none;
-  }
-
-  @media (max-width: 800px) {
-    body { overflow: auto; }
-
+  @media (max-width: 980px) {
     #app {
       grid-template-columns: 1fr;
-      grid-template-rows: auto minmax(460px, 1fr) 300px;
-      min-height: 100%;
+      grid-template-rows: auto minmax(56vh, 1fr) 280px;
     }
 
     header {
       grid-column: 1;
       flex-wrap: wrap;
-      height: auto;
-      padding: 12px;
+      align-items: stretch;
+    }
+
+    .controls {
+      width: 100%;
+      margin-left: 0;
+      flex-wrap: wrap;
     }
 
     #search {
       width: 100%;
-      margin-left: 0;
+      max-width: none;
+      flex: 1 1 100%;
     }
 
     aside {
@@ -273,15 +312,17 @@
   }
 </style>
 </head>
-
 <body>
 <div id="app">
   <header>
-    <h1><span>✦</span> Fam Star Map</h1>
+    <h1><span class="spark">✦</span> Fam Star Map</h1>
     <span class="tag">House of Atreus · public-domain myth demo</span>
-    <input id="search" placeholder="Search the constellation…" autocomplete="off" />
-    <button class="btn" id="freeze">Freeze</button>
-    <button class="btn" id="reset">Re-center</button>
+
+    <div class="controls">
+      <input id="search" placeholder="Search the constellation…" autocomplete="off" />
+      <button class="btn" id="freeze">Freeze</button>
+      <button class="btn" id="reset">Re-center</button>
+    </div>
   </header>
 
   <div id="stage">
@@ -290,7 +331,7 @@
   </div>
 
   <aside id="panel">
-    <div class="panel-kicker">mythic demo data</div>
+    <div class="eyebrow">Mythic demo data</div>
     <p class="empty">Click any star in the map to inspect its role, notes, and visible connections.</p>
   </aside>
 </div>
@@ -298,207 +339,60 @@
 <script>
 const DATA = {
   people: [
-    {
-      id: "tantalus",
-      name: "Tantalus",
-      gen: 0,
-      role: "origin star",
-      motif: "curse source",
-      note: "The ancestral fault line. In this demo, he functions as the gravity well behind the whole constellation."
-    },
-    {
-      id: "dione",
-      name: "Dione",
-      gen: 0,
-      role: "origin star",
-      motif: "old record",
-      note: "A simplified partner node used to stabilize the mythic first generation."
-    },
-    {
-      id: "pelops",
-      name: "Pelops",
-      gen: 1,
-      role: "dynasty branch",
-      motif: "returned heir",
-      note: "The branch through which the visible House of Atreus constellation forms."
-    },
-    {
-      id: "hippodamia",
-      name: "Hippodamia",
-      gen: 1,
-      role: "dynasty branch",
-      motif: "contested union",
-      note: "Partner node for Pelops. A stable-looking connection with a very unstable inheritance."
-    },
-    {
-      id: "atreus",
-      name: "Atreus",
-      gen: 2,
-      role: "primary branch",
-      motif: "king / rupture",
-      note: "The name-bearing branch. His line gives the demo its central visible structure."
-    },
-    {
-      id: "thyestes",
-      name: "Thyestes",
-      gen: 2,
-      role: "shadow branch",
-      motif: "rival branch",
-      note: "Sibling and rival branch. Useful for showing how family maps become conflict maps."
-    },
-    {
-      id: "aerope",
-      name: "Aerope",
-      gen: 2,
-      role: "partner node",
-      motif: "breach point",
-      note: "Partner connection around which several versions of the myth turn unstable."
-    },
-    {
-      id: "pelopia",
-      name: "Pelopia",
-      gen: 3,
-      role: "partial record",
-      motif: "hidden branch",
-      note: "Simplified here as a partial record to keep the public demo readable."
-    },
-    {
-      id: "agamemnon",
-      name: "Agamemnon",
-      gen: 3,
-      role: "war branch",
-      motif: "returning king",
-      note: "A major visible node: power, return, sacrifice, and collapse all run through this star."
-    },
-    {
-      id: "menelaus",
-      name: "Menelaus",
-      gen: 3,
-      role: "war branch",
-      motif: "lost / restored union",
-      note: "Sibling branch tied to Helen, Sparta, and the wider Trojan constellation."
-    },
-    {
-      id: "clytemnestra",
-      name: "Clytemnestra",
-      gen: 3,
-      role: "partner star",
-      motif: "counter-force",
-      note: "Partner to Agamemnon. Not a side note: one of the strongest gravity fields in the map."
-    },
-    {
-      id: "helen",
-      name: "Helen",
-      gen: 3,
-      role: "partner star",
-      motif: "bright signal",
-      note: "A famous neighboring star. The family map starts behaving like a war map around her."
-    },
-    {
-      id: "aegisthus",
-      name: "Aegisthus",
-      gen: 4,
-      role: "late signal",
-      motif: "revenge branch",
-      note: "A late-returning branch. In the demo, he shows how a partial record can re-enter the main field."
-    },
-    {
-      id: "iphigenia",
-      name: "Iphigenia",
-      gen: 4,
-      role: "sacrifice star",
-      motif: "vanishing point",
-      note: "A node that demonstrates how one person can bend the emotional geometry of an entire archive."
-    },
-    {
-      id: "electra",
-      name: "Electra",
-      gen: 4,
-      role: "witness star",
-      motif: "memory keeper",
-      note: "A witness and continuity node. She carries the old story forward rather than closing it."
-    },
-    {
-      id: "orestes",
-      name: "Orestes",
-      gen: 4,
-      role: "returning signal",
-      motif: "recursive justice",
-      note: "The returning child branch. The constellation loops back through him."
-    },
-    {
-      id: "chrysothemis",
-      name: "Chrysothemis",
-      gen: 4,
-      role: "quiet branch",
-      motif: "low-signal record",
-      note: "A quieter branch included to keep the map from only showing the loudest mythic nodes."
-    },
-    {
-      id: "hermione",
-      name: "Hermione",
-      gen: 4,
-      role: "next branch",
-      motif: "afterimage",
-      note: "Child node of Helen and Menelaus. A continuation point after the central war story."
-    }
+    { id: "tantalus", name: "Tantalus", gen: 0, role: "Origin node", note: "Mythic origin point of the cursed line." },
+    { id: "pelops", name: "Pelops", gen: 1, role: "Dynastic node", note: "Central ancestor whose descendants define the House of Atreus." },
+    { id: "hippodamia", name: "Hippodamia", gen: 1, role: "Partner node", note: "Paired with Pelops in the founding branch." },
+
+    { id: "atreus", name: "Atreus", gen: 2, role: "Primary branch", note: "One of the two defining brothers in the central rupture." },
+    { id: "thyestes", name: "Thyestes", gen: 2, role: "Counter-branch", note: "Sibling rival to Atreus. A core fracture point in the constellation." },
+
+    { id: "aerope", name: "Aerope", gen: 3, role: "Partner node", note: "Connected to Atreus; entangled in the line’s instability." },
+    { id: "pelopia", name: "Pelopia", gen: 3, role: "Partner node", note: "Linked to Thyestes and the shadow branch below." },
+
+    { id: "agamemnon", name: "Agamemnon", gen: 4, role: "Descendant node", note: "One of Atreus’s most famous descendants." },
+    { id: "menelaus", name: "Menelaus", gen: 4, role: "Descendant node", note: "Brother of Agamemnon; another highly visible branch." },
+    { id: "aegisthus", name: "Aegisthus", gen: 4, role: "Shadow descendant", note: "A destabilizing line emerging from the counter-branch." },
+    { id: "helen", name: "Helen", gen: 4, role: "Partner node", note: "Paired here as the Menelaus branch’s most recognizable counterpart." },
+
+    { id: "clytemnestra", name: "Clytemnestra", gen: 5, role: "Partner node", note: "Partner of Agamemnon and a major node in the tragic continuation." },
+    { id: "orestes", name: "Orestes", gen: 6, role: "Descendant node", note: "A continuation point where the family curse remains legible." },
+    { id: "electra", name: "Electra", gen: 6, role: "Descendant node", note: "Sibling branch tied tightly to the Orestes line." },
+    { id: "hermione", name: "Hermione", gen: 5, role: "Descendant node", note: "A child branch extending from Menelaus and Helen." }
   ],
 
   links: [
-    { source: "tantalus", target: "dione", type: "partner" },
     { source: "tantalus", target: "pelops", type: "parent" },
-    { source: "dione", target: "pelops", type: "parent" },
 
     { source: "pelops", target: "hippodamia", type: "partner" },
+
     { source: "pelops", target: "atreus", type: "parent" },
     { source: "hippodamia", target: "atreus", type: "parent" },
     { source: "pelops", target: "thyestes", type: "parent" },
     { source: "hippodamia", target: "thyestes", type: "parent" },
 
     { source: "atreus", target: "aerope", type: "partner" },
+    { source: "thyestes", target: "pelopia", type: "partner" },
+
     { source: "atreus", target: "agamemnon", type: "parent" },
     { source: "aerope", target: "agamemnon", type: "parent" },
     { source: "atreus", target: "menelaus", type: "parent" },
     { source: "aerope", target: "menelaus", type: "parent" },
 
-    { source: "thyestes", target: "pelopia", type: "parent" },
     { source: "thyestes", target: "aegisthus", type: "parent" },
     { source: "pelopia", target: "aegisthus", type: "parent" },
 
-    { source: "agamemnon", target: "clytemnestra", type: "partner" },
     { source: "menelaus", target: "helen", type: "partner" },
 
-    { source: "agamemnon", target: "iphigenia", type: "parent" },
-    { source: "clytemnestra", target: "iphigenia", type: "parent" },
-    { source: "agamemnon", target: "electra", type: "parent" },
-    { source: "clytemnestra", target: "electra", type: "parent" },
+    { source: "agamemnon", target: "clytemnestra", type: "partner" },
+
     { source: "agamemnon", target: "orestes", type: "parent" },
     { source: "clytemnestra", target: "orestes", type: "parent" },
-    { source: "agamemnon", target: "chrysothemis", type: "parent" },
-    { source: "clytemnestra", target: "chrysothemis", type: "parent" },
+    { source: "agamemnon", target: "electra", type: "parent" },
+    { source: "clytemnestra", target: "electra", type: "parent" },
 
     { source: "menelaus", target: "hermione", type: "parent" },
-    { source: "helen", target: "hermione", type: "parent" },
-
-    { source: "tantalus", target: "atreus", type: "curse" },
-    { source: "tantalus", target: "thyestes", type: "curse" },
-    { source: "thyestes", target: "agamemnon", type: "curse" },
-    { source: "aegisthus", target: "orestes", type: "curse" }
+    { source: "helen", target: "hermione", type: "parent" }
   ]
-};
-
-const root = document.documentElement;
-const css = getComputedStyle(root);
-
-const GEN_COLORS = ["--g0", "--g1", "--g2", "--g3", "--g4"]
-  .map(name => css.getPropertyValue(name).trim());
-
-const REL_COLORS = {
-  parent: css.getPropertyValue("--rel-parent").trim(),
-  partner: css.getPropertyValue("--rel-partner").trim(),
-  sibling: css.getPropertyValue("--rel-sibling").trim(),
-  half: css.getPropertyValue("--rel-half").trim(),
-  curse: css.getPropertyValue("--rel-curse").trim()
 };
 
 const REL_LABEL = {
@@ -506,13 +400,19 @@ const REL_LABEL = {
   child: "child / parent",
   partner: "partner",
   sibling: "sibling",
-  half: "partial sibling line",
-  curse: "mythic pressure line"
+  half: "partial sibling line"
 };
 
+const STARS = [];
+const cv = document.getElementById("c");
+const ctx = cv.getContext("2d");
+const panel = document.getElementById("panel");
+
+const nodePalette = ["#7ee4d2", "#75b8ff", "#f4ce73", "#ff9eb2", "#c8b0ff", "#8d72ff", "#89d8ff"];
+
 const byId = {};
-const nodes = DATA.people.map(person => {
-  const node = { ...person, x: 0, y: 0, vx: 0, vy: 0, r: 22 };
+const nodes = DATA.people.map((person) => {
+  const node = { ...person, x: 0, y: 0, vx: 0, vy: 0, r: 23 };
   byId[node.id] = node;
   return node;
 });
@@ -526,29 +426,25 @@ const directLinks = DATA.links
   }));
 
 positionNodesByGeneration();
-
 const siblingLinks = deriveSiblingLinks();
 const visualLinks = [...directLinks, ...siblingLinks];
-
-const cv = document.getElementById("c");
-const ctx = cv.getContext("2d");
-const panel = document.getElementById("panel");
-const freezeButton = document.getElementById("freeze");
 
 let W = 0;
 let H = 0;
 let DPR = Math.max(1, window.devicePixelRatio || 1);
+
 let view = { x: 0, y: 0, k: 1 };
-let cameraTarget = null;
+let targetView = { x: 0, y: 0, k: 1 };
+
 let selected = null;
 let hover = null;
 let query = "";
 let dragNode = null;
 let panning = false;
-let last = { x: 0, y: 0 };
 let moved = false;
-let frozen = false;
-let stars = [];
+let last = { x: 0, y: 0 };
+let firstFitDone = false;
+let physicsFrozen = false;
 
 function positionNodesByGeneration() {
   const groups = new Map();
@@ -560,23 +456,18 @@ function positionNodesByGeneration() {
 
   for (const [gen, group] of groups.entries()) {
     group.forEach((node, index) => {
-      node.x = (index - (group.length - 1) / 2) * 142;
-      node.y = (gen - 2.05) * 128;
+      const spread = 170;
+      node.x = (index - (group.length - 1) / 2) * spread;
+      node.y = (gen - 2.2) * 140;
     });
   }
-}
 
-function buildStars() {
-  const count = Math.max(90, Math.floor((W * H) / 8200));
-  stars = Array.from({ length: count }, (_, i) => ({
-    x: Math.random() * W,
-    y: Math.random() * H,
-    r: Math.random() < 0.08 ? 1.6 : 0.6 + Math.random() * 0.9,
-    a: 0.18 + Math.random() * 0.62,
-    tw: Math.random() * Math.PI * 2,
-    speed: 0.002 + Math.random() * 0.006,
-    drift: i % 3 === 0 ? 0.18 + Math.random() * 0.28 : 0
-  }));
+  if (byId.agamemnon) byId.agamemnon.x -= 50;
+  if (byId.menelaus) byId.menelaus.x += 50;
+  if (byId.aegisthus) byId.aegisthus.x -= 130;
+  if (byId.helen) byId.helen.x += 120;
+  if (byId.hermione) byId.hermione.x += 120;
+  if (byId.clytemnestra) byId.clytemnestra.x -= 60;
 }
 
 function parentsOf(node) {
@@ -624,7 +515,6 @@ function deriveSiblingLinks() {
       const aParents = parentsOf(a);
       const bParents = parentsOf(b);
       const type = sameSet(aParents, bParents) ? "sibling" : "half";
-
       links.push({ source: a, target: b, type });
     }
   }
@@ -644,12 +534,21 @@ function relationsOf(node) {
     if (link.target === node) out.push({ other: link.source, type: link.type });
   }
 
-  for (const link of directLinks.filter(link => link.type === "curse")) {
-    if (link.source === node) out.push({ other: link.target, type: "curse" });
-    if (link.target === node) out.push({ other: link.source, type: "curse" });
-  }
-
   return out;
+}
+
+function makeStars() {
+  STARS.length = 0;
+  const count = Math.max(90, Math.floor((W * H) / 14000));
+
+  for (let i = 0; i < count; i++) {
+    STARS.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.8 + 0.3,
+      a: Math.random() * 0.65 + 0.15
+    });
+  }
 }
 
 function resize() {
@@ -657,21 +556,74 @@ function resize() {
   W = rect.width;
   H = rect.height;
   DPR = Math.max(1, window.devicePixelRatio || 1);
+
   cv.width = W * DPR;
   cv.height = H * DPR;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  view.x = W / 2;
-  view.y = H / 2;
-  buildStars();
+
+  makeStars();
+
+  if (!firstFitDone) {
+    fitToGraph(true);
+    firstFitDone = true;
+  } else {
+    fitToGraph(true);
+  }
 }
 
 window.addEventListener("resize", resize);
 
-function tick() {
-  easeCamera();
+function fitToGraph(immediate = false) {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
 
-  if (frozen && !dragNode) return;
+  for (const node of nodes) {
+    minX = Math.min(minX, node.x - node.r - 28);
+    maxX = Math.max(maxX, node.x + node.r + 28);
+    minY = Math.min(minY, node.y - node.r - 28);
+    maxY = Math.max(maxY, node.y + node.r + 34);
+  }
 
+  const graphW = Math.max(1, maxX - minX);
+  const graphH = Math.max(1, maxY - minY);
+  const padding = Math.min(110, Math.max(44, Math.min(W, H) * 0.09));
+
+  const k = clamp(
+    Math.min((W - padding * 2) / graphW, (H - padding * 2) / graphH),
+    0.36,
+    1.18
+  );
+
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+
+  const next = {
+    x: W / 2 - cx * k,
+    y: H / 2 - cy * k,
+    k
+  };
+
+  targetView = { ...next };
+
+  if (immediate) view = { ...next };
+}
+
+function flyToNode(node, preferredZoom = null) {
+  const k = preferredZoom || clamp(Math.max(view.k, 0.9), 0.72, 1.35);
+  targetView = {
+    x: W / 2 - node.x * k,
+    y: H / 2 - node.y * k,
+    k
+  };
+}
+
+function clamp(v, min, max) {
+  return Math.max(min, Math.min(max, v));
+}
+
+function tickPhysics() {
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
       const a = nodes[i];
@@ -680,7 +632,7 @@ function tick() {
       let dy = b.y - a.y;
       let d2 = dx * dx + dy * dy || 0.01;
       let d = Math.sqrt(d2);
-      let force = 2850 / d2;
+      let force = 2400 / d2;
       let ux = dx / d;
       let uy = dy / d;
 
@@ -697,8 +649,13 @@ function tick() {
     let dx = b.x - a.x;
     let dy = b.y - a.y;
     let d = Math.sqrt(dx * dx + dy * dy) || 0.01;
-    let rest = link.type === "partner" ? 78 : link.type === "curse" ? 210 : link.type === "half" ? 148 : link.type === "sibling" ? 125 : 118;
-    let stiffness = link.type === "curse" ? 0.003 : link.type === "sibling" ? 0.006 : link.type === "half" ? 0.008 : 0.022;
+    let rest =
+      link.type === "partner" ? 96 :
+      link.type === "sibling" ? 144 :
+      link.type === "half" ? 160 : 118;
+    let stiffness =
+      link.type === "half" ? 0.008 :
+      link.type === "sibling" ? 0.011 : 0.021;
     let force = (d - rest) * stiffness;
     let ux = dx / d;
     let uy = dy / d;
@@ -710,157 +667,134 @@ function tick() {
   }
 
   for (const node of nodes) {
-    const targetY = (node.gen - 2.05) * 128;
-    node.vy += (targetY - node.y) * 0.004;
-    node.vx += (0 - node.x) * 0.002;
+    const targetY = (node.gen - 2.2) * 140;
+    node.vy += (targetY - node.y) * 0.0033;
+    node.vx += (0 - node.x) * 0.0018;
 
     if (node !== dragNode) {
-      node.vx *= 0.86;
-      node.vy *= 0.86;
+      node.vx *= 0.87;
+      node.vy *= 0.87;
       node.x += node.vx;
       node.y += node.vy;
     }
   }
 }
 
-function easeCamera() {
-  if (!cameraTarget) return;
-
-  view.x += (cameraTarget.x - view.x) * 0.12;
-  view.y += (cameraTarget.y - view.y) * 0.12;
-  view.k += (cameraTarget.k - view.k) * 0.10;
-
-  const done = Math.abs(view.x - cameraTarget.x) < 0.4 &&
-    Math.abs(view.y - cameraTarget.y) < 0.4 &&
-    Math.abs(view.k - cameraTarget.k) < 0.004;
-
-  if (done) cameraTarget = null;
+function tickView() {
+  view.x += (targetView.x - view.x) * 0.14;
+  view.y += (targetView.y - view.y) * 0.14;
+  view.k += (targetView.k - view.k) * 0.16;
 }
 
-function drawStars() {
-  const now = performance.now();
-
-  ctx.save();
-  ctx.clearRect(0, 0, W, H);
-
-  for (const star of stars) {
-    const twinkle = Math.sin(now * star.speed + star.tw) * 0.22;
-    const alpha = Math.max(0.08, star.a + twinkle);
-    const x = star.x + Math.sin(now * 0.00008 + star.tw) * star.drift;
-    const y = star.y + Math.cos(now * 0.00007 + star.tw) * star.drift;
-
+function drawBackground() {
+  for (const star of STARS) {
     ctx.beginPath();
-    ctx.arc(x, y, star.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(237, 243, 255, ${alpha})`;
+    ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(235, 241, 255, ${star.a})`;
     ctx.fill();
   }
-
-  const gradient = ctx.createRadialGradient(W * 0.52, H * 0.48, 40, W * 0.52, H * 0.48, Math.max(W, H) * 0.75);
-  gradient.addColorStop(0, "rgba(139, 184, 255, 0.06)");
-  gradient.addColorStop(1, "rgba(8, 10, 16, 0.35)");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, W, H);
-  ctx.restore();
 }
 
-function draw() {
-  drawStars();
-  ctx.save();
-  ctx.translate(view.x, view.y);
-  ctx.scale(view.k, view.k);
-
-  for (const link of visualLinks) {
-    const dim = query && !matches(link.source) && !matches(link.target);
-    const alpha = dim ? 0.08 : link.type === "curse" ? 0.36 : link.type === "sibling" ? 0.30 : 0.68;
-    const color = REL_COLORS[link.type] || "#3a4557";
-
-    ctx.beginPath();
-    ctx.moveTo(link.source.x, link.source.y);
-    ctx.lineTo(link.target.x, link.target.y);
-
-    ctx.strokeStyle = color;
-    ctx.lineWidth = link.type === "curse" ? 1.2 : link.type === "half" ? 2.1 : 1.55;
-    ctx.globalAlpha = alpha;
-
-    if (link.type === "half") ctx.setLineDash([5, 5]);
-    else if (link.type === "curse") ctx.setLineDash([2, 10]);
-    else ctx.setLineDash([]);
-
-    ctx.shadowBlur = link.type === "curse" ? 14 : 6;
-    ctx.shadowColor = color;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-  }
-
-  ctx.setLineDash([]);
-  ctx.globalAlpha = 1;
-
-  for (const node of nodes) {
-    const dim = query && !matches(node);
-    const color = GEN_COLORS[node.gen % GEN_COLORS.length];
-    const isActive = node === selected || node === hover;
-
-    ctx.globalAlpha = dim ? 0.16 : 1;
-
-    if (isActive || node.id === "tantalus") {
-      ctx.beginPath();
-      ctx.arc(node.x, node.y, node.r + (isActive ? 12 : 7), 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.globalAlpha = dim ? 0.05 : isActive ? 0.17 : 0.09;
-      ctx.fill();
-      ctx.globalAlpha = dim ? 0.16 : 1;
-    }
-
-    ctx.beginPath();
-    ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.shadowBlur = isActive ? 26 : 12;
-    ctx.shadowColor = color;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    if (isActive) {
-      ctx.lineWidth = 2.8;
-      ctx.strokeStyle = "#ffffff";
-      ctx.stroke();
-    }
-
-    ctx.fillStyle = "#080a10";
-    ctx.font = "700 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(initials(node.name), node.x, node.y);
-
-    ctx.fillStyle = css.getPropertyValue("--ink").trim();
-    ctx.font = "12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-    ctx.textBaseline = "top";
-    ctx.fillText(node.name, node.x, node.y + node.r + 5);
-  }
-
-  ctx.globalAlpha = 1;
-  ctx.restore();
-}
-
-function initials(name) {
-  return name
-    .split(/\s+/)
-    .map(word => word[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+function relationColor(type) {
+  if (type === "parent") return "rgba(105, 166, 255, 0.78)";
+  if (type === "partner") return "rgba(244, 206, 115, 0.72)";
+  if (type === "sibling") return "rgba(126, 228, 210, 0.58)";
+  if (type === "half") return "rgba(162, 123, 255, 0.72)";
+  return "rgba(150, 170, 220, 0.45)";
 }
 
 function matches(node) {
   return query && (
     node.name.toLowerCase().includes(query) ||
     node.role.toLowerCase().includes(query) ||
-    node.motif.toLowerCase().includes(query) ||
     node.note.toLowerCase().includes(query)
   );
 }
 
+function initials(name) {
+  return name
+    .split(/\s+/)
+    .map(part => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  drawBackground();
+
+  ctx.save();
+  ctx.translate(view.x, view.y);
+  ctx.scale(view.k, view.k);
+
+  for (const link of visualLinks) {
+    const dim = query && !matches(link.source) && !matches(link.target);
+
+    ctx.beginPath();
+    ctx.moveTo(link.source.x, link.source.y);
+    ctx.lineTo(link.target.x, link.target.y);
+
+    ctx.strokeStyle = relationColor(link.type);
+    ctx.lineWidth = link.type === "half" ? 2.2 : link.type === "partner" ? 1.8 : 1.6;
+    ctx.globalAlpha = dim ? 0.08 : link.type === "half" ? 0.46 : 0.62;
+
+    if (link.type === "half") ctx.setLineDash([5, 8]);
+    else if (link.type === "sibling") ctx.setLineDash([2, 9]);
+    else ctx.setLineDash([]);
+
+    ctx.shadowBlur = link.type === "partner" ? 10 : 16;
+    ctx.shadowColor = relationColor(link.type);
+    ctx.stroke();
+  }
+
+  ctx.setLineDash([]);
+  ctx.shadowBlur = 0;
+  ctx.globalAlpha = 1;
+
+  for (const node of nodes) {
+    const dim = query && !matches(node);
+    const fill = nodePalette[node.gen % nodePalette.length];
+
+    ctx.globalAlpha = dim ? 0.18 : 1;
+
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, node.r + 8, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(124, 92, 255, 0.08)";
+    ctx.shadowBlur = node === selected ? 34 : 20;
+    ctx.shadowColor = node === selected ? "rgba(124, 92, 255, 0.42)" : fill;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
+    ctx.fillStyle = fill;
+    ctx.fill();
+
+    ctx.lineWidth = node === selected ? 3 : node === hover ? 2.4 : 1.2;
+    ctx.strokeStyle = node === selected ? "#ffffff" : "rgba(255,255,255,0.18)";
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = "#0c1020";
+    ctx.font = "700 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(initials(node.name), node.x, node.y);
+
+    ctx.fillStyle = "#edf2ff";
+    ctx.font = "12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    ctx.textBaseline = "top";
+    ctx.fillText(node.name, node.x, node.y + node.r + 6);
+  }
+
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
 function loop() {
-  tick();
+  if (!physicsFrozen) tickPhysics();
+  tickView();
   draw();
   requestAnimationFrame(loop);
 }
@@ -873,10 +807,11 @@ function pointFromEvent(event) {
   };
 }
 
-function toWorld(x, y) {
+function toWorld(x, y, useTarget = false) {
+  const v = useTarget ? targetView : view;
   return {
-    x: (x - view.x) / view.k,
-    y: (y - view.y) / view.k
+    x: (x - v.x) / v.k,
+    y: (y - v.y) / v.k
   };
 }
 
@@ -887,19 +822,17 @@ function pick(x, y) {
     const node = nodes[i];
     const dx = world.x - node.x;
     const dy = world.y - node.y;
-
     if (dx * dx + dy * dy <= node.r * node.r) return node;
   }
 
   return null;
 }
 
-cv.addEventListener("pointerdown", event => {
+cv.addEventListener("pointerdown", (event) => {
   const p = pointFromEvent(event);
   const node = pick(p.x, p.y);
 
   moved = false;
-  cameraTarget = null;
   cv.setPointerCapture(event.pointerId);
 
   if (node) {
@@ -912,7 +845,7 @@ cv.addEventListener("pointerdown", event => {
   }
 });
 
-cv.addEventListener("pointermove", event => {
+cv.addEventListener("pointermove", (event) => {
   const p = pointFromEvent(event);
 
   if (dragNode) {
@@ -926,8 +859,12 @@ cv.addEventListener("pointermove", event => {
   }
 
   if (panning) {
-    view.x += p.x - last.x;
-    view.y += p.y - last.y;
+    const dx = p.x - last.x;
+    const dy = p.y - last.y;
+    view.x += dx;
+    view.y += dy;
+    targetView.x += dx;
+    targetView.y += dy;
     last = p;
     moved = true;
     return;
@@ -937,28 +874,30 @@ cv.addEventListener("pointermove", event => {
   cv.style.cursor = hover ? "pointer" : "grab";
 });
 
-cv.addEventListener("pointerup", event => {
+cv.addEventListener("pointerup", (event) => {
   const p = pointFromEvent(event);
 
-  if (dragNode && !moved) select(dragNode);
-  else if (!dragNode && !panning && !moved) select(pick(p.x, p.y));
+  if (dragNode && !moved) {
+    select(dragNode);
+  } else if (!dragNode && !panning && !moved) {
+    select(pick(p.x, p.y));
+  }
 
   dragNode = null;
   panning = false;
   cv.classList.remove("dragging");
 });
 
-cv.addEventListener("wheel", event => {
+cv.addEventListener("wheel", (event) => {
   event.preventDefault();
-  cameraTarget = null;
 
-  const zoom = event.deltaY < 0 ? 1.1 : 0.9;
-  const wx = (event.offsetX - view.x) / view.k;
-  const wy = (event.offsetY - view.y) / view.k;
+  const zoomFactor = Math.exp(-event.deltaY * 0.0012);
+  const nextK = clamp(targetView.k * zoomFactor, 0.32, 2.2);
 
-  view.k = Math.min(3.2, Math.max(0.35, view.k * zoom));
-  view.x = event.offsetX - wx * view.k;
-  view.y = event.offsetY - wy * view.k;
+  const world = toWorld(event.offsetX, event.offsetY, true);
+  targetView.k = nextK;
+  targetView.x = event.offsetX - world.x * targetView.k;
+  targetView.y = event.offsetY - world.y * targetView.k;
 }, { passive: false });
 
 function escapeHtml(value) {
@@ -970,20 +909,12 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function focusNode(node, zoom = Math.max(1.04, view.k)) {
-  cameraTarget = {
-    x: W / 2 - node.x * zoom,
-    y: H / 2 - node.y * zoom,
-    k: zoom
-  };
-}
-
 function select(node) {
   selected = node;
 
   if (!node) {
     panel.innerHTML = `
-      <div class="panel-kicker">mythic demo data</div>
+      <div class="eyebrow">Mythic demo data</div>
       <p class="empty">Click any star in the map to inspect its role, notes, and visible connections.</p>
     `;
     return;
@@ -992,10 +923,10 @@ function select(node) {
   const relations = relationsOf(node);
   const relationHtml = relations.length
     ? relations.map(relation => {
-        const color = REL_COLORS[relation.type] || REL_COLORS.parent;
+        const color = relationColor(relation.type);
         return `
           <div class="rel" data-id="${escapeHtml(relation.other.id)}">
-            <span class="dot" style="background:${color}; color:${color}"></span>
+            <span class="dot" style="background:${color}"></span>
             <span>${escapeHtml(relation.other.name)}</span>
             <small>${escapeHtml(REL_LABEL[relation.type] || relation.type)}</small>
           </div>
@@ -1004,13 +935,13 @@ function select(node) {
     : '<div class="empty">No recorded connections.</div>';
 
   panel.innerHTML = `
-    <div class="panel-kicker">${escapeHtml(node.motif)}</div>
+    <div class="eyebrow">Mythic demo data</div>
     <h2 class="person-name">${escapeHtml(node.name)}</h2>
     <div class="person-meta">generation ${escapeHtml(node.gen)} · ${escapeHtml(node.role)}</div>
 
     <div class="field">
       <b>Note</b>
-      <p>${escapeHtml(node.note)}</p>
+      ${escapeHtml(node.note)}
     </div>
 
     <div class="field">
@@ -1019,11 +950,11 @@ function select(node) {
     </div>
 
     <div class="legend">
-      <h3>Line types</h3>
-      <div class="leg-row"><span class="dot" style="background:${REL_COLORS.parent}; color:${REL_COLORS.parent}"></span>parent / child</div>
-      <div class="leg-row"><span class="dot" style="background:${REL_COLORS.partner}; color:${REL_COLORS.partner}"></span>partner</div>
-      <div class="leg-row"><span class="dot" style="background:${REL_COLORS.sibling}; color:${REL_COLORS.sibling}"></span>sibling</div>
-      <div class="leg-row"><span class="dot" style="background:${REL_COLORS.curse}; color:${REL_COLORS.curse}"></span>mythic pressure line</div>
+      <h3>Relationship lines</h3>
+      <div class="leg-row"><span class="dot" style="background:${relationColor("parent")}"></span>parent / child</div>
+      <div class="leg-row"><span class="dot" style="background:${relationColor("partner")}"></span>partner</div>
+      <div class="leg-row"><span class="dot" style="background:${relationColor("sibling")}"></span>sibling</div>
+      <div class="leg-row"><span class="dot" style="background:${relationColor("half")}"></span>partial sibling line</div>
     </div>
   `;
 
@@ -1032,23 +963,25 @@ function select(node) {
       const target = byId[element.dataset.id];
       if (!target) return;
       select(target);
-      focusNode(target);
+      flyToNode(target, clamp(view.k * 1.04, 0.82, 1.28));
     });
   });
+
+  flyToNode(node, clamp(view.k * 1.03, 0.82, 1.22));
 }
 
-document.getElementById("search").addEventListener("input", event => {
+document.getElementById("search").addEventListener("input", (event) => {
   query = event.target.value.trim().toLowerCase();
 });
 
 document.getElementById("reset").addEventListener("click", () => {
-  cameraTarget = { x: W / 2, y: H / 2, k: 1 };
+  fitToGraph(false);
 });
 
-freezeButton.addEventListener("click", () => {
-  frozen = !frozen;
-  freezeButton.textContent = frozen ? "Unfreeze" : "Freeze";
-  freezeButton.classList.toggle("active", frozen);
+document.getElementById("freeze").addEventListener("click", (event) => {
+  physicsFrozen = !physicsFrozen;
+  event.currentTarget.classList.toggle("active", physicsFrozen);
+  event.currentTarget.textContent = physicsFrozen ? "Unfreeze" : "Freeze";
 });
 
 resize();

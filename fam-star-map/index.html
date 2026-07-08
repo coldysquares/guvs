@@ -3,46 +3,53 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Fam Star Map</title>
+<title>Fam Star Map — House of Atreus</title>
 <style>
   :root {
-    --bg: #0d0f14;
-    --panel: #151a23;
-    --panel-2: #0c1018;
-    --line: #222a37;
-    --ink: #e7ecf3;
-    --muted: #8a97ab;
-    --accent: #6ea8fe;
+    --bg: #080a10;
+    --bg-2: #0d0f18;
+    --panel: #141925;
+    --panel-2: #0c1019;
+    --line: #243044;
+    --ink: #edf3ff;
+    --muted: #8f9cb4;
+    --soft: #bdc8dc;
+    --accent: #8bb8ff;
     --accent-2: #ffd479;
+    --danger: #ff8a9a;
 
-    --g0: #6ea8fe;
+    --g0: #8bb8ff;
     --g1: #7ee0c9;
     --g2: #ffd479;
     --g3: #ff9aa2;
     --g4: #c8a8ff;
 
-    --rel-parent: #3f5d8a;
-    --rel-partner: #b9893f;
-    --rel-half: #8a5cc0;
+    --rel-parent: #4f75b4;
+    --rel-partner: #c89446;
+    --rel-sibling: #6f819b;
+    --rel-half: #9b70de;
+    --rel-curse: #ff708d;
   }
 
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
 
   html,
   body {
     margin: 0;
     height: 100%;
-    background: var(--bg);
+    background:
+      radial-gradient(circle at 20% 10%, rgba(91, 128, 202, 0.22), transparent 32rem),
+      radial-gradient(circle at 78% 18%, rgba(255, 212, 121, 0.10), transparent 28rem),
+      linear-gradient(180deg, var(--bg-2), var(--bg));
     color: var(--ink);
     font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
   }
 
   #app {
     display: grid;
-    grid-template-columns: 1fr 320px;
-    grid-template-rows: 56px 1fr;
+    grid-template-columns: 1fr 330px;
+    grid-template-rows: 58px 1fr;
     height: 100%;
   }
 
@@ -50,22 +57,22 @@
     grid-column: 1 / 3;
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     padding: 0 16px;
     border-bottom: 1px solid var(--line);
-    background: var(--panel);
+    background: rgba(20, 25, 37, 0.92);
+    backdrop-filter: blur(12px);
   }
 
   header h1 {
     font-size: 15px;
     margin: 0;
     letter-spacing: 0.3px;
-    font-weight: 650;
+    font-weight: 700;
+    white-space: nowrap;
   }
 
-  header h1 span {
-    color: var(--accent);
-  }
+  header h1 span { color: var(--accent-2); }
 
   .tag {
     font-size: 11px;
@@ -87,9 +94,7 @@
     outline: none;
   }
 
-  #search:focus {
-    border-color: var(--accent);
-  }
+  #search:focus { border-color: var(--accent); }
 
   .btn {
     background: var(--panel-2);
@@ -99,9 +104,11 @@
     border-radius: 8px;
     cursor: pointer;
     font-size: 12px;
+    white-space: nowrap;
   }
 
-  .btn:hover {
+  .btn:hover,
+  .btn.active {
     color: var(--ink);
     border-color: var(--accent);
   }
@@ -119,15 +126,14 @@
     touch-action: none;
   }
 
-  canvas.dragging {
-    cursor: grabbing;
-  }
+  canvas.dragging { cursor: grabbing; }
 
   aside {
-    background: var(--panel);
+    background: rgba(20, 25, 37, 0.94);
     border-left: 1px solid var(--line);
     padding: 18px;
     overflow: auto;
+    backdrop-filter: blur(12px);
   }
 
   .empty {
@@ -136,10 +142,19 @@
     margin-top: 8px;
   }
 
+  .panel-kicker {
+    color: var(--accent-2);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+  }
+
   .person-name {
-    font-size: 20px;
-    font-weight: 650;
-    margin: 0 0 2px;
+    font-size: 21px;
+    font-weight: 700;
+    margin: 0 0 3px;
+    letter-spacing: -0.03em;
   }
 
   .person-meta {
@@ -148,9 +163,7 @@
     margin-bottom: 14px;
   }
 
-  .field {
-    margin-bottom: 12px;
-  }
+  .field { margin-bottom: 12px; }
 
   .field b {
     display: block;
@@ -161,35 +174,39 @@
     margin-bottom: 3px;
   }
 
-  .rels {
-    margin-top: 6px;
+  .field span,
+  .field p {
+    margin: 0;
+    color: var(--soft);
   }
+
+  .rels { margin-top: 6px; }
 
   .rel {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 8px;
-    border-radius: 7px;
+    padding: 7px 8px;
+    border-radius: 8px;
     cursor: pointer;
     margin-bottom: 3px;
   }
 
-  .rel:hover {
-    background: var(--panel-2);
-  }
+  .rel:hover { background: var(--panel-2); }
 
   .dot {
     width: 9px;
     height: 9px;
     border-radius: 50%;
     flex: 0 0 auto;
+    box-shadow: 0 0 12px currentColor;
   }
 
   .rel small {
     color: var(--muted);
     margin-left: auto;
     text-align: right;
+    font-size: 11px;
   }
 
   .legend {
@@ -210,7 +227,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     font-size: 12px;
     color: var(--muted);
   }
@@ -221,16 +238,20 @@
     left: 14px;
     color: var(--muted);
     font-size: 11px;
-    background: rgba(13, 15, 20, 0.72);
-    padding: 6px 10px;
-    border-radius: 6px;
+    background: rgba(8, 10, 16, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 7px 10px;
+    border-radius: 8px;
     pointer-events: none;
   }
 
-  @media (max-width: 760px) {
+  @media (max-width: 800px) {
+    body { overflow: auto; }
+
     #app {
       grid-template-columns: 1fr;
-      grid-template-rows: auto minmax(420px, 1fr) 280px;
+      grid-template-rows: auto minmax(460px, 1fr) 300px;
+      min-height: 100%;
     }
 
     header {
@@ -257,18 +278,20 @@
 <div id="app">
   <header>
     <h1><span>✦</span> Fam Star Map</h1>
-    <span class="tag">fictional kinship map · demo data</span>
-    <input id="search" placeholder="Search a node…" autocomplete="off" />
+    <span class="tag">House of Atreus · public-domain myth demo</span>
+    <input id="search" placeholder="Search the constellation…" autocomplete="off" />
+    <button class="btn" id="freeze">Freeze</button>
     <button class="btn" id="reset">Re-center</button>
   </header>
 
   <div id="stage">
     <canvas id="c"></canvas>
-    <div class="hint">drag nodes · scroll to zoom · click to inspect</div>
+    <div class="hint">drag stars · scroll to zoom · click to inspect · freeze to hold the sky still</div>
   </div>
 
   <aside id="panel">
-    <p class="empty">Click any node in the map to inspect its role, notes, and visible connections.</p>
+    <div class="panel-kicker">mythic demo data</div>
+    <p class="empty">Click any star in the map to inspect its role, notes, and visible connections.</p>
   </aside>
 </div>
 
@@ -276,108 +299,191 @@
 const DATA = {
   people: [
     {
-      id: "root-a",
-      name: "Root Star A",
+      id: "tantalus",
+      name: "Tantalus",
       gen: 0,
-      role: "Origin node",
-      note: "One of two starting points in the visible record."
+      role: "origin star",
+      motif: "curse source",
+      note: "The ancestral fault line. In this demo, he functions as the gravity well behind the whole constellation."
     },
     {
-      id: "root-b",
-      name: "Root Star B",
+      id: "dione",
+      name: "Dione",
       gen: 0,
-      role: "Origin node",
-      note: "Paired with Root Star A to form the first visible branch."
+      role: "origin star",
+      motif: "old record",
+      note: "A simplified partner node used to stabilize the mythic first generation."
     },
     {
-      id: "branch-a",
-      name: "Primary Branch",
+      id: "pelops",
+      name: "Pelops",
       gen: 1,
-      role: "Known branch",
-      note: "A well-recorded descendant line with several visible child nodes."
+      role: "dynasty branch",
+      motif: "returned heir",
+      note: "The branch through which the visible House of Atreus constellation forms."
     },
     {
-      id: "branch-b",
-      name: "Side Branch",
+      id: "hippodamia",
+      name: "Hippodamia",
       gen: 1,
-      role: "Known branch",
-      note: "A parallel branch used to show how nearby records can remain structurally separate."
+      role: "dynasty branch",
+      motif: "contested union",
+      note: "Partner node for Pelops. A stable-looking connection with a very unstable inheritance."
     },
     {
-      id: "partner-a",
-      name: "Companion Node",
-      gen: 1,
-      role: "Partner node",
-      note: "Primary partner connection for the known line."
-    },
-    {
-      id: "prior-link",
-      name: "Earlier Link",
-      gen: 1,
-      role: "Partial partner node",
-      note: "A partial relationship record. Useful for testing hidden or rediscovered branches."
-    },
-    {
-      id: "known-1",
-      name: "Known Line 1",
+      id: "atreus",
+      name: "Atreus",
       gen: 2,
-      role: "Descendant node",
-      note: "A standard visible descendant in the primary branch."
+      role: "primary branch",
+      motif: "king / rupture",
+      note: "The name-bearing branch. His line gives the demo its central visible structure."
     },
     {
-      id: "known-2",
-      name: "Known Line 2",
+      id: "thyestes",
+      name: "Thyestes",
       gen: 2,
-      role: "Descendant node",
-      note: "Another visible descendant in the primary branch."
+      role: "shadow branch",
+      motif: "rival branch",
+      note: "Sibling and rival branch. Useful for showing how family maps become conflict maps."
     },
     {
-      id: "search-origin",
-      name: "Search-Origin Node",
+      id: "aerope",
+      name: "Aerope",
       gen: 2,
-      role: "Inspector node",
-      note: "The point of view node: the one used to inspect how branches become visible."
+      role: "partner node",
+      motif: "breach point",
+      note: "Partner connection around which several versions of the myth turn unstable."
     },
     {
-      id: "late-signal",
-      name: "Late Signal",
-      gen: 2,
-      role: "Rediscovered node",
-      note: "A branch that appears later through a partial record, search result, or outside signal."
+      id: "pelopia",
+      name: "Pelopia",
+      gen: 3,
+      role: "partial record",
+      motif: "hidden branch",
+      note: "Simplified here as a partial record to keep the public demo readable."
     },
     {
-      id: "partial-record",
-      name: "Partial Record",
-      gen: 2,
-      role: "Incomplete node",
-      note: "A deliberately incomplete node with only one recorded parent link."
+      id: "agamemnon",
+      name: "Agamemnon",
+      gen: 3,
+      role: "war branch",
+      motif: "returning king",
+      note: "A major visible node: power, return, sacrifice, and collapse all run through this star."
+    },
+    {
+      id: "menelaus",
+      name: "Menelaus",
+      gen: 3,
+      role: "war branch",
+      motif: "lost / restored union",
+      note: "Sibling branch tied to Helen, Sparta, and the wider Trojan constellation."
+    },
+    {
+      id: "clytemnestra",
+      name: "Clytemnestra",
+      gen: 3,
+      role: "partner star",
+      motif: "counter-force",
+      note: "Partner to Agamemnon. Not a side note: one of the strongest gravity fields in the map."
+    },
+    {
+      id: "helen",
+      name: "Helen",
+      gen: 3,
+      role: "partner star",
+      motif: "bright signal",
+      note: "A famous neighboring star. The family map starts behaving like a war map around her."
+    },
+    {
+      id: "aegisthus",
+      name: "Aegisthus",
+      gen: 4,
+      role: "late signal",
+      motif: "revenge branch",
+      note: "A late-returning branch. In the demo, he shows how a partial record can re-enter the main field."
+    },
+    {
+      id: "iphigenia",
+      name: "Iphigenia",
+      gen: 4,
+      role: "sacrifice star",
+      motif: "vanishing point",
+      note: "A node that demonstrates how one person can bend the emotional geometry of an entire archive."
+    },
+    {
+      id: "electra",
+      name: "Electra",
+      gen: 4,
+      role: "witness star",
+      motif: "memory keeper",
+      note: "A witness and continuity node. She carries the old story forward rather than closing it."
+    },
+    {
+      id: "orestes",
+      name: "Orestes",
+      gen: 4,
+      role: "returning signal",
+      motif: "recursive justice",
+      note: "The returning child branch. The constellation loops back through him."
+    },
+    {
+      id: "chrysothemis",
+      name: "Chrysothemis",
+      gen: 4,
+      role: "quiet branch",
+      motif: "low-signal record",
+      note: "A quieter branch included to keep the map from only showing the loudest mythic nodes."
+    },
+    {
+      id: "hermione",
+      name: "Hermione",
+      gen: 4,
+      role: "next branch",
+      motif: "afterimage",
+      note: "Child node of Helen and Menelaus. A continuation point after the central war story."
     }
   ],
 
   links: [
-    { source: "root-a", target: "root-b", type: "partner" },
+    { source: "tantalus", target: "dione", type: "partner" },
+    { source: "tantalus", target: "pelops", type: "parent" },
+    { source: "dione", target: "pelops", type: "parent" },
 
-    { source: "root-a", target: "branch-a", type: "parent" },
-    { source: "root-b", target: "branch-a", type: "parent" },
-    { source: "root-a", target: "branch-b", type: "parent" },
-    { source: "root-b", target: "branch-b", type: "parent" },
+    { source: "pelops", target: "hippodamia", type: "partner" },
+    { source: "pelops", target: "atreus", type: "parent" },
+    { source: "hippodamia", target: "atreus", type: "parent" },
+    { source: "pelops", target: "thyestes", type: "parent" },
+    { source: "hippodamia", target: "thyestes", type: "parent" },
 
-    { source: "branch-a", target: "partner-a", type: "partner" },
-    { source: "branch-a", target: "prior-link", type: "partner" },
+    { source: "atreus", target: "aerope", type: "partner" },
+    { source: "atreus", target: "agamemnon", type: "parent" },
+    { source: "aerope", target: "agamemnon", type: "parent" },
+    { source: "atreus", target: "menelaus", type: "parent" },
+    { source: "aerope", target: "menelaus", type: "parent" },
 
-    { source: "branch-a", target: "known-1", type: "parent" },
-    { source: "partner-a", target: "known-1", type: "parent" },
+    { source: "thyestes", target: "pelopia", type: "parent" },
+    { source: "thyestes", target: "aegisthus", type: "parent" },
+    { source: "pelopia", target: "aegisthus", type: "parent" },
 
-    { source: "branch-a", target: "known-2", type: "parent" },
-    { source: "partner-a", target: "known-2", type: "parent" },
+    { source: "agamemnon", target: "clytemnestra", type: "partner" },
+    { source: "menelaus", target: "helen", type: "partner" },
 
-    { source: "branch-a", target: "search-origin", type: "parent" },
-    { source: "partner-a", target: "search-origin", type: "parent" },
+    { source: "agamemnon", target: "iphigenia", type: "parent" },
+    { source: "clytemnestra", target: "iphigenia", type: "parent" },
+    { source: "agamemnon", target: "electra", type: "parent" },
+    { source: "clytemnestra", target: "electra", type: "parent" },
+    { source: "agamemnon", target: "orestes", type: "parent" },
+    { source: "clytemnestra", target: "orestes", type: "parent" },
+    { source: "agamemnon", target: "chrysothemis", type: "parent" },
+    { source: "clytemnestra", target: "chrysothemis", type: "parent" },
 
-    { source: "branch-a", target: "late-signal", type: "parent" },
-    { source: "prior-link", target: "late-signal", type: "parent" },
+    { source: "menelaus", target: "hermione", type: "parent" },
+    { source: "helen", target: "hermione", type: "parent" },
 
-    { source: "branch-b", target: "partial-record", type: "parent" }
+    { source: "tantalus", target: "atreus", type: "curse" },
+    { source: "tantalus", target: "thyestes", type: "curse" },
+    { source: "thyestes", target: "agamemnon", type: "curse" },
+    { source: "aegisthus", target: "orestes", type: "curse" }
   ]
 };
 
@@ -390,7 +496,9 @@ const GEN_COLORS = ["--g0", "--g1", "--g2", "--g3", "--g4"]
 const REL_COLORS = {
   parent: css.getPropertyValue("--rel-parent").trim(),
   partner: css.getPropertyValue("--rel-partner").trim(),
-  half: css.getPropertyValue("--rel-half").trim()
+  sibling: css.getPropertyValue("--rel-sibling").trim(),
+  half: css.getPropertyValue("--rel-half").trim(),
+  curse: css.getPropertyValue("--rel-curse").trim()
 };
 
 const REL_LABEL = {
@@ -398,7 +506,8 @@ const REL_LABEL = {
   child: "child / parent",
   partner: "partner",
   sibling: "sibling",
-  half: "partial sibling line"
+  half: "partial sibling line",
+  curse: "mythic pressure line"
 };
 
 const byId = {};
@@ -418,17 +527,19 @@ const directLinks = DATA.links
 
 positionNodesByGeneration();
 
-const halfSiblingLinks = deriveSiblingLinks().filter(link => link.type === "half");
-const visualLinks = [...directLinks, ...halfSiblingLinks];
+const siblingLinks = deriveSiblingLinks();
+const visualLinks = [...directLinks, ...siblingLinks];
 
 const cv = document.getElementById("c");
 const ctx = cv.getContext("2d");
 const panel = document.getElementById("panel");
+const freezeButton = document.getElementById("freeze");
 
 let W = 0;
 let H = 0;
 let DPR = Math.max(1, window.devicePixelRatio || 1);
 let view = { x: 0, y: 0, k: 1 };
+let cameraTarget = null;
 let selected = null;
 let hover = null;
 let query = "";
@@ -436,6 +547,8 @@ let dragNode = null;
 let panning = false;
 let last = { x: 0, y: 0 };
 let moved = false;
+let frozen = false;
+let stars = [];
 
 function positionNodesByGeneration() {
   const groups = new Map();
@@ -447,10 +560,23 @@ function positionNodesByGeneration() {
 
   for (const [gen, group] of groups.entries()) {
     group.forEach((node, index) => {
-      node.x = (index - (group.length - 1) / 2) * 155;
-      node.y = (gen - 1.3) * 135;
+      node.x = (index - (group.length - 1) / 2) * 142;
+      node.y = (gen - 2.05) * 128;
     });
   }
+}
+
+function buildStars() {
+  const count = Math.max(90, Math.floor((W * H) / 8200));
+  stars = Array.from({ length: count }, (_, i) => ({
+    x: Math.random() * W,
+    y: Math.random() * H,
+    r: Math.random() < 0.08 ? 1.6 : 0.6 + Math.random() * 0.9,
+    a: 0.18 + Math.random() * 0.62,
+    tw: Math.random() * Math.PI * 2,
+    speed: 0.002 + Math.random() * 0.006,
+    drift: i % 3 === 0 ? 0.18 + Math.random() * 0.28 : 0
+  }));
 }
 
 function parentsOf(node) {
@@ -509,21 +635,18 @@ function deriveSiblingLinks() {
 function relationsOf(node) {
   const out = [];
 
-  for (const parent of parentsOf(node)) {
-    out.push({ other: parent, type: "parent" });
-  }
+  for (const parent of parentsOf(node)) out.push({ other: parent, type: "parent" });
+  for (const child of childrenOf(node)) out.push({ other: child, type: "child" });
+  for (const partner of partnersOf(node)) out.push({ other: partner, type: "partner" });
 
-  for (const child of childrenOf(node)) {
-    out.push({ other: child, type: "child" });
-  }
-
-  for (const partner of partnersOf(node)) {
-    out.push({ other: partner, type: "partner" });
-  }
-
-  for (const link of deriveSiblingLinks()) {
+  for (const link of siblingLinks) {
     if (link.source === node) out.push({ other: link.target, type: link.type });
     if (link.target === node) out.push({ other: link.source, type: link.type });
+  }
+
+  for (const link of directLinks.filter(link => link.type === "curse")) {
+    if (link.source === node) out.push({ other: link.target, type: "curse" });
+    if (link.target === node) out.push({ other: link.source, type: "curse" });
   }
 
   return out;
@@ -533,16 +656,22 @@ function resize() {
   const rect = cv.getBoundingClientRect();
   W = rect.width;
   H = rect.height;
+  DPR = Math.max(1, window.devicePixelRatio || 1);
   cv.width = W * DPR;
   cv.height = H * DPR;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   view.x = W / 2;
   view.y = H / 2;
+  buildStars();
 }
 
 window.addEventListener("resize", resize);
 
 function tick() {
+  easeCamera();
+
+  if (frozen && !dragNode) return;
+
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
       const a = nodes[i];
@@ -551,7 +680,7 @@ function tick() {
       let dy = b.y - a.y;
       let d2 = dx * dx + dy * dy || 0.01;
       let d = Math.sqrt(d2);
-      let force = 2600 / d2;
+      let force = 2850 / d2;
       let ux = dx / d;
       let uy = dy / d;
 
@@ -568,8 +697,8 @@ function tick() {
     let dx = b.x - a.x;
     let dy = b.y - a.y;
     let d = Math.sqrt(dx * dx + dy * dy) || 0.01;
-    let rest = link.type === "partner" ? 78 : link.type === "half" ? 145 : 118;
-    let stiffness = link.type === "half" ? 0.008 : 0.022;
+    let rest = link.type === "partner" ? 78 : link.type === "curse" ? 210 : link.type === "half" ? 148 : link.type === "sibling" ? 125 : 118;
+    let stiffness = link.type === "curse" ? 0.003 : link.type === "sibling" ? 0.006 : link.type === "half" ? 0.008 : 0.022;
     let force = (d - rest) * stiffness;
     let ux = dx / d;
     let uy = dy / d;
@@ -581,7 +710,7 @@ function tick() {
   }
 
   for (const node of nodes) {
-    const targetY = (node.gen - 1.3) * 135;
+    const targetY = (node.gen - 2.05) * 128;
     node.vy += (targetY - node.y) * 0.004;
     node.vx += (0 - node.x) * 0.002;
 
@@ -594,27 +723,73 @@ function tick() {
   }
 }
 
-function draw() {
+function easeCamera() {
+  if (!cameraTarget) return;
+
+  view.x += (cameraTarget.x - view.x) * 0.12;
+  view.y += (cameraTarget.y - view.y) * 0.12;
+  view.k += (cameraTarget.k - view.k) * 0.10;
+
+  const done = Math.abs(view.x - cameraTarget.x) < 0.4 &&
+    Math.abs(view.y - cameraTarget.y) < 0.4 &&
+    Math.abs(view.k - cameraTarget.k) < 0.004;
+
+  if (done) cameraTarget = null;
+}
+
+function drawStars() {
+  const now = performance.now();
+
+  ctx.save();
   ctx.clearRect(0, 0, W, H);
+
+  for (const star of stars) {
+    const twinkle = Math.sin(now * star.speed + star.tw) * 0.22;
+    const alpha = Math.max(0.08, star.a + twinkle);
+    const x = star.x + Math.sin(now * 0.00008 + star.tw) * star.drift;
+    const y = star.y + Math.cos(now * 0.00007 + star.tw) * star.drift;
+
+    ctx.beginPath();
+    ctx.arc(x, y, star.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(237, 243, 255, ${alpha})`;
+    ctx.fill();
+  }
+
+  const gradient = ctx.createRadialGradient(W * 0.52, H * 0.48, 40, W * 0.52, H * 0.48, Math.max(W, H) * 0.75);
+  gradient.addColorStop(0, "rgba(139, 184, 255, 0.06)");
+  gradient.addColorStop(1, "rgba(8, 10, 16, 0.35)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+
+function draw() {
+  drawStars();
   ctx.save();
   ctx.translate(view.x, view.y);
   ctx.scale(view.k, view.k);
 
   for (const link of visualLinks) {
     const dim = query && !matches(link.source) && !matches(link.target);
+    const alpha = dim ? 0.08 : link.type === "curse" ? 0.36 : link.type === "sibling" ? 0.30 : 0.68;
+    const color = REL_COLORS[link.type] || "#3a4557";
 
     ctx.beginPath();
     ctx.moveTo(link.source.x, link.source.y);
     ctx.lineTo(link.target.x, link.target.y);
 
-    ctx.strokeStyle = REL_COLORS[link.type] || "#3a4557";
-    ctx.lineWidth = link.type === "half" ? 2.1 : 1.6;
-    ctx.globalAlpha = dim ? 0.1 : link.type === "half" ? 0.55 : 0.68;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = link.type === "curse" ? 1.2 : link.type === "half" ? 2.1 : 1.55;
+    ctx.globalAlpha = alpha;
 
     if (link.type === "half") ctx.setLineDash([5, 5]);
+    else if (link.type === "curse") ctx.setLineDash([2, 10]);
     else ctx.setLineDash([]);
 
+    ctx.shadowBlur = link.type === "curse" ? 14 : 6;
+    ctx.shadowColor = color;
     ctx.stroke();
+    ctx.shadowBlur = 0;
   }
 
   ctx.setLineDash([]);
@@ -623,22 +798,35 @@ function draw() {
   for (const node of nodes) {
     const dim = query && !matches(node);
     const color = GEN_COLORS[node.gen % GEN_COLORS.length];
+    const isActive = node === selected || node === hover;
 
     ctx.globalAlpha = dim ? 0.16 : 1;
+
+    if (isActive || node.id === "tantalus") {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, node.r + (isActive ? 12 : 7), 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.globalAlpha = dim ? 0.05 : isActive ? 0.17 : 0.09;
+      ctx.fill();
+      ctx.globalAlpha = dim ? 0.16 : 1;
+    }
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
     ctx.fillStyle = color;
+    ctx.shadowBlur = isActive ? 26 : 12;
+    ctx.shadowColor = color;
     ctx.fill();
+    ctx.shadowBlur = 0;
 
-    if (node === selected || node === hover) {
-      ctx.lineWidth = 3;
+    if (isActive) {
+      ctx.lineWidth = 2.8;
       ctx.strokeStyle = "#ffffff";
       ctx.stroke();
     }
 
-    ctx.fillStyle = "#0d0f14";
-    ctx.font = "650 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    ctx.fillStyle = "#080a10";
+    ctx.font = "700 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(initials(node.name), node.x, node.y);
@@ -666,6 +854,7 @@ function matches(node) {
   return query && (
     node.name.toLowerCase().includes(query) ||
     node.role.toLowerCase().includes(query) ||
+    node.motif.toLowerCase().includes(query) ||
     node.note.toLowerCase().includes(query)
   );
 }
@@ -710,6 +899,7 @@ cv.addEventListener("pointerdown", event => {
   const node = pick(p.x, p.y);
 
   moved = false;
+  cameraTarget = null;
   cv.setPointerCapture(event.pointerId);
 
   if (node) {
@@ -750,11 +940,8 @@ cv.addEventListener("pointermove", event => {
 cv.addEventListener("pointerup", event => {
   const p = pointFromEvent(event);
 
-  if (dragNode && !moved) {
-    select(dragNode);
-  } else if (!dragNode && !panning && !moved) {
-    select(pick(p.x, p.y));
-  }
+  if (dragNode && !moved) select(dragNode);
+  else if (!dragNode && !panning && !moved) select(pick(p.x, p.y));
 
   dragNode = null;
   panning = false;
@@ -763,12 +950,13 @@ cv.addEventListener("pointerup", event => {
 
 cv.addEventListener("wheel", event => {
   event.preventDefault();
+  cameraTarget = null;
 
   const zoom = event.deltaY < 0 ? 1.1 : 0.9;
   const wx = (event.offsetX - view.x) / view.k;
   const wy = (event.offsetY - view.y) / view.k;
 
-  view.k = Math.min(3, Math.max(0.35, view.k * zoom));
+  view.k = Math.min(3.2, Math.max(0.35, view.k * zoom));
   view.x = event.offsetX - wx * view.k;
   view.y = event.offsetY - wy * view.k;
 }, { passive: false });
@@ -782,11 +970,22 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function focusNode(node, zoom = Math.max(1.04, view.k)) {
+  cameraTarget = {
+    x: W / 2 - node.x * zoom,
+    y: H / 2 - node.y * zoom,
+    k: zoom
+  };
+}
+
 function select(node) {
   selected = node;
 
   if (!node) {
-    panel.innerHTML = '<p class="empty">Click any node in the map to inspect its role, notes, and visible connections.</p>';
+    panel.innerHTML = `
+      <div class="panel-kicker">mythic demo data</div>
+      <p class="empty">Click any star in the map to inspect its role, notes, and visible connections.</p>
+    `;
     return;
   }
 
@@ -796,7 +995,7 @@ function select(node) {
         const color = REL_COLORS[relation.type] || REL_COLORS.parent;
         return `
           <div class="rel" data-id="${escapeHtml(relation.other.id)}">
-            <span class="dot" style="background:${color}"></span>
+            <span class="dot" style="background:${color}; color:${color}"></span>
             <span>${escapeHtml(relation.other.name)}</span>
             <small>${escapeHtml(REL_LABEL[relation.type] || relation.type)}</small>
           </div>
@@ -805,12 +1004,13 @@ function select(node) {
     : '<div class="empty">No recorded connections.</div>';
 
   panel.innerHTML = `
+    <div class="panel-kicker">${escapeHtml(node.motif)}</div>
     <h2 class="person-name">${escapeHtml(node.name)}</h2>
     <div class="person-meta">generation ${escapeHtml(node.gen)} · ${escapeHtml(node.role)}</div>
 
     <div class="field">
       <b>Note</b>
-      ${escapeHtml(node.note)}
+      <p>${escapeHtml(node.note)}</p>
     </div>
 
     <div class="field">
@@ -819,22 +1019,20 @@ function select(node) {
     </div>
 
     <div class="legend">
-      <h3>Relationship lines</h3>
-      <div class="leg-row"><span class="dot" style="background:${REL_COLORS.parent}"></span>parent / child</div>
-      <div class="leg-row"><span class="dot" style="background:${REL_COLORS.partner}"></span>partner</div>
-      <div class="leg-row"><span class="dot" style="background:${REL_COLORS.half}"></span>partial sibling line</div>
+      <h3>Line types</h3>
+      <div class="leg-row"><span class="dot" style="background:${REL_COLORS.parent}; color:${REL_COLORS.parent}"></span>parent / child</div>
+      <div class="leg-row"><span class="dot" style="background:${REL_COLORS.partner}; color:${REL_COLORS.partner}"></span>partner</div>
+      <div class="leg-row"><span class="dot" style="background:${REL_COLORS.sibling}; color:${REL_COLORS.sibling}"></span>sibling</div>
+      <div class="leg-row"><span class="dot" style="background:${REL_COLORS.curse}; color:${REL_COLORS.curse}"></span>mythic pressure line</div>
     </div>
   `;
 
   panel.querySelectorAll(".rel").forEach(element => {
     element.addEventListener("click", () => {
       const target = byId[element.dataset.id];
-
       if (!target) return;
-
       select(target);
-      view.x = W / 2 - target.x * view.k;
-      view.y = H / 2 - target.y * view.k;
+      focusNode(target);
     });
   });
 }
@@ -844,9 +1042,13 @@ document.getElementById("search").addEventListener("input", event => {
 });
 
 document.getElementById("reset").addEventListener("click", () => {
-  view.x = W / 2;
-  view.y = H / 2;
-  view.k = 1;
+  cameraTarget = { x: W / 2, y: H / 2, k: 1 };
+});
+
+freezeButton.addEventListener("click", () => {
+  frozen = !frozen;
+  freezeButton.textContent = frozen ? "Unfreeze" : "Freeze";
+  freezeButton.classList.toggle("active", frozen);
 });
 
 resize();

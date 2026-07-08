@@ -51,15 +51,15 @@
     "description": "Early substrate journal/artifact experiment."
   },
   {
-    "title": "House of Atreus",
+    "title": "Aster Graf",
     "fullName": "House of Atreus",
     "slug": "aster-graf",
     "type": [
       "GUV"
     ],
-    "status": "draft",
+    "status": "working",
     "path": "aster-graf/",
-    "description": "See your family lines in a whole new starlight."
+    "description": "Explore the prototype House of Atreus constellation."
   },
   {
     "title": "fungi_cell_map",

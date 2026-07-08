@@ -44,7 +44,7 @@
   .mic.active{background:var(--amber-soft);border-color:var(--amber);color:var(--amber)}
   .mic:disabled{opacity:.45;cursor:not-allowed}
   .status{font-size:12px;color:var(--muted);min-height:16px;padding-left:2px}
-  .toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);max-width:min(560px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--line);box-shadow:0 10px 35px rgba(0,0,0,.35);border-radius:14px;padding:13px 15px;z-index:70;color:var(--text);display:none;line-height:1.45;font-size:15px}
+  .toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);max-width:min(620px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--line);box-shadow:0 10px 35px rgba(0,0,0,.35);border-radius:14px;padding:14px 16px;z-index:70;color:var(--text);display:none;line-height:1.45;font-size:15px;white-space:pre-wrap}
   .toast.show{display:block}
   .toast strong{color:var(--amber)}
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;}
@@ -129,8 +129,21 @@
   function systemPrompt() {
     return `You are Saperlipopette, a warm, slightly eccentric, and endlessly curious French friend. Speak mostly in French, but keep the conversation accessible for a beginner. Never be a formal teacher. If the user is struggling, let a little English leak in naturally. Perform "Natural Recast" for corrections. Be tangential, whimsical, and curious. Keep replies brief, natural, and conversational, usually 1-3 sentences. End with one simple question.
 
-At the very end, append a hidden plain-English comprehension hint in this exact format:
-[HINT: Saperli Popette is trying to say: one short English explanation of the message.]`;
+At the very end, append a hidden beginner support note in this exact format:
+
+[HINT:
+Saperli is saying: one plain-English sentence explaining the gist of your message.
+Useful words:
+- French word or phrase = English meaning
+- French word or phrase = English meaning
+- French word or phrase = English meaning
+Ways to respond:
+- Simple French reply = English meaning
+- Simple French reply = English meaning
+- Simple French reply = English meaning
+]
+
+Keep the hint practical, short, and tied to the current conversation. Do not make it feel like a worksheet. Make the reply ideas useful things the user could actually say next.`;
   }
 
   function setStatus(text) {
@@ -185,7 +198,7 @@ At the very end, append a hidden plain-English comprehension hint in this exact 
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
       hintToast.classList.remove("show");
-    }, 7000);
+    }, 14000);
   }
 
   function addBubble(role, text = "", isThinking = false) {
@@ -528,7 +541,17 @@ At the very end, append a hidden plain-English comprehension hint in this exact 
       removeThinking();
 
       if (!reply) {
-        addBubble("assistant", "Je n’ai rien reçu. Une petite brume technique. Tu veux réessayer ? [HINT: Saperli Popette is trying to say: Something technical went wrong and she wants to try again.]");
+        addBubble("assistant", "Je n’ai rien reçu. Une petite brume technique. Tu veux réessayer ? [HINT:
+Saperli is saying: Something technical went wrong and she wants to try again.
+Useful words:
+- réessayer = to try again
+- brume = mist
+- technique = technical
+Ways to respond:
+- On réessaie. = Let’s try again.
+- Ça ne marche pas. = It isn’t working.
+- Encore une fois. = One more time.
+]");
         setStatus("");
         return;
       }
@@ -588,7 +611,17 @@ At the very end, append a hidden plain-English comprehension hint in this exact 
 
     addBubble(
       "assistant",
-      "Bonjour! Je suis Saperlipopette. Je suis prête à discuter. Qu'est-ce qu'on fait aujourd'hui? [HINT: Saperli Popette is trying to say: Hello, she is ready to talk and wants to know what you want to discuss.]"
+      "Bonjour! Je suis Saperlipopette. Je suis prête à discuter. Qu'est-ce qu'on fait aujourd'hui? [HINT:
+Saperli is saying: Hello, she is ready to talk and wants to know what you want to discuss.
+Useful words:
+- bonjour = hello
+- prête = ready
+- discuter = to chat
+Ways to respond:
+- Bonjour, comment ça va ? = Hello, how are you?
+- Je veux parler de musique. = I want to talk about music.
+- Je ne sais pas quoi dire. = I don’t know what to say.
+]"
     );
 
     input.focus();
@@ -614,7 +647,17 @@ At the very end, append a hidden plain-English comprehension hint in this exact 
   } else {
     addBubble(
       "assistant",
-      "Bonjour! Je suis déjà réveillée dans le petit sous-bois numérique. On parle de quoi? [HINT: Saperli Popette is trying to say: She is awake and ready to chat.]"
+      "Bonjour! Je suis déjà réveillée dans le petit sous-bois numérique. On parle de quoi? [HINT:
+Saperli is saying: She is awake and ready to chat.
+Useful words:
+- réveillée = awake
+- sous-bois = undergrowth / little forest floor
+- parler = to talk
+Ways to respond:
+- Bonjour Saperli. = Hello Saperli.
+- Je veux pratiquer le français. = I want to practice French.
+- On parle de guitare ? = Shall we talk about guitar?
+]"
     );
   }
 })();

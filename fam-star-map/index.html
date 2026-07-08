@@ -1,289 +1,856 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Constellation — family map</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fam Star Map</title>
 <style>
-  :root{
-    --bg:#0d0f14; --panel:#151a23; --line:#222a37; --ink:#e7ecf3;
-    --muted:#8a97ab; --accent:#6ea8fe; --accent2:#ffd479;
-    --g0:#6ea8fe; --g1:#7ee0c9; --g2:#ffd479; --g3:#ff9aa2; --g4:#c8a8ff;
-    --rel-parent:#3f5d8a; --rel-spouse:#b9893f; --rel-half:#8a5cc0;
+  :root {
+    --bg: #0d0f14;
+    --panel: #151a23;
+    --panel-2: #0c1018;
+    --line: #222a37;
+    --ink: #e7ecf3;
+    --muted: #8a97ab;
+    --accent: #6ea8fe;
+    --accent-2: #ffd479;
+
+    --g0: #6ea8fe;
+    --g1: #7ee0c9;
+    --g2: #ffd479;
+    --g3: #ff9aa2;
+    --g4: #c8a8ff;
+
+    --rel-parent: #3f5d8a;
+    --rel-partner: #b9893f;
+    --rel-half: #8a5cc0;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
-    font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-  #app{display:grid;grid-template-columns:1fr 320px;grid-template-rows:56px 1fr;height:100%}
-  header{grid-column:1/3;display:flex;align-items:center;gap:14px;padding:0 16px;
-    border-bottom:1px solid var(--line);background:var(--panel)}
-  header h1{font-size:15px;margin:0;letter-spacing:.3px;font-weight:600}
-  header h1 span{color:var(--accent)}
-  .tag{font-size:11px;color:var(--muted);border:1px solid var(--line);
-    padding:2px 8px;border-radius:20px}
-  #search{margin-left:auto;background:#0c1018;border:1px solid var(--line);
-    color:var(--ink);padding:8px 12px;border-radius:8px;width:220px;outline:none}
-  #search:focus{border-color:var(--accent)}
-  .btn{background:#0c1018;border:1px solid var(--line);color:var(--muted);
-    padding:8px 10px;border-radius:8px;cursor:pointer;font-size:12px}
-  .btn:hover{color:var(--ink);border-color:var(--accent)}
-  #stage{position:relative;overflow:hidden}
-  canvas{display:block;width:100%;height:100%;cursor:grab}
-  canvas.drag{cursor:grabbing}
-  aside{background:var(--panel);border-left:1px solid var(--line);
-    padding:18px;overflow:auto}
-  .empty{color:var(--muted);font-size:13px;margin-top:8px}
-  .person-name{font-size:20px;font-weight:600;margin:0 0 2px}
-  .person-meta{color:var(--muted);font-size:12.5px;margin-bottom:14px}
-  .field{margin-bottom:10px}
-  .field b{display:block;font-size:11px;text-transform:uppercase;
-    letter-spacing:.6px;color:var(--muted);margin-bottom:2px}
-  .rels{margin-top:6px}
-  .rel{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;
-    cursor:pointer;margin-bottom:3px}
-  .rel:hover{background:#0c1018}
-  .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
-  .rel small{color:var(--muted);margin-left:auto}
-  .legend{margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
-  .legend h3{font-size:11px;text-transform:uppercase;letter-spacing:.6px;
-    color:var(--muted);margin:0 0 8px}
-  .leg-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:12px;color:var(--muted)}
-  .hint{position:absolute;bottom:12px;left:14px;color:var(--muted);font-size:11px;
-    background:rgba(13,15,20,.7);padding:6px 10px;border-radius:6px;pointer-events:none}
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  #app {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    grid-template-rows: 56px 1fr;
+    height: 100%;
+  }
+
+  header {
+    grid-column: 1 / 3;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel);
+  }
+
+  header h1 {
+    font-size: 15px;
+    margin: 0;
+    letter-spacing: 0.3px;
+    font-weight: 650;
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  .tag {
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  #search {
+    margin-left: auto;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 8px 12px;
+    border-radius: 8px;
+    width: 220px;
+    outline: none;
+  }
+
+  #search:focus {
+    border-color: var(--accent);
+  }
+
+  .btn {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  .btn:hover {
+    color: var(--ink);
+    border-color: var(--accent);
+  }
+
+  #stage {
+    position: relative;
+    overflow: hidden;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  canvas.dragging {
+    cursor: grabbing;
+  }
+
+  aside {
+    background: var(--panel);
+    border-left: 1px solid var(--line);
+    padding: 18px;
+    overflow: auto;
+  }
+
+  .empty {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 8px;
+  }
+
+  .person-name {
+    font-size: 20px;
+    font-weight: 650;
+    margin: 0 0 2px;
+  }
+
+  .person-meta {
+    color: var(--muted);
+    font-size: 12.5px;
+    margin-bottom: 14px;
+  }
+
+  .field {
+    margin-bottom: 12px;
+  }
+
+  .field b {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+
+  .rels {
+    margin-top: 6px;
+  }
+
+  .rel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 7px;
+    cursor: pointer;
+    margin-bottom: 3px;
+  }
+
+  .rel:hover {
+    background: var(--panel-2);
+  }
+
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+  }
+
+  .rel small {
+    color: var(--muted);
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .legend {
+    margin-top: 22px;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+
+  .legend h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    margin: 0 0 8px;
+  }
+
+  .leg-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .hint {
+    position: absolute;
+    bottom: 12px;
+    left: 14px;
+    color: var(--muted);
+    font-size: 11px;
+    background: rgba(13, 15, 20, 0.72);
+    padding: 6px 10px;
+    border-radius: 6px;
+    pointer-events: none;
+  }
+
+  @media (max-width: 760px) {
+    #app {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto minmax(420px, 1fr) 280px;
+    }
+
+    header {
+      grid-column: 1;
+      flex-wrap: wrap;
+      height: auto;
+      padding: 12px;
+    }
+
+    #search {
+      width: 100%;
+      margin-left: 0;
+    }
+
+    aside {
+      border-left: 0;
+      border-top: 1px solid var(--line);
+    }
+  }
 </style>
 </head>
+
 <body>
 <div id="app">
   <header>
-    <h1><span>✦</span> Constellation</h1>
-    <span class="tag">family map · local · demo data</span>
-    <input id="search" placeholder="Search a name…" autocomplete="off">
+    <h1><span>✦</span> Fam Star Map</h1>
+    <span class="tag">fictional kinship map · demo data</span>
+    <input id="search" placeholder="Search a node…" autocomplete="off" />
     <button class="btn" id="reset">Re-center</button>
   </header>
+
   <div id="stage">
     <canvas id="c"></canvas>
-    <div class="hint">drag people · scroll to zoom · click to inspect</div>
+    <div class="hint">drag nodes · scroll to zoom · click to inspect</div>
   </div>
+
   <aside id="panel">
-    <p class="empty">Click anyone in the map to see who they are and how they connect.</p>
+    <p class="empty">Click any node in the map to inspect its role, notes, and visible connections.</p>
   </aside>
 </div>
 
 <script>
-/* ───────────────────────────────────────────────────────────
-   DATA MODEL — swap this block for real data locally.
-   gen = generation tier (0 oldest). type on links:
-   "parent" | "spouse" | "half" (half-sibling shown via shared parent)
-   This is GENERIC placeholder data — no real names.
-   ─────────────────────────────────────────────────────────── */
 const DATA = {
   people: [
-    {id:"gp1", name:"Eleanor V.",  gen:0, born:1931, died:2019, note:"Matriarch. Kept the family letters."},
-    {id:"gp2", name:"Arthur V.",   gen:0, born:1928, died:2002, note:"Worked the rail yards."},
-    {id:"p1",  name:"Margaret",    gen:1, born:1955,           note:"Eldest. Lives upstate."},
-    {id:"p2",  name:"Daniel",      gen:1, born:1958, died:2016, note:"The father. Much of him was only legible later."},
-    {id:"p2x", name:"Carol",       gen:1, born:1960,           note:"Daniel's first relationship — long unrecorded."},
-    {id:"sp",  name:"Joan",        gen:1, born:1961,           note:"Married Daniel in '84."},
-    {id:"c1",  name:"Drew",        gen:2, born:1985,           note:"Calls himself the eldest."},
-    {id:"c2",  name:"Kristen",     gen:2, born:1988,           note:""},
-    {id:"c3",  name:"You",         gen:2, born:1991,           note:"The one who went looking."},
-    {id:"h1",  name:"Katelyn",     gen:2, born:1982,           note:"Half-sibling. Known to the grandparents, hidden from the rest."},
-    {id:"h2",  name:"Renata",      gen:2, born:1986,           note:"Half-sibling. Surfaced through a DNA test nobody expected."},
+    {
+      id: "root-a",
+      name: "Root Star A",
+      gen: 0,
+      role: "Origin node",
+      note: "One of two starting points in the visible record."
+    },
+    {
+      id: "root-b",
+      name: "Root Star B",
+      gen: 0,
+      role: "Origin node",
+      note: "Paired with Root Star A to form the first visible branch."
+    },
+    {
+      id: "branch-a",
+      name: "Primary Branch",
+      gen: 1,
+      role: "Known branch",
+      note: "A well-recorded descendant line with several visible child nodes."
+    },
+    {
+      id: "branch-b",
+      name: "Side Branch",
+      gen: 1,
+      role: "Known branch",
+      note: "A parallel branch used to show how nearby records can remain structurally separate."
+    },
+    {
+      id: "partner-a",
+      name: "Companion Node",
+      gen: 1,
+      role: "Partner node",
+      note: "Primary partner connection for the known line."
+    },
+    {
+      id: "prior-link",
+      name: "Earlier Link",
+      gen: 1,
+      role: "Partial partner node",
+      note: "A partial relationship record. Useful for testing hidden or rediscovered branches."
+    },
+    {
+      id: "known-1",
+      name: "Known Line 1",
+      gen: 2,
+      role: "Descendant node",
+      note: "A standard visible descendant in the primary branch."
+    },
+    {
+      id: "known-2",
+      name: "Known Line 2",
+      gen: 2,
+      role: "Descendant node",
+      note: "Another visible descendant in the primary branch."
+    },
+    {
+      id: "search-origin",
+      name: "Search-Origin Node",
+      gen: 2,
+      role: "Inspector node",
+      note: "The point of view node: the one used to inspect how branches become visible."
+    },
+    {
+      id: "late-signal",
+      name: "Late Signal",
+      gen: 2,
+      role: "Rediscovered node",
+      note: "A branch that appears later through a partial record, search result, or outside signal."
+    },
+    {
+      id: "partial-record",
+      name: "Partial Record",
+      gen: 2,
+      role: "Incomplete node",
+      note: "A deliberately incomplete node with only one recorded parent link."
+    }
   ],
+
   links: [
-    {s:"gp1", t:"gp2", type:"spouse"},
-    {s:"gp1", t:"p1",  type:"parent"}, {s:"gp2", t:"p1", type:"parent"},
-    {s:"gp1", t:"p2",  type:"parent"}, {s:"gp2", t:"p2", type:"parent"},
-    {s:"p2",  t:"sp",  type:"spouse"},
-    {s:"p2",  t:"c1",  type:"parent"}, {s:"sp", t:"c1", type:"parent"},
-    {s:"p2",  t:"c2",  type:"parent"}, {s:"sp", t:"c2", type:"parent"},
-    {s:"p2",  t:"c3",  type:"parent"}, {s:"sp", t:"c3", type:"parent"},
-    {s:"p2",  t:"h1",  type:"half"},   {s:"carolx", t:"h1", type:"parent", _ghost:true},
-    {s:"p2",  t:"h2",  type:"half"},   {s:"p2x", t:"h2", type:"parent"},
+    { source: "root-a", target: "root-b", type: "partner" },
+
+    { source: "root-a", target: "branch-a", type: "parent" },
+    { source: "root-b", target: "branch-a", type: "parent" },
+    { source: "root-a", target: "branch-b", type: "parent" },
+    { source: "root-b", target: "branch-b", type: "parent" },
+
+    { source: "branch-a", target: "partner-a", type: "partner" },
+    { source: "branch-a", target: "prior-link", type: "partner" },
+
+    { source: "branch-a", target: "known-1", type: "parent" },
+    { source: "partner-a", target: "known-1", type: "parent" },
+
+    { source: "branch-a", target: "known-2", type: "parent" },
+    { source: "partner-a", target: "known-2", type: "parent" },
+
+    { source: "branch-a", target: "search-origin", type: "parent" },
+    { source: "partner-a", target: "search-origin", type: "parent" },
+
+    { source: "branch-a", target: "late-signal", type: "parent" },
+    { source: "prior-link", target: "late-signal", type: "parent" },
+
+    { source: "branch-b", target: "partial-record", type: "parent" }
   ]
 };
-/* ─────────────────────────────────────────────────────────── */
 
-const GEN_COLORS = ['--g0','--g1','--g2','--g3','--g4']
-  .map(v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim());
+const root = document.documentElement;
+const css = getComputedStyle(root);
+
+const GEN_COLORS = ["--g0", "--g1", "--g2", "--g3", "--g4"]
+  .map(name => css.getPropertyValue(name).trim());
+
 const REL_COLORS = {
-  parent:getComputedStyle(document.documentElement).getPropertyValue('--rel-parent').trim(),
-  spouse:getComputedStyle(document.documentElement).getPropertyValue('--rel-spouse').trim(),
-  half:getComputedStyle(document.documentElement).getPropertyValue('--rel-half').trim(),
+  parent: css.getPropertyValue("--rel-parent").trim(),
+  partner: css.getPropertyValue("--rel-partner").trim(),
+  half: css.getPropertyValue("--rel-half").trim()
 };
 
-// build node + link objects
-const byId = {};
-const nodes = DATA.people.map((p,i)=>{
-  const n = {...p, x:Math.cos(i)*120+ (Math.random()-.5)*40,
-                   y:Math.sin(i*1.7)*120+(Math.random()-.5)*40, vx:0, vy:0, r:22};
-  byId[p.id]=n; return n;
-});
-const links = DATA.links
-  .filter(l=>!l._ghost && byId[l.s] && byId[l.t])
-  .map(l=>({source:byId[l.s], target:byId[l.t], type:l.type}));
+const REL_LABEL = {
+  parent: "parent / child",
+  child: "child / parent",
+  partner: "partner",
+  sibling: "sibling",
+  half: "partial sibling line"
+};
 
-// adjacency for the side panel
-const REL_LABEL = {parent:"parent / child", spouse:"partner", half:"half-sibling"};
-function relationsOf(node){
-  const out=[];
-  for(const l of links){
-    if(l.source===node) out.push({other:l.target,type:l.type,dir:"down"});
-    if(l.target===node) out.push({other:l.source,type:l.type,dir:"up"});
+const byId = {};
+const nodes = DATA.people.map(person => {
+  const node = { ...person, x: 0, y: 0, vx: 0, vy: 0, r: 22 };
+  byId[node.id] = node;
+  return node;
+});
+
+const directLinks = DATA.links
+  .filter(link => byId[link.source] && byId[link.target])
+  .map(link => ({
+    source: byId[link.source],
+    target: byId[link.target],
+    type: link.type
+  }));
+
+positionNodesByGeneration();
+
+const halfSiblingLinks = deriveSiblingLinks().filter(link => link.type === "half");
+const visualLinks = [...directLinks, ...halfSiblingLinks];
+
+const cv = document.getElementById("c");
+const ctx = cv.getContext("2d");
+const panel = document.getElementById("panel");
+
+let W = 0;
+let H = 0;
+let DPR = Math.max(1, window.devicePixelRatio || 1);
+let view = { x: 0, y: 0, k: 1 };
+let selected = null;
+let hover = null;
+let query = "";
+let dragNode = null;
+let panning = false;
+let last = { x: 0, y: 0 };
+let moved = false;
+
+function positionNodesByGeneration() {
+  const groups = new Map();
+
+  for (const node of nodes) {
+    if (!groups.has(node.gen)) groups.set(node.gen, []);
+    groups.get(node.gen).push(node);
   }
+
+  for (const [gen, group] of groups.entries()) {
+    group.forEach((node, index) => {
+      node.x = (index - (group.length - 1) / 2) * 155;
+      node.y = (gen - 1.3) * 135;
+    });
+  }
+}
+
+function parentsOf(node) {
+  return directLinks
+    .filter(link => link.type === "parent" && link.target === node)
+    .map(link => link.source);
+}
+
+function childrenOf(node) {
+  return directLinks
+    .filter(link => link.type === "parent" && link.source === node)
+    .map(link => link.target);
+}
+
+function partnersOf(node) {
+  return directLinks
+    .filter(link => link.type === "partner" && (link.source === node || link.target === node))
+    .map(link => link.source === node ? link.target : link.source);
+}
+
+function sameSet(a, b) {
+  if (a.length !== b.length) return false;
+  const ids = new Set(a.map(node => node.id));
+  return b.every(node => ids.has(node.id));
+}
+
+function sharedParents(a, b) {
+  const aParents = parentsOf(a);
+  const bParents = parentsOf(b);
+  const bIds = new Set(bParents.map(node => node.id));
+  return aParents.filter(parent => bIds.has(parent.id));
+}
+
+function deriveSiblingLinks() {
+  const links = [];
+
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i];
+      const b = nodes[j];
+      const shared = sharedParents(a, b);
+
+      if (!shared.length) continue;
+
+      const aParents = parentsOf(a);
+      const bParents = parentsOf(b);
+      const type = sameSet(aParents, bParents) ? "sibling" : "half";
+
+      links.push({ source: a, target: b, type });
+    }
+  }
+
+  return links;
+}
+
+function relationsOf(node) {
+  const out = [];
+
+  for (const parent of parentsOf(node)) {
+    out.push({ other: parent, type: "parent" });
+  }
+
+  for (const child of childrenOf(node)) {
+    out.push({ other: child, type: "child" });
+  }
+
+  for (const partner of partnersOf(node)) {
+    out.push({ other: partner, type: "partner" });
+  }
+
+  for (const link of deriveSiblingLinks()) {
+    if (link.source === node) out.push({ other: link.target, type: link.type });
+    if (link.target === node) out.push({ other: link.source, type: link.type });
+  }
+
   return out;
 }
 
-// ── canvas setup ─────────────────────────────────────────────
-const cv=document.getElementById('c'), ctx=cv.getContext('2d');
-let W=0,H=0,DPR=Math.max(1,window.devicePixelRatio||1);
-let view={x:0,y:0,k:1}; // pan + zoom
-function resize(){
-  const r=cv.getBoundingClientRect(); W=r.width; H=r.height;
-  cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
-  view.x=W/2; view.y=H/2;
-}
-window.addEventListener('resize',resize);
-
-// ── force simulation ─────────────────────────────────────────
-function tick(){
-  // repulsion
-  for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
-    const a=nodes[i],b=nodes[j];
-    let dx=b.x-a.x, dy=b.y-a.y, d2=dx*dx+dy*dy||0.01, d=Math.sqrt(d2);
-    const f=2600/d2; const ux=dx/d, uy=dy/d;
-    a.vx-=ux*f; a.vy-=uy*f; b.vx+=ux*f; b.vy+=uy*f;
-  }
-  // springs
-  for(const l of links){
-    const a=l.source,b=l.target;
-    let dx=b.x-a.x, dy=b.y-a.y, d=Math.sqrt(dx*dx+dy*dy)||0.01;
-    const rest=l.type==='spouse'?70:120;
-    const f=(d-rest)*0.02; const ux=dx/d, uy=dy/d;
-    a.vx+=ux*f; a.vy+=uy*f; b.vx-=ux*f; b.vy-=uy*f;
-  }
-  // gentle gen-based vertical ordering + centering
-  for(const n of nodes){
-    const targetY=(n.gen-2)*110;
-    n.vy+=(targetY-n.y)*0.004;
-    n.vx+=(0-n.x)*0.002;
-    if(n===dragNode){continue;}
-    n.vx*=0.86; n.vy*=0.86;
-    n.x+=n.vx; n.y+=n.vy;
-  }
+function resize() {
+  const rect = cv.getBoundingClientRect();
+  W = rect.width;
+  H = rect.height;
+  cv.width = W * DPR;
+  cv.height = H * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  view.x = W / 2;
+  view.y = H / 2;
 }
 
-// ── rendering ────────────────────────────────────────────────
-let selected=null, hover=null, query="";
-function draw(){
-  ctx.clearRect(0,0,W,H);
-  ctx.save(); ctx.translate(view.x,view.y); ctx.scale(view.k,view.k);
-  // links
-  for(const l of links){
-    ctx.beginPath();
-    ctx.moveTo(l.source.x,l.source.y); ctx.lineTo(l.target.x,l.target.y);
-    ctx.strokeStyle=REL_COLORS[l.type]||'#333';
-    ctx.lineWidth=(l.type==='half'?2.2:1.6);
-    if(l.type==='half') ctx.setLineDash([5,5]); else ctx.setLineDash([]);
-    const dim = query && !match(l.source)&&!match(l.target);
-    ctx.globalAlpha=dim?0.12:0.65; ctx.stroke();
-  }
-  ctx.setLineDash([]); ctx.globalAlpha=1;
-  // nodes
-  for(const n of nodes){
-    const dim = query && !match(n);
-    ctx.globalAlpha=dim?0.18:1;
-    const col=GEN_COLORS[n.gen%GEN_COLORS.length];
-    ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
-    ctx.fillStyle=col; ctx.fill();
-    if(n===selected||n===hover){
-      ctx.lineWidth=3; ctx.strokeStyle='#fff'; ctx.stroke();
+window.addEventListener("resize", resize);
+
+function tick() {
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i];
+      const b = nodes[j];
+      let dx = b.x - a.x;
+      let dy = b.y - a.y;
+      let d2 = dx * dx + dy * dy || 0.01;
+      let d = Math.sqrt(d2);
+      let force = 2600 / d2;
+      let ux = dx / d;
+      let uy = dy / d;
+
+      a.vx -= ux * force;
+      a.vy -= uy * force;
+      b.vx += ux * force;
+      b.vy += uy * force;
     }
-    ctx.fillStyle='#0d0f14'; ctx.font='600 12px -apple-system,sans-serif';
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    const init=n.name.split(' ').map(w=>w[0]).join('').slice(0,2);
-    ctx.fillText(init,n.x,n.y);
-    ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--ink').trim();
-    ctx.font='12px -apple-system,sans-serif'; ctx.textBaseline='top';
-    ctx.fillText(n.name,n.x,n.y+n.r+4);
   }
-  ctx.globalAlpha=1; ctx.restore();
+
+  for (const link of visualLinks) {
+    const a = link.source;
+    const b = link.target;
+    let dx = b.x - a.x;
+    let dy = b.y - a.y;
+    let d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+    let rest = link.type === "partner" ? 78 : link.type === "half" ? 145 : 118;
+    let stiffness = link.type === "half" ? 0.008 : 0.022;
+    let force = (d - rest) * stiffness;
+    let ux = dx / d;
+    let uy = dy / d;
+
+    a.vx += ux * force;
+    a.vy += uy * force;
+    b.vx -= ux * force;
+    b.vy -= uy * force;
+  }
+
+  for (const node of nodes) {
+    const targetY = (node.gen - 1.3) * 135;
+    node.vy += (targetY - node.y) * 0.004;
+    node.vx += (0 - node.x) * 0.002;
+
+    if (node !== dragNode) {
+      node.vx *= 0.86;
+      node.vy *= 0.86;
+      node.x += node.vx;
+      node.y += node.vy;
+    }
+  }
 }
-function match(n){ return query && n.name.toLowerCase().includes(query); }
 
-function loop(){ tick(); draw(); requestAnimationFrame(loop); }
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.save();
+  ctx.translate(view.x, view.y);
+  ctx.scale(view.k, view.k);
 
-// ── interaction ──────────────────────────────────────────────
-function toWorld(mx,my){ return {x:(mx-view.x)/view.k, y:(my-view.y)/view.k}; }
-function pick(mx,my){
-  const w=toWorld(mx,my);
-  for(let i=nodes.length-1;i>=0;i--){
-    const n=nodes[i], dx=w.x-n.x, dy=w.y-n.y;
-    if(dx*dx+dy*dy<=n.r*n.r) return n;
+  for (const link of visualLinks) {
+    const dim = query && !matches(link.source) && !matches(link.target);
+
+    ctx.beginPath();
+    ctx.moveTo(link.source.x, link.source.y);
+    ctx.lineTo(link.target.x, link.target.y);
+
+    ctx.strokeStyle = REL_COLORS[link.type] || "#3a4557";
+    ctx.lineWidth = link.type === "half" ? 2.1 : 1.6;
+    ctx.globalAlpha = dim ? 0.1 : link.type === "half" ? 0.55 : 0.68;
+
+    if (link.type === "half") ctx.setLineDash([5, 5]);
+    else ctx.setLineDash([]);
+
+    ctx.stroke();
   }
+
+  ctx.setLineDash([]);
+  ctx.globalAlpha = 1;
+
+  for (const node of nodes) {
+    const dim = query && !matches(node);
+    const color = GEN_COLORS[node.gen % GEN_COLORS.length];
+
+    ctx.globalAlpha = dim ? 0.16 : 1;
+
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    if (node === selected || node === hover) {
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#ffffff";
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = "#0d0f14";
+    ctx.font = "650 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(initials(node.name), node.x, node.y);
+
+    ctx.fillStyle = css.getPropertyValue("--ink").trim();
+    ctx.font = "12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    ctx.textBaseline = "top";
+    ctx.fillText(node.name, node.x, node.y + node.r + 5);
+  }
+
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function initials(name) {
+  return name
+    .split(/\s+/)
+    .map(word => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function matches(node) {
+  return query && (
+    node.name.toLowerCase().includes(query) ||
+    node.role.toLowerCase().includes(query) ||
+    node.note.toLowerCase().includes(query)
+  );
+}
+
+function loop() {
+  tick();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+function pointFromEvent(event) {
+  const rect = cv.getBoundingClientRect();
+  return {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+}
+
+function toWorld(x, y) {
+  return {
+    x: (x - view.x) / view.k,
+    y: (y - view.y) / view.k
+  };
+}
+
+function pick(x, y) {
+  const world = toWorld(x, y);
+
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    const node = nodes[i];
+    const dx = world.x - node.x;
+    const dy = world.y - node.y;
+
+    if (dx * dx + dy * dy <= node.r * node.r) return node;
+  }
+
   return null;
 }
-let dragNode=null, panning=false, last={x:0,y:0}, moved=false;
-cv.addEventListener('mousedown',e=>{
-  const n=pick(e.offsetX,e.offsetY); moved=false;
-  if(n){ dragNode=n; cv.classList.add('drag'); }
-  else { panning=true; last={x:e.offsetX,y:e.offsetY}; cv.classList.add('drag'); }
-});
-window.addEventListener('mousemove',e=>{
-  const rect=cv.getBoundingClientRect(); const mx=e.clientX-rect.left, my=e.clientY-rect.top;
-  if(dragNode){ const w=toWorld(mx,my); dragNode.x=w.x; dragNode.y=w.y; dragNode.vx=dragNode.vy=0; moved=true; }
-  else if(panning){ view.x+=mx-last.x; view.y+=my-last.y; last={x:mx,y:my}; moved=true; }
-  else { hover=pick(mx,my); cv.style.cursor=hover?'pointer':'grab'; }
-});
-window.addEventListener('mouseup',e=>{
-  if(dragNode&&!moved) select(dragNode);
-  else if(!dragNode&&!panning){}
-  dragNode=null; panning=false; cv.classList.remove('drag');
-});
-cv.addEventListener('click',e=>{ if(!moved){ const n=pick(e.offsetX,e.offsetY); select(n); } });
-cv.addEventListener('wheel',e=>{
-  e.preventDefault();
-  const f=e.deltaY<0?1.1:0.9;
-  const wx=(e.offsetX-view.x)/view.k, wy=(e.offsetY-view.y)/view.k;
-  view.k=Math.min(3,Math.max(.35,view.k*f));
-  view.x=e.offsetX-wx*view.k; view.y=e.offsetY-wy*view.k;
-},{passive:false});
 
-// ── side panel ───────────────────────────────────────────────
-const panel=document.getElementById('panel');
-function select(n){
-  selected=n;
-  if(!n){ panel.innerHTML='<p class="empty">Click anyone in the map to see who they are and how they connect.</p>'; return; }
-  const lifespan = n.born ? (n.born + (n.died?(' – '+n.died):' – present')) : '';
-  const rels=relationsOf(n);
-  const relHtml = rels.map(r=>{
-    const col=REL_COLORS[r.type]||'#555';
-    return `<div class="rel" data-id="${r.other.id}">
-      <span class="dot" style="background:${col}"></span>
-      <span>${r.other.name}</span>
-      <small>${REL_LABEL[r.type]}</small></div>`;
-  }).join('') || '<div class="empty">No recorded connections.</div>';
-  panel.innerHTML=`
-    <h2 class="person-name">${n.name}</h2>
-    <div class="person-meta">${lifespan}${lifespan&&'  ·  '}generation ${n.gen}</div>
-    ${n.note?`<div class="field"><b>Note</b>${n.note}</div>`:''}
-    <div class="field"><b>Connections</b><div class="rels">${relHtml}</div></div>
+cv.addEventListener("pointerdown", event => {
+  const p = pointFromEvent(event);
+  const node = pick(p.x, p.y);
+
+  moved = false;
+  cv.setPointerCapture(event.pointerId);
+
+  if (node) {
+    dragNode = node;
+    cv.classList.add("dragging");
+  } else {
+    panning = true;
+    last = p;
+    cv.classList.add("dragging");
+  }
+});
+
+cv.addEventListener("pointermove", event => {
+  const p = pointFromEvent(event);
+
+  if (dragNode) {
+    const world = toWorld(p.x, p.y);
+    dragNode.x = world.x;
+    dragNode.y = world.y;
+    dragNode.vx = 0;
+    dragNode.vy = 0;
+    moved = true;
+    return;
+  }
+
+  if (panning) {
+    view.x += p.x - last.x;
+    view.y += p.y - last.y;
+    last = p;
+    moved = true;
+    return;
+  }
+
+  hover = pick(p.x, p.y);
+  cv.style.cursor = hover ? "pointer" : "grab";
+});
+
+cv.addEventListener("pointerup", event => {
+  const p = pointFromEvent(event);
+
+  if (dragNode && !moved) {
+    select(dragNode);
+  } else if (!dragNode && !panning && !moved) {
+    select(pick(p.x, p.y));
+  }
+
+  dragNode = null;
+  panning = false;
+  cv.classList.remove("dragging");
+});
+
+cv.addEventListener("wheel", event => {
+  event.preventDefault();
+
+  const zoom = event.deltaY < 0 ? 1.1 : 0.9;
+  const wx = (event.offsetX - view.x) / view.k;
+  const wy = (event.offsetY - view.y) / view.k;
+
+  view.k = Math.min(3, Math.max(0.35, view.k * zoom));
+  view.x = event.offsetX - wx * view.k;
+  view.y = event.offsetY - wy * view.k;
+}, { passive: false });
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function select(node) {
+  selected = node;
+
+  if (!node) {
+    panel.innerHTML = '<p class="empty">Click any node in the map to inspect its role, notes, and visible connections.</p>';
+    return;
+  }
+
+  const relations = relationsOf(node);
+  const relationHtml = relations.length
+    ? relations.map(relation => {
+        const color = REL_COLORS[relation.type] || REL_COLORS.parent;
+        return `
+          <div class="rel" data-id="${escapeHtml(relation.other.id)}">
+            <span class="dot" style="background:${color}"></span>
+            <span>${escapeHtml(relation.other.name)}</span>
+            <small>${escapeHtml(REL_LABEL[relation.type] || relation.type)}</small>
+          </div>
+        `;
+      }).join("")
+    : '<div class="empty">No recorded connections.</div>';
+
+  panel.innerHTML = `
+    <h2 class="person-name">${escapeHtml(node.name)}</h2>
+    <div class="person-meta">generation ${escapeHtml(node.gen)} · ${escapeHtml(node.role)}</div>
+
+    <div class="field">
+      <b>Note</b>
+      ${escapeHtml(node.note)}
+    </div>
+
+    <div class="field">
+      <b>Connections</b>
+      <div class="rels">${relationHtml}</div>
+    </div>
+
     <div class="legend">
       <h3>Relationship lines</h3>
       <div class="leg-row"><span class="dot" style="background:${REL_COLORS.parent}"></span>parent / child</div>
-      <div class="leg-row"><span class="dot" style="background:${REL_COLORS.spouse}"></span>partner</div>
-      <div class="leg-row"><span class="dot" style="background:${REL_COLORS.half}"></span>half-sibling (dashed)</div>
-    </div>`;
-  panel.querySelectorAll('.rel').forEach(el=>el.onclick=()=>{
-    const t=byId[el.dataset.id]; if(t){select(t);
-      view.x=W/2-t.x*view.k; view.y=H/2-t.y*view.k;}
+      <div class="leg-row"><span class="dot" style="background:${REL_COLORS.partner}"></span>partner</div>
+      <div class="leg-row"><span class="dot" style="background:${REL_COLORS.half}"></span>partial sibling line</div>
+    </div>
+  `;
+
+  panel.querySelectorAll(".rel").forEach(element => {
+    element.addEventListener("click", () => {
+      const target = byId[element.dataset.id];
+
+      if (!target) return;
+
+      select(target);
+      view.x = W / 2 - target.x * view.k;
+      view.y = H / 2 - target.y * view.k;
+    });
   });
 }
 
-document.getElementById('search').addEventListener('input',e=>{ query=e.target.value.trim().toLowerCase(); });
-document.getElementById('reset').onclick=()=>{ view.x=W/2; view.y=H/2; view.k=1; };
+document.getElementById("search").addEventListener("input", event => {
+  query = event.target.value.trim().toLowerCase();
+});
 
-resize(); loop();
+document.getElementById("reset").addEventListener("click", () => {
+  view.x = W / 2;
+  view.y = H / 2;
+  view.k = 1;
+});
+
+resize();
+loop();
 </script>
 </body>
 </html>

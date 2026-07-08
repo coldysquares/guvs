@@ -60,5 +60,16 @@
     "status": "draft",
     "path": "fam-star-map/",
     "description": "See your family lines in a whole new starlight."
+  },
+  {
+    "title": "fungi_cell_map",
+    "fullName": "fungi_cell_map",
+    "slug": "fungi-cell-map",
+    "type": [
+      "GUV"
+    ],
+    "status": "working",
+    "path": "fungi-cell-map/",
+    "description": "Protocellular-Mycelian Internals Monitor"
   }
 ]

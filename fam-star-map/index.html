@@ -1,359 +1,420 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Fam Star Map</title>
-<style>
-  :root {
-    --bg: #080c16;
-    --bg-2: #0c1324;
-    --panel: rgba(12, 18, 34, 0.94);
-    --panel-2: rgba(8, 12, 22, 0.88);
-    --line: rgba(124, 92, 255, 0.22);
-    --line-2: rgba(146, 168, 230, 0.18);
-    --ink: #eef3ff;
-    --muted: #a2acc7;
-    --faint: #73809d;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fam Star Map</title>
+  <style>
+    /*
+      This file implements a flagship demo of the Fam Star Map for the
+      House of Atreus dataset. It keeps the dark/violet/gold palette,
+      starfield and spring physics from previous iterations, but improves
+      the mobile experience by introducing a floating bottom sheet on
+      small screens. The bottom sheet displays selected node details and
+      related chips, allowing for tap‑to‑traverse storytelling without
+      scrolling away from the constellation. On wider screens the
+      inspector remains in a right‑hand panel as before.  The entire
+      application is self contained in this single HTML file and is
+      suitable for deployment on GitHub Pages.
+    */
 
-    --accent: #7c5cff;
-    --accent-2: #9a7cff;
-    --gold: #f4d67c;
-    --cyan: #82dcff;
-    --teal: #85eadb;
-    --rose: #ff9fb4;
-    --violet: #9878ff;
-    --lav: #cbb7ff;
+    :root {
+      /* colour palette for stars and UI */
+      --bg: #090d17;
+      --bg-2: #0e1526;
+      --panel: rgba(12, 18, 34, 0.92);
+      --panel-2: rgba(10, 15, 28, 0.94);
+      --line: rgba(108, 133, 204, 0.22);
+      --ink: #eef3ff;
+      --muted: #9ca8c4;
 
-    --shadow-panel: 0 18px 70px rgba(0, 0, 0, 0.36);
-  }
+      --accent: #7c5cff;
+      --accent-soft: rgba(124, 92, 255, 0.24);
+      --accent-soft-2: rgba(124, 92, 255, 0.12);
+      --gold: #f4ce73;
+      --teal: #7ee4d2;
+      --rose: #ff9eb2;
+      --lav: #c8b0ff;
+      --blue: #77b4ff;
 
-  * { box-sizing: border-box; }
+      /* relationship line colours */
+      --rel-parent: rgba(105, 166, 255, 0.78);
+      --rel-partner: rgba(244, 206, 115, 0.72);
+      --rel-sibling: rgba(126, 228, 210, 0.62);
+      --rel-half: rgba(162, 123, 255, 0.72);
+    }
 
-  html,
-  body {
-    margin: 0;
-    height: 100%;
-    background:
-      radial-gradient(circle at 18% 0%, rgba(124, 92, 255, 0.16), transparent 34%),
-      radial-gradient(circle at 88% 22%, rgba(82, 132, 255, 0.12), transparent 30%),
-      linear-gradient(180deg, #0a1020 0%, #080c16 100%);
-    color: var(--ink);
-    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
+    * {
+      box-sizing: border-box;
+    }
 
-  #app {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    grid-template-rows: 60px minmax(0, 1fr);
-    height: 100%;
-    overflow: hidden;
-  }
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(68, 102, 194, 0.18), transparent 34%),
+        radial-gradient(circle at 85% 18%, rgba(124, 92, 255, 0.14), transparent 28%),
+        linear-gradient(180deg, #0b1120 0%, #090d17 100%);
+      color: var(--ink);
+      font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
 
-  header {
-    grid-column: 1 / 3;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--line-2);
-    background: rgba(10, 15, 29, 0.92);
-    backdrop-filter: blur(16px);
-  }
-
-  h1 {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 17px;
-    font-weight: 750;
-    letter-spacing: -0.03em;
-    white-space: nowrap;
-  }
-
-  .spark {
-    color: var(--gold);
-    filter: drop-shadow(0 0 10px rgba(244, 214, 124, 0.32));
-  }
-
-  .tag {
-    color: var(--muted);
-    border: 1px solid var(--line);
-    background: rgba(124, 92, 255, 0.07);
-    padding: 4px 11px;
-    border-radius: 999px;
-    font-size: 11px;
-    white-space: nowrap;
-  }
-
-  .controls {
-    margin-left: auto;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    min-width: 0;
-  }
-
-  #search {
-    width: min(300px, 30vw);
-    padding: 10px 13px;
-    border-radius: 13px;
-    border: 1px solid rgba(124, 92, 255, 0.24);
-    background: rgba(6, 10, 19, 0.72);
-    color: var(--ink);
-    outline: none;
-  }
-
-  #search::placeholder { color: #7d89a8; }
-
-  #search:focus {
-    border-color: rgba(124, 92, 255, 0.58);
-    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.14);
-  }
-
-  .btn {
-    border: 1px solid rgba(124, 92, 255, 0.30);
-    background: rgba(8, 12, 22, 0.84);
-    color: var(--ink);
-    padding: 10px 13px;
-    border-radius: 13px;
-    cursor: pointer;
-    font-size: 13px;
-    line-height: 1;
-    transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
-  }
-
-  .btn:hover {
-    transform: translateY(-1px);
-    border-color: rgba(124, 92, 255, 0.56);
-    background: rgba(18, 25, 46, 0.94);
-  }
-
-  .btn.active {
-    background: linear-gradient(180deg, rgba(124, 92, 255, 0.27), rgba(124, 92, 255, 0.14));
-    border-color: rgba(124, 92, 255, 0.62);
-  }
-
-  #stage {
-    position: relative;
-    overflow: hidden;
-    background:
-      radial-gradient(circle at 48% 44%, rgba(124, 92, 255, 0.14), transparent 35%),
-      radial-gradient(circle at 42% 52%, rgba(96, 139, 255, 0.13), transparent 28%),
-      linear-gradient(180deg, #0a1020 0%, #080d19 100%);
-  }
-
-  canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-    cursor: grab;
-    touch-action: none;
-  }
-
-  canvas.dragging { cursor: grabbing; }
-
-  .hint {
-    position: absolute;
-    left: 16px;
-    bottom: 16px;
-    padding: 8px 12px;
-    border-radius: 12px;
-    font-size: 11px;
-    color: var(--muted);
-    background: rgba(6, 9, 17, 0.64);
-    border: 1px solid rgba(124, 92, 255, 0.16);
-    backdrop-filter: blur(10px);
-    pointer-events: none;
-  }
-
-  .zoomDock {
-    position: absolute;
-    right: 16px;
-    bottom: 16px;
-    display: flex;
-    gap: 6px;
-    padding: 6px;
-    border-radius: 15px;
-    background: rgba(6, 9, 17, 0.62);
-    border: 1px solid rgba(124, 92, 255, 0.16);
-    backdrop-filter: blur(10px);
-  }
-
-  .miniBtn {
-    width: 34px;
-    height: 32px;
-    border-radius: 11px;
-    border: 1px solid rgba(124, 92, 255, 0.24);
-    background: rgba(16, 23, 42, 0.84);
-    color: var(--ink);
-    cursor: pointer;
-    font-size: 16px;
-  }
-
-  .miniBtn:hover {
-    border-color: rgba(124, 92, 255, 0.58);
-    background: rgba(124, 92, 255, 0.12);
-  }
-
-  aside {
-    border-left: 1px solid var(--line-2);
-    background: rgba(9, 14, 27, 0.94);
-    backdrop-filter: blur(16px);
-    padding: 18px;
-    overflow: auto;
-  }
-
-  .eyebrow {
-    color: var(--gold);
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 14px;
-  }
-
-  .empty {
-    color: var(--muted);
-    font-size: 13px;
-    margin-top: 6px;
-  }
-
-  .person-name {
-    margin: 0 0 2px;
-    font-size: 22px;
-    font-weight: 760;
-    letter-spacing: -0.03em;
-  }
-
-  .person-meta {
-    color: var(--muted);
-    font-size: 12.5px;
-    margin-bottom: 14px;
-  }
-
-  .field { margin-bottom: 14px; }
-
-  .field b {
-    display: block;
-    margin-bottom: 4px;
-    color: var(--muted);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .rels { margin-top: 6px; }
-
-  .rel {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding: 8px 10px;
-    border-radius: 10px;
-    cursor: pointer;
-    margin-bottom: 4px;
-    transition: background 120ms ease;
-  }
-
-  .rel:hover { background: rgba(124, 92, 255, 0.09); }
-
-  .dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    flex: 0 0 auto;
-  }
-
-  .rel small {
-    color: var(--muted);
-    margin-left: auto;
-    text-align: right;
-  }
-
-  .legend {
-    margin-top: 22px;
-    border-top: 1px solid var(--line-2);
-    padding-top: 14px;
-  }
-
-  .legend h3 {
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin: 0 0 10px;
-  }
-
-  .leg-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
-
-  @media (max-width: 940px) {
     #app {
-      grid-template-columns: 1fr;
-      grid-template-rows: auto minmax(60vh, 1fr) 270px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      grid-template-rows: auto 1fr;
+      height: 100%;
     }
 
     header {
-      grid-column: 1;
-      flex-wrap: wrap;
-      height: auto;
+      grid-column: 1 / 3;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(17, 25, 46, 0.92), rgba(12, 18, 34, 0.92));
+      backdrop-filter: blur(14px);
+      z-index: 10;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 .spark {
+      color: var(--gold);
+      filter: drop-shadow(0 0 10px rgba(244, 206, 115, 0.3));
+    }
+
+    .tag {
+      color: var(--muted);
+      border: 1px solid var(--line);
+      background: rgba(124, 92, 255, 0.08);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      white-space: nowrap;
     }
 
     .controls {
-      width: 100%;
-      margin-left: 0;
-      flex-wrap: wrap;
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
     }
 
     #search {
-      width: 100%;
-      max-width: none;
-      flex: 1 1 100%;
+      width: 280px;
+      max-width: 36vw;
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(124, 92, 255, 0.22);
+      background: rgba(7, 11, 20, 0.78);
+      color: var(--ink);
+      outline: none;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
     }
 
-    aside {
-      border-left: 0;
-      border-top: 1px solid var(--line-2);
+    #search::placeholder {
+      color: #7f8ca9;
     }
-  }
-</style>
+
+    #search:focus {
+      border-color: rgba(124, 92, 255, 0.5);
+      box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.14);
+    }
+
+    .btn {
+      border: 1px solid rgba(124, 92, 255, 0.28);
+      background: rgba(9, 13, 23, 0.86);
+      color: var(--ink);
+      padding: 10px 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(124, 92, 255, 0.48);
+      background: rgba(15, 21, 38, 0.94);
+    }
+
+    .btn.active {
+      background: linear-gradient(180deg, rgba(124, 92, 255, 0.26), rgba(124, 92, 255, 0.18));
+      border-color: rgba(124, 92, 255, 0.54);
+    }
+
+    #stage {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 40%, rgba(95, 121, 191, 0.16), transparent 36%),
+        radial-gradient(circle at 20% 15%, rgba(124, 92, 255, 0.11), transparent 24%),
+        linear-gradient(180deg, #0b1120 0%, #0a1020 100%);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    canvas.dragging {
+      cursor: grabbing;
+    }
+
+    .hint {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      color: var(--muted);
+      background: rgba(6, 9, 17, 0.6);
+      border: 1px solid rgba(124, 92, 255, 0.14);
+      backdrop-filter: blur(10px);
+      pointer-events: none;
+    }
+
+    aside#panel {
+      border-left: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(12, 18, 34, 0.95), rgba(10, 15, 29, 0.95));
+      backdrop-filter: blur(16px);
+      padding: 18px;
+      overflow: auto;
+    }
+
+    .eyebrow {
+      color: var(--gold);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    .person-name {
+      margin: 0 0 2px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .person-meta {
+      color: var(--muted);
+      font-size: 12.5px;
+      margin-bottom: 14px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field b {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .rels {
+      margin-top: 6px;
+    }
+
+    .rel {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-bottom: 4px;
+      transition: background 120ms ease;
+    }
+
+    .rel:hover {
+      background: rgba(124, 92, 255, 0.08);
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+    }
+
+    .rel small {
+      color: var(--muted);
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .legend {
+      margin-top: 22px;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+    }
+
+    .legend h3 {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 0 0 10px;
+    }
+
+    .leg-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    /* bottom sheet for mobile */
+    #sheet {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(12, 18, 34, 0.95), rgba(10, 15, 29, 0.95));
+      border-top: 1px solid var(--line);
+      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.4);
+      transform: translateY(100%);
+      transition: transform 300ms ease;
+      padding: 18px;
+      z-index: 11;
+    }
+
+    #sheet.show {
+      transform: translateY(0);
+    }
+
+    #sheet .eyebrow {
+      margin-bottom: 12px;
+    }
+
+    #sheet .person-name {
+      font-size: 20px;
+    }
+
+    #sheet .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    #sheet .chip {
+      border: 1px solid rgba(124, 92, 255, 0.28);
+      background: rgba(9, 13, 23, 0.84);
+      color: var(--ink);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: background 120ms ease, border-color 120ms ease;
+    }
+
+    #sheet .chip:hover {
+      border-color: rgba(124, 92, 255, 0.48);
+      background: rgba(15, 21, 38, 0.94);
+    }
+
+    #sheet .trail {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #sheet .trail span {
+      color: var(--ink);
+    }
+
+    /* responsive layout adjustments */
+    @media (max-width: 980px) {
+      #app {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto minmax(56vh, 1fr);
+      }
+      header {
+        grid-column: 1;
+        flex-wrap: wrap;
+        align-items: stretch;
+      }
+      .controls {
+        width: 100%;
+        margin-left: 0;
+        flex-wrap: wrap;
+      }
+      #search {
+        width: 100%;
+        max-width: none;
+      }
+      aside#panel {
+        display: none;
+      }
+      /* safe area for mobile bottom sheet */
+      #sheet {
+        padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+      }
+    }
+  </style>
 </head>
 <body>
 <div id="app">
   <header>
     <h1><span class="spark">✦</span> Fam Star Map</h1>
-    <span class="tag">House of Atreus · public-domain myth demo</span>
-
+    <span class="tag">House of Atreus · mythic demo</span>
     <div class="controls">
-      <input id="search" placeholder="Search the constellation…" autocomplete="off" />
+      <input id="search" type="text" placeholder="Search the constellation…" autocomplete="off" />
+      <button class="btn" id="zoomOut">−</button>
+      <button class="btn" id="zoomIn">+</button>
       <button class="btn" id="freeze">Freeze</button>
       <button class="btn" id="fit">Fit</button>
     </div>
   </header>
-
   <div id="stage">
     <canvas id="c"></canvas>
-    <div class="hint">drag stars · scroll/pinch to zoom · click to inspect · fit returns to the full constellation</div>
-    <div class="zoomDock" aria-label="Zoom controls">
-      <button class="miniBtn" id="zoomOut" title="Zoom out">−</button>
-      <button class="miniBtn" id="zoomIn" title="Zoom in">+</button>
-    </div>
+    <div class="hint">drag stars · scroll to zoom · tap to inspect · chips navigate</div>
   </div>
-
   <aside id="panel">
     <div class="eyebrow">Mythic demo data</div>
-    <p class="empty">Click any star in the map to inspect its role, notes, and visible connections.</p>
+    <p class="empty">Tap a star to explore its connections.</p>
   </aside>
+  <div id="sheet"></div>
 </div>
-
 <script>
+// Data for the House of Atreus.
 const DATA = {
   people: [
     { id: "tantalus", name: "Tantalus", gen: 0, role: "Origin node", note: "Mythic origin point of the cursed line." },
@@ -398,6 +459,7 @@ const DATA = {
   ]
 };
 
+// Relationship labels for display.
 const REL_LABEL = {
   parent: "parent / child",
   child: "child / parent",
@@ -406,453 +468,531 @@ const REL_LABEL = {
   half: "partial sibling line"
 };
 
-const cv = document.getElementById("c");
-const ctx = cv.getContext("2d");
-const panel = document.getElementById("panel");
-const stage = document.getElementById("stage");
-
-const nodePalette = ["#85eadb", "#78b8ff", "#f4d67c", "#ff9fb4", "#cbb7ff", "#9878ff", "#82dcff"];
+// Prepare graph structures.
 const byId = {};
-const nodes = DATA.people.map(person => {
-  const node = { ...person, x: 0, y: 0, vx: 0, vy: 0, r: 22 };
-  byId[node.id] = node;
-  return node;
+const nodes = DATA.people.map((p) => {
+  const n = { ...p, x: 0, y: 0, vx: 0, vy: 0, r: 23 };
+  byId[n.id] = n;
+  return n;
 });
 
+// Primary (direct) links from the dataset.
 const directLinks = DATA.links
-  .filter(link => byId[link.source] && byId[link.target])
-  .map(link => ({ source: byId[link.source], target: byId[link.target], type: link.type }));
+  .filter((l) => byId[l.source] && byId[l.target])
+  .map((l) => ({ source: byId[l.source], target: byId[l.target], type: l.type }));
 
-positionNodesByGeneration();
-const siblingLinks = deriveSiblingLinks();
-const visualLinks = [...directLinks, ...siblingLinks];
-
-const STARS = [];
-let W = 0;
-let H = 0;
-let DPR = Math.max(1, window.devicePixelRatio || 1);
-
-let view = { x: 0, y: 0, k: 1 };
-let targetView = { x: 0, y: 0, k: 1 };
-let selected = null;
-let hover = null;
-let query = "";
-let dragNode = null;
-let panning = false;
-let moved = false;
-let last = { x: 0, y: 0 };
-let firstFitDone = false;
-let physicsFrozen = false;
-let userCameraActive = false;
-
-function positionNodesByGeneration() {
-  const groups = new Map();
-
-  for (const node of nodes) {
-    if (!groups.has(node.gen)) groups.set(node.gen, []);
-    groups.get(node.gen).push(node);
-  }
-
-  for (const [gen, group] of groups.entries()) {
-    group.forEach((node, index) => {
-      node.x = (index - (group.length - 1) / 2) * 132;
-      node.y = (gen - 2.55) * 108;
-    });
-  }
-
-  if (byId.tantalus) byId.tantalus.y -= 18;
-  if (byId.hippodamia) byId.hippodamia.x += 44;
-  if (byId.thyestes) byId.thyestes.x += 16;
-  if (byId.aerope) byId.aerope.x -= 70;
-  if (byId.pelopia) byId.pelopia.x += 74;
-  if (byId.agamemnon) byId.agamemnon.x -= 58;
-  if (byId.menelaus) byId.menelaus.x += 58;
-  if (byId.aegisthus) byId.aegisthus.x += 40;
-  if (byId.helen) byId.helen.x += 120;
-  if (byId.hermione) byId.hermione.x += 120;
-  if (byId.clytemnestra) byId.clytemnestra.x -= 100;
-  if (byId.orestes) byId.orestes.x -= 128;
-}
-
+// Utility functions for graph relations.
 function parentsOf(node) {
-  return directLinks.filter(link => link.type === "parent" && link.target === node).map(link => link.source);
+  return directLinks
+    .filter((l) => l.type === "parent" && l.target === node)
+    .map((l) => l.source);
 }
 
 function childrenOf(node) {
-  return directLinks.filter(link => link.type === "parent" && link.source === node).map(link => link.target);
+  return directLinks
+    .filter((l) => l.type === "parent" && l.source === node)
+    .map((l) => l.target);
 }
 
 function partnersOf(node) {
   return directLinks
-    .filter(link => link.type === "partner" && (link.source === node || link.target === node))
-    .map(link => link.source === node ? link.target : link.source);
+    .filter((l) => l.type === "partner" && (l.source === node || l.target === node))
+    .map((l) => (l.source === node ? l.target : l.source));
 }
 
 function sameSet(a, b) {
   if (a.length !== b.length) return false;
-  const ids = new Set(a.map(node => node.id));
-  return b.every(node => ids.has(node.id));
+  const ids = new Set(a.map((n) => n.id));
+  return b.every((n) => ids.has(n.id));
 }
 
 function sharedParents(a, b) {
   const aParents = parentsOf(a);
   const bParents = parentsOf(b);
-  const bIds = new Set(bParents.map(node => node.id));
-  return aParents.filter(parent => bIds.has(parent.id));
+  const ids = new Set(bParents.map((n) => n.id));
+  return aParents.filter((n) => ids.has(n.id));
 }
 
 function deriveSiblingLinks() {
   const links = [];
-
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
       const a = nodes[i];
       const b = nodes[j];
       const shared = sharedParents(a, b);
       if (!shared.length) continue;
-      const type = sameSet(parentsOf(a), parentsOf(b)) ? "sibling" : "half";
+      const aParents = parentsOf(a);
+      const bParents = parentsOf(b);
+      const type = sameSet(aParents, bParents) ? "sibling" : "half";
       links.push({ source: a, target: b, type });
     }
   }
-
   return links;
 }
 
-function relationsOf(node) {
-  const out = [];
+// Derive sibling/half-sibling links.
+const siblingLinks = deriveSiblingLinks();
+const visualLinks = [...directLinks, ...siblingLinks];
 
-  for (const parent of parentsOf(node)) out.push({ other: parent, type: "parent" });
-  for (const child of childrenOf(node)) out.push({ other: child, type: "child" });
-  for (const partner of partnersOf(node)) out.push({ other: partner, type: "partner" });
+// Starfield for ambience.
+const STARS = [];
 
-  for (const link of siblingLinks) {
-    if (link.source === node) out.push({ other: link.target, type: link.type });
-    if (link.target === node) out.push({ other: link.source, type: link.type });
-  }
+// Canvas and rendering state.
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const panel = document.getElementById('panel');
+const sheet = document.getElementById('sheet');
+let W = 0;
+let H = 0;
+let DPR = 1;
 
-  return out;
+// View transforms (pan + zoom). `view` is current; `targetView` is animated towards.
+let view = { x: 0, y: 0, k: 1 };
+let targetView = { x: 0, y: 0, k: 1 };
+
+// Interaction state.
+let selected = null;
+let hover = null;
+let dragNode = null;
+let panning = false;
+let moved = false;
+let last = { x: 0, y: 0 };
+let physicsFrozen = false;
+let firstFitDone = false;
+
+// Keep a trail of selected nodes for narrative.
+const selectionTrail = [];
+
+// Utility to clamp values.
+function clamp(v, min, max) {
+  return Math.max(min, Math.min(max, v));
 }
 
+// Position nodes by generation for initial layout. Adjust offsets manually for better composition.
+function positionNodesByGeneration() {
+  const groups = new Map();
+  for (const n of nodes) {
+    if (!groups.has(n.gen)) groups.set(n.gen, []);
+    groups.get(n.gen).push(n);
+  }
+  for (const [gen, group] of groups.entries()) {
+    group.forEach((n, i) => {
+      const spread = 170;
+      n.x = (i - (group.length - 1) / 2) * spread;
+      n.y = (gen - 2.2) * 140;
+    });
+  }
+  // custom offsets for key nodes for clarity
+  if (byId.agamemnon) byId.agamemnon.x -= 50;
+  if (byId.menelaus) byId.menelaus.x += 50;
+  if (byId.aegisthus) byId.aegisthus.x -= 130;
+  if (byId.helen) byId.helen.x += 120;
+  if (byId.hermione) byId.hermione.x += 120;
+  if (byId.clytemnestra) byId.clytemnestra.x -= 60;
+}
+
+// Initialise starfield based on canvas size.
 function makeStars() {
   STARS.length = 0;
-  const count = Math.max(110, Math.floor((W * H) / 11000));
-
+  const count = Math.max(90, Math.floor((W * H) / 14000));
   for (let i = 0; i < count; i++) {
     STARS.push({
       x: Math.random() * W,
       y: Math.random() * H,
-      r: Math.random() * 1.45 + 0.25,
-      a: Math.random() * 0.60 + 0.14
+      r: Math.random() * 1.8 + 0.3,
+      a: Math.random() * 0.65 + 0.15
     });
   }
 }
 
+// Resize canvas and perform initial fit.
 function resize() {
   const rect = cv.getBoundingClientRect();
   W = rect.width;
   H = rect.height;
   DPR = Math.max(1, window.devicePixelRatio || 1);
-
   cv.width = W * DPR;
   cv.height = H * DPR;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-
   makeStars();
-
   if (!firstFitDone) {
-    fitGraph(true);
+    fitToGraph(true);
     firstFitDone = true;
-  } else if (!userCameraActive) {
-    fitGraph(true);
+  } else {
+    fitToGraph(true);
   }
 }
 
-window.addEventListener("resize", resize);
-
-function graphBounds() {
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-
-  for (const node of nodes) {
-    minX = Math.min(minX, node.x - node.r - 48);
-    maxX = Math.max(maxX, node.x + node.r + 48);
-    minY = Math.min(minY, node.y - node.r - 48);
-    maxY = Math.max(maxY, node.y + node.r + 56);
+// Fit view to include entire graph nicely.
+function fitToGraph(immediate = false) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const n of nodes) {
+    minX = Math.min(minX, n.x - n.r - 28);
+    maxX = Math.max(maxX, n.x + n.r + 28);
+    minY = Math.min(minY, n.y - n.r - 28);
+    maxY = Math.max(maxY, n.y + n.r + 34);
   }
-
-  return { minX, minY, maxX, maxY };
-}
-
-function fitGraph(immediate = false) {
-  const b = graphBounds();
-  const graphW = Math.max(1, b.maxX - b.minX);
-  const graphH = Math.max(1, b.maxY - b.minY);
-  const padding = clamp(Math.min(W, H) * 0.12, 38, 92);
-  const k = clamp(Math.min((W - padding * 2) / graphW, (H - padding * 2) / graphH) * 1.08, 0.52, 1.46);
-  const cx = (b.minX + b.maxX) / 2;
-  const cy = (b.minY + b.maxY) / 2;
-
-  setCamera({ x: W / 2 - cx * k, y: H / 2 - cy * k, k }, immediate);
-  userCameraActive = false;
-}
-
-function setCamera(next, immediate = false) {
+  const graphW = Math.max(1, maxX - minX);
+  const graphH = Math.max(1, maxY - minY);
+  const padding = Math.min(110, Math.max(44, Math.min(W, H) * 0.09));
+  const k = clamp(Math.min((W - padding * 2) / graphW, (H - padding * 2) / graphH), 0.36, 1.18);
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  const next = { x: W / 2 - cx * k, y: H / 2 - cy * k, k };
   targetView = { ...next };
   if (immediate) view = { ...next };
 }
 
-function flyToNode(node) {
-  const k = clamp(Math.max(targetView.k, 1.04), 0.78, 1.42);
-  setCamera({ x: W / 2 - node.x * k, y: H / 2 - node.y * k, k });
-  userCameraActive = true;
-}
-
-function clamp(v, min, max) {
-  return Math.max(min, Math.min(max, v));
-}
-
+// Physics tick: repulsion, springs, gentle centring.
 function tickPhysics() {
+  // repulsion
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
-      const a = nodes[i];
-      const b = nodes[j];
+      const a = nodes[i], b = nodes[j];
       let dx = b.x - a.x;
       let dy = b.y - a.y;
       let d2 = dx * dx + dy * dy || 0.01;
       let d = Math.sqrt(d2);
-      let force = 2050 / d2;
+      let f = 2400 / d2;
       let ux = dx / d;
       let uy = dy / d;
-
-      a.vx -= ux * force;
-      a.vy -= uy * force;
-      b.vx += ux * force;
-      b.vy += uy * force;
+      a.vx -= ux * f;
+      a.vy -= uy * f;
+      b.vx += ux * f;
+      b.vy += uy * f;
     }
   }
-
-  for (const link of visualLinks) {
-    const a = link.source;
-    const b = link.target;
+  // springs
+  for (const l of visualLinks) {
+    const a = l.source, b = l.target;
     let dx = b.x - a.x;
     let dy = b.y - a.y;
     let d = Math.sqrt(dx * dx + dy * dy) || 0.01;
-    let rest = link.type === "partner" ? 86 : link.type === "sibling" ? 125 : link.type === "half" ? 148 : 104;
-    let stiffness = link.type === "half" ? 0.007 : link.type === "sibling" ? 0.009 : 0.020;
-    let force = (d - rest) * stiffness;
+    let rest = l.type === 'partner' ? 96 : l.type === 'sibling' ? 144 : l.type === 'half' ? 160 : 118;
+    let stiffness = l.type === 'half' ? 0.008 : l.type === 'sibling' ? 0.011 : 0.021;
+    let f = (d - rest) * stiffness;
     let ux = dx / d;
     let uy = dy / d;
-
-    a.vx += ux * force;
-    a.vy += uy * force;
-    b.vx -= ux * force;
-    b.vy -= uy * force;
+    a.vx += ux * f;
+    a.vy += uy * f;
+    b.vx -= ux * f;
+    b.vy -= uy * f;
   }
-
-  for (const node of nodes) {
-    const targetY = (node.gen - 2.55) * 108;
-    node.vy += (targetY - node.y) * 0.003;
-    node.vx += (0 - node.x) * 0.0013;
-
-    if (node !== dragNode) {
-      node.vx *= 0.875;
-      node.vy *= 0.875;
-      node.x += node.vx;
-      node.y += node.vy;
+  // centring by generation and x axis
+  for (const n of nodes) {
+    const targetY = (n.gen - 2.2) * 140;
+    n.vy += (targetY - n.y) * 0.0035;
+    n.vx += (0 - n.x) * 0.0019;
+    if (n !== dragNode) {
+      n.vx *= 0.87;
+      n.vy *= 0.87;
+      n.x += n.vx;
+      n.y += n.vy;
     }
   }
 }
 
-function tickCamera() {
-  view.x += (targetView.x - view.x) * 0.22;
-  view.y += (targetView.y - view.y) * 0.22;
-  view.k += (targetView.k - view.k) * 0.24;
+// Animate view towards target.
+function tickView() {
+  view.x += (targetView.x - view.x) * 0.14;
+  view.y += (targetView.y - view.y) * 0.14;
+  view.k += (targetView.k - view.k) * 0.16;
 }
 
+// Draw starfield in background.
 function drawBackground() {
-  for (const star of STARS) {
+  for (const s of STARS) {
     ctx.beginPath();
-    ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(235, 241, 255, ${star.a})`;
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(235, 241, 255, ${s.a})`;
     ctx.fill();
   }
 }
 
+// Relationship color helper.
 function relationColor(type) {
-  if (type === "parent") return "rgba(112, 170, 255, 0.78)";
-  if (type === "partner") return "rgba(244, 214, 124, 0.72)";
-  if (type === "sibling") return "rgba(133, 234, 219, 0.56)";
-  if (type === "half") return "rgba(154, 124, 255, 0.72)";
-  return "rgba(150, 170, 220, 0.45)";
+  if (type === 'parent') return 'rgba(105,166,255,0.78)';
+  if (type === 'partner') return 'rgba(244,206,115,0.72)';
+  if (type === 'sibling') return 'rgba(126,228,210,0.62)';
+  if (type === 'half') return 'rgba(162,123,255,0.72)';
+  return 'rgba(150,170,220,0.45)';
 }
 
-function matches(node) {
+// Determine if node matches current search query.
+function matches(n) {
   return query && (
-    node.name.toLowerCase().includes(query) ||
-    node.role.toLowerCase().includes(query) ||
-    node.note.toLowerCase().includes(query)
+    n.name.toLowerCase().includes(query) ||
+    n.role.toLowerCase().includes(query) ||
+    n.note.toLowerCase().includes(query)
   );
 }
 
+// Compute initials for a node.
 function initials(name) {
-  return name.split(/\s+/).map(part => part[0]).join("").slice(0, 2).toUpperCase();
+  return name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 }
 
-function screenRadius(value) {
-  return value / Math.sqrt(view.k);
-}
-
+// Render everything.
 function draw() {
   ctx.clearRect(0, 0, W, H);
   drawBackground();
-
   ctx.save();
   ctx.translate(view.x, view.y);
   ctx.scale(view.k, view.k);
-
-  for (const link of visualLinks) {
-    const dim = query && !matches(link.source) && !matches(link.target);
-
+  // draw links
+  for (const l of visualLinks) {
+    const dim = query && !matches(l.source) && !matches(l.target);
     ctx.beginPath();
-    ctx.moveTo(link.source.x, link.source.y);
-    ctx.lineTo(link.target.x, link.target.y);
-
-    ctx.strokeStyle = relationColor(link.type);
-    ctx.lineWidth = link.type === "half" ? 1.9 : link.type === "partner" ? 1.6 : 1.3;
-    ctx.globalAlpha = dim ? 0.08 : link.type === "half" ? 0.42 : 0.56;
-
-    if (link.type === "half") ctx.setLineDash([4, 8]);
-    else if (link.type === "sibling") ctx.setLineDash([2, 9]);
+    ctx.moveTo(l.source.x, l.source.y);
+    ctx.lineTo(l.target.x, l.target.y);
+    ctx.strokeStyle = relationColor(l.type);
+    ctx.lineWidth = l.type === 'half' ? 2.1 : l.type === 'sibling' ? 1.8 : 1.6;
+    ctx.globalAlpha = dim ? 0.08 : l.type === 'half' ? 0.52 : l.type === 'sibling' ? 0.52 : 0.68;
+    if (l.type === 'half') ctx.setLineDash([5, 7]);
+    else if (l.type === 'sibling') ctx.setLineDash([2, 7]);
     else ctx.setLineDash([]);
-
-    ctx.shadowBlur = link.type === "partner" ? 8 : 13;
-    ctx.shadowColor = relationColor(link.type);
+    if (selected && (l.source === selected || l.target === selected)) {
+      ctx.globalAlpha = 0.85;
+      ctx.lineWidth = l.type === 'half' ? 2.6 : 2.4;
+    }
     ctx.stroke();
   }
-
   ctx.setLineDash([]);
-  ctx.shadowBlur = 0;
   ctx.globalAlpha = 1;
-
-  for (const node of nodes) {
-    const dim = query && !matches(node);
-    const fill = nodePalette[node.gen % nodePalette.length];
-    const r = screenRadius(node.r);
-
+  // draw nodes
+  for (const n of nodes) {
+    const dim = query && !matches(n);
+    const palette = ['#7ee4d2', '#75b8ff', '#f4ce73', '#ff9eb2', '#c8b0ff', '#8d72ff', '#89d8ff'];
+    const fill = palette[n.gen % palette.length];
     ctx.globalAlpha = dim ? 0.18 : 1;
-
     ctx.beginPath();
-    ctx.arc(node.x, node.y, r + 8 / view.k, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(124, 92, 255, 0.075)";
-    ctx.shadowBlur = node === selected ? 34 : 18;
-    ctx.shadowColor = node === selected ? "rgba(154, 124, 255, 0.56)" : fill;
+    ctx.arc(n.x, n.y, n.r + 8, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(124,92,255,0.08)';
+    if (n === selected) {
+      ctx.shadowBlur = 28;
+      ctx.shadowColor = 'rgba(124,92,255,0.42)';
+    } else if (n === hover) {
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = 'rgba(124,92,255,0.22)';
+    } else {
+      ctx.shadowBlur = 0;
+    }
     ctx.fill();
-
+    ctx.shadowBlur = 0;
     ctx.beginPath();
-    ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+    ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
     ctx.fillStyle = fill;
     ctx.fill();
-
-    ctx.lineWidth = node === selected ? 3 / view.k : node === hover ? 2.3 / view.k : 1.15 / view.k;
-    ctx.strokeStyle = node === selected ? "#ffffff" : "rgba(255,255,255,0.20)";
+    let lineWidth = 1.2;
+    let lineColor = 'rgba(255,255,255,0.18)';
+    if (n === selected) {
+      lineWidth = 3;
+      lineColor = '#ffffff';
+    } else if (selected && (parentsOf(selected).includes(n) || childrenOf(selected).includes(n) || partnersOf(selected).includes(n) || sharedParents(selected, n).length)) {
+      lineWidth = 2.2;
+      lineColor = '#ffffff';
+    } else if (hover === n) {
+      lineWidth = 2.0;
+      lineColor = 'rgba(255,255,255,0.6)';
+    }
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = lineColor;
     ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    ctx.fillStyle = "#0b1020";
-    ctx.font = `${Math.max(10, 12 / Math.sqrt(view.k))}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
-    ctx.font = `750 ${Math.max(10, 12 / Math.sqrt(view.k))}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(initials(node.name), node.x, node.y);
-
-    ctx.fillStyle = "rgba(238, 243, 255, 0.94)";
-    ctx.font = `600 ${Math.max(10, 12 / Math.sqrt(view.k))}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
-    ctx.textBaseline = "top";
-    ctx.fillText(node.name, node.x, node.y + r + 6 / view.k);
+    ctx.fillStyle = '#0c1020';
+    ctx.font = '700 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(initials(n.name), n.x, n.y);
+    ctx.fillStyle = '#edf2ff';
+    ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.textBaseline = 'top';
+    ctx.fillText(n.name, n.x, n.y + n.r + 6);
   }
-
   ctx.restore();
   ctx.globalAlpha = 1;
 }
 
+// Animation loop.
 function loop() {
   if (!physicsFrozen) tickPhysics();
-  tickCamera();
+  tickView();
   draw();
   requestAnimationFrame(loop);
 }
 
-function pointFromEvent(event) {
-  const rect = cv.getBoundingClientRect();
-  return { x: event.clientX - rect.left, y: event.clientY - rect.top };
-}
-
-function toWorld(x, y, v = view) {
+// Convert pointer coordinate to world coordinate.
+function toWorld(x, y, useTarget = false) {
+  const v = useTarget ? targetView : view;
   return { x: (x - v.x) / v.k, y: (y - v.y) / v.k };
 }
 
+// Pick node under pointer (world coords).
 function pick(x, y) {
-  const world = toWorld(x, y);
-
+  const w = toWorld(x, y);
   for (let i = nodes.length - 1; i >= 0; i--) {
-    const node = nodes[i];
-    const r = screenRadius(node.r);
-    const dx = world.x - node.x;
-    const dy = world.y - node.y;
-    if (dx * dx + dy * dy <= r * r) return node;
+    const n = nodes[i];
+    const dx = w.x - n.x;
+    const dy = w.y - n.y;
+    if (dx * dx + dy * dy <= n.r * n.r) return n;
   }
-
   return null;
 }
 
-function zoomAt(screenX, screenY, factor) {
-  const old = { ...view };
-  const world = toWorld(screenX, screenY, old);
-  const k = clamp(old.k * factor, 0.42, 2.65);
-  const next = {
-    x: screenX - world.x * k,
-    y: screenY - world.y * k,
-    k
-  };
-
-  view = { ...next };
-  targetView = { ...next };
-  userCameraActive = true;
+// Escape HTML for safe insertion.
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
-cv.addEventListener("pointerdown", event => {
-  const p = pointFromEvent(event);
-  const node = pick(p.x, p.y);
+// Show details in panel and sheet. Also update trail.
+function selectNode(n) {
+  selected = n;
+  updatePanel();
+  updateSheet();
+  if (n) {
+    if (selectionTrail.length === 0 || selectionTrail[selectionTrail.length - 1].id !== n.id) {
+      selectionTrail.push(n);
+      if (selectionTrail.length > 5) selectionTrail.shift();
+    }
+    flyToNode(n, clamp(view.k * 1.05, 0.8, 1.4));
+  } else {
+    selectionTrail.length = 0;
+  }
+}
 
+// Update desktop side panel content.
+function updatePanel() {
+  if (window.matchMedia('(max-width: 980px)').matches) return;
+  if (!selected) {
+    panel.innerHTML = '<div class="eyebrow">Mythic demo data</div><p class="empty">Tap a star to explore its connections.</p>';
+    return;
+  }
+  const rels = getRelations(selected);
+  const relHtml = rels.length ? rels.map((rel) => {
+    const color = relationColor(rel.type);
+    return `<div class="rel" data-id="${escapeHtml(rel.other.id)}"><span class="dot" style="background:${color}"></span><span>${escapeHtml(rel.other.name)}</span><small>${escapeHtml(REL_LABEL[rel.type] || rel.type)}</small></div>`;
+  }).join('') : '<div class="empty">No recorded connections.</div>';
+  panel.innerHTML = `
+    <div class="eyebrow">Mythic demo data</div>
+    <h2 class="person-name">${escapeHtml(selected.name)}</h2>
+    <div class="person-meta">generation ${escapeHtml(selected.gen)} · ${escapeHtml(selected.role)}</div>
+    <div class="field"><b>Note</b>${escapeHtml(selected.note)}</div>
+    <div class="field"><b>Connections</b><div class="rels">${relHtml}</div></div>
+    <div class="legend">
+      <h3>Relationship lines</h3>
+      <div class="leg-row"><span class="dot" style="background:${relationColor('parent')}"></span>parent / child</div>
+      <div class="leg-row"><span class="dot" style="background:${relationColor('partner')}"></span>partner</div>
+      <div class="leg-row"><span class="dot" style="background:${relationColor('sibling')}"></span>sibling</div>
+      <div class="leg-row"><span class="dot" style="background:${relationColor('half')}"></span>partial sibling line</div>
+    </div>`;
+  panel.querySelectorAll('.rel').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = el.getAttribute('data-id');
+      const t = byId[id];
+      if (t) {
+        selectNode(t);
+      }
+    });
+  });
+}
+
+// Build list of relations for a node including child/parent/partner/sibling/half.
+function getRelations(n) {
+  const out = [];
+  for (const p of parentsOf(n)) out.push({ other: p, type: 'parent' });
+  for (const c of childrenOf(n)) out.push({ other: c, type: 'child' });
+  for (const p of partnersOf(n)) out.push({ other: p, type: 'partner' });
+  for (const link of siblingLinks) {
+    if (link.source === n) out.push({ other: link.target, type: link.type });
+    if (link.target === n) out.push({ other: link.source, type: link.type });
+  }
+  return out;
+}
+
+// Update bottom sheet for mobile. Show/hide accordingly.
+function updateSheet() {
+  if (!window.matchMedia('(max-width: 980px)').matches) {
+    sheet.classList.remove('show');
+    sheet.innerHTML = '';
+    return;
+  }
+  if (!selected) {
+    sheet.classList.remove('show');
+    sheet.innerHTML = '';
+    return;
+  }
+  const rels = getRelations(selected);
+  const chips = rels.map(rel => {
+    const color = relationColor(rel.type);
+    const label = REL_LABEL[rel.type] || rel.type;
+    return `<div class="chip" data-id="${escapeHtml(rel.other.id)}"><span style="background:${color}" class="dot"></span>${escapeHtml(label)} · ${escapeHtml(rel.other.name)}</div>`;
+  }).join('');
+  let trailStr = '';
+  if (selectionTrail.length > 1) {
+    trailStr = selectionTrail.map(n => escapeHtml(n.name)).join(' → ');
+    trailStr = `<div class="trail"><span>${trailStr}</span></div>`;
+  }
+  sheet.innerHTML = `
+    <div class="eyebrow">Mythic demo data</div>
+    <h2 class="person-name">${escapeHtml(selected.name)}</h2>
+    <div class="person-meta">generation ${escapeHtml(selected.gen)} · ${escapeHtml(selected.role)}</div>
+    <div class="field"><b>Note</b>${escapeHtml(selected.note)}</div>
+    <div class="field"><b>Connections</b><div class="chips">${chips || '<div class="empty">No recorded connections.</div>'}</div></div>
+    ${trailStr}
+  `;
+  sheet.classList.add('show');
+  sheet.querySelectorAll('.chip').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = el.getAttribute('data-id');
+      const t = byId[id];
+      if (t) {
+        selectNode(t);
+      }
+    });
+  });
+}
+
+// Move camera to a node smoothly.
+function flyToNode(n, preferredZoom) {
+  const k = preferredZoom || clamp(Math.max(view.k, 0.9), 0.72, 1.35);
+  targetView = { x: W / 2 - n.x * k, y: H / 2 - n.y * k, k };
+}
+
+// Event listeners for canvas interactions.
+cv.addEventListener('pointerdown', (e) => {
+  const rect = cv.getBoundingClientRect();
+  const p = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  const n = pick(p.x, p.y);
   moved = false;
-  cv.setPointerCapture(event.pointerId);
-
-  if (node) {
-    dragNode = node;
-    cv.classList.add("dragging");
+  cv.setPointerCapture(e.pointerId);
+  if (n) {
+    dragNode = n;
+    cv.classList.add('dragging');
   } else {
     panning = true;
     last = p;
-    cv.classList.add("dragging");
+    cv.classList.add('dragging');
   }
 });
 
-cv.addEventListener("pointermove", event => {
-  const p = pointFromEvent(event);
-
+cv.addEventListener('pointermove', (e) => {
+  const rect = cv.getBoundingClientRect();
+  const p = { x: e.clientX - rect.left, y: e.clientY - rect.top };
   if (dragNode) {
-    const world = toWorld(p.x, p.y);
-    dragNode.x = world.x;
-    dragNode.y = world.y;
+    const w = toWorld(p.x, p.y);
+    dragNode.x = w.x;
+    dragNode.y = w.y;
     dragNode.vx = 0;
     dragNode.vy = 0;
     moved = true;
-    userCameraActive = true;
     return;
   }
-
   if (panning) {
     const dx = p.x - last.x;
     const dy = p.y - last.y;
@@ -862,118 +1002,79 @@ cv.addEventListener("pointermove", event => {
     targetView.y += dy;
     last = p;
     moved = true;
-    userCameraActive = true;
     return;
   }
-
   hover = pick(p.x, p.y);
-  cv.style.cursor = hover ? "pointer" : "grab";
+  cv.style.cursor = hover ? 'pointer' : 'grab';
 });
 
-cv.addEventListener("pointerup", event => {
-  const p = pointFromEvent(event);
-
+cv.addEventListener('pointerup', (e) => {
+  const rect = cv.getBoundingClientRect();
+  const p = { x: e.clientX - rect.left, y: e.clientY - rect.top };
   if (dragNode && !moved) {
-    select(dragNode, true);
+    selectNode(dragNode);
   } else if (!dragNode && !panning && !moved) {
-    select(pick(p.x, p.y), true);
+    selectNode(pick(p.x, p.y));
   }
-
   dragNode = null;
   panning = false;
-  cv.classList.remove("dragging");
+  cv.classList.remove('dragging');
 });
 
-cv.addEventListener("wheel", event => {
-  event.preventDefault();
-  const raw = Math.exp(-event.deltaY * 0.0018);
-  const factor = clamp(raw, 0.82, 1.22);
-  zoomAt(event.offsetX, event.offsetY, factor);
+cv.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const zoomFactor = Math.exp(-e.deltaY * 0.0012);
+  let nextK = clamp(targetView.k * zoomFactor, 0.32, 2.2);
+  const rect = cv.getBoundingClientRect();
+  const world = toWorld(e.clientX - rect.left, e.clientY - rect.top, true);
+  targetView.k = nextK;
+  targetView.x = (e.clientX - rect.left) - world.x * targetView.k;
+  targetView.y = (e.clientY - rect.top) - world.y * targetView.k;
 }, { passive: false });
 
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function select(node, moveCamera = false) {
-  selected = node;
-
-  if (!node) {
-    panel.innerHTML = `
-      <div class="eyebrow">Mythic demo data</div>
-      <p class="empty">Click any star in the map to inspect its role, notes, and visible connections.</p>
-    `;
-    return;
-  }
-
-  const relations = relationsOf(node);
-  const relationHtml = relations.length
-    ? relations.map(relation => `
-        <div class="rel" data-id="${escapeHtml(relation.other.id)}">
-          <span class="dot" style="background:${relationColor(relation.type)}"></span>
-          <span>${escapeHtml(relation.other.name)}</span>
-          <small>${escapeHtml(REL_LABEL[relation.type] || relation.type)}</small>
-        </div>
-      `).join("")
-    : '<div class="empty">No recorded connections.</div>';
-
-  panel.innerHTML = `
-    <div class="eyebrow">Mythic demo data</div>
-    <h2 class="person-name">${escapeHtml(node.name)}</h2>
-    <div class="person-meta">generation ${escapeHtml(node.gen)} · ${escapeHtml(node.role)}</div>
-
-    <div class="field">
-      <b>Note</b>
-      ${escapeHtml(node.note)}
-    </div>
-
-    <div class="field">
-      <b>Connections</b>
-      <div class="rels">${relationHtml}</div>
-    </div>
-
-    <div class="legend">
-      <h3>Relationship lines</h3>
-      <div class="leg-row"><span class="dot" style="background:${relationColor("parent")}"></span>parent / child</div>
-      <div class="leg-row"><span class="dot" style="background:${relationColor("partner")}"></span>partner</div>
-      <div class="leg-row"><span class="dot" style="background:${relationColor("sibling")}"></span>sibling</div>
-      <div class="leg-row"><span class="dot" style="background:${relationColor("half")}"></span>partial sibling line</div>
-    </div>
-  `;
-
-  panel.querySelectorAll(".rel").forEach(element => {
-    element.addEventListener("click", () => {
-      const target = byId[element.dataset.id];
-      if (!target) return;
-      select(target, true);
-    });
-  });
-
-  if (moveCamera) flyToNode(node);
-}
-
-document.getElementById("search").addEventListener("input", event => {
-  query = event.target.value.trim().toLowerCase();
+// Search functionality.
+let query = '';
+document.getElementById('search').addEventListener('input', (e) => {
+  query = e.target.value.trim().toLowerCase();
 });
 
-document.getElementById("fit").addEventListener("click", () => fitGraph(false));
-
-document.getElementById("zoomIn").addEventListener("click", () => zoomAt(W / 2, H / 2, 1.18));
-document.getElementById("zoomOut").addEventListener("click", () => zoomAt(W / 2, H / 2, 0.84));
-
-document.getElementById("freeze").addEventListener("click", event => {
+// Button actions.
+document.getElementById('fit').addEventListener('click', () => {
+  fitToGraph(false);
+});
+document.getElementById('freeze').addEventListener('click', (e) => {
   physicsFrozen = !physicsFrozen;
-  event.currentTarget.classList.toggle("active", physicsFrozen);
-  event.currentTarget.textContent = physicsFrozen ? "Unfreeze" : "Freeze";
+  e.currentTarget.classList.toggle('active', physicsFrozen);
+  e.currentTarget.textContent = physicsFrozen ? 'Unfreeze' : 'Freeze';
+});
+document.getElementById('zoomOut').addEventListener('click', () => {
+  const factor = 0.88;
+  let nextK = clamp(targetView.k * factor, 0.32, 2.2);
+  const center = { x: W / 2, y: H / 2 };
+  const w = toWorld(center.x, center.y, true);
+  targetView.k = nextK;
+  targetView.x = center.x - w.x * nextK;
+  targetView.y = center.y - w.y * nextK;
+});
+document.getElementById('zoomIn').addEventListener('click', () => {
+  const factor = 1.18;
+  let nextK = clamp(targetView.k * factor, 0.32, 2.2);
+  const center = { x: W / 2, y: H / 2 };
+  const w = toWorld(center.x, center.y, true);
+  targetView.k = nextK;
+  targetView.x = center.x - w.x * nextK;
+  targetView.y = center.y - w.y * nextK;
 });
 
+// Window resize handler.
+window.addEventListener('resize', resize);
+
+// Initial setup.
+positionNodesByGeneration();
 resize();
-loop();
+updatePanel();
+updateSheet();
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>

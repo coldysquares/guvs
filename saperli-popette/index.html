@@ -78,7 +78,7 @@
 (() => {
   const $ = s => document.querySelector(s);
   const thread = $("#thread"), input = $("#input");
-  let apiKey = localStorage.getItem("awd_key") || "";
+  let apiKey = localStorage.getItem("saperli_key") || "";
   let history = [];
   let busy = false;
   const MODEL = "llama-3.3-70b-versatile";
@@ -160,7 +160,7 @@
 
   $("#sendBtn").onclick = () => send(input.value);
   input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input.value); } });
-  $("#saveKey").onclick = () => { apiKey = $("#keyInput").value.trim(); localStorage.setItem("awd_key", apiKey); $("#overlay").classList.remove("show"); };
+  $("#saveKey").onclick = () => { apiKey = $("#keyInput").value.trim(); localStorage.setItem("saperli_key", apiKey); $("#overlay").classList.remove("show"); };
   $("#settingsBtn").onclick = () => $("#overlay").classList.add("show");
   if (!apiKey) $("#overlay").classList.add("show");
 })();

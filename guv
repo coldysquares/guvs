@@ -1,0 +1,300 @@
+#!/usr/bin/env python3
+import json
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+REGISTRY_PATH = Path("registry.json")
+PLACEHOLDER_TEXT = "Replace this page with the actual GUV HTML"
+
+def slugify(text):
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-") or "new-guv"
+
+def load_registry():
+    if not REGISTRY_PATH.exists():
+        print("Missing registry.json")
+        sys.exit(1)
+    try:
+        return json.loads(REGISTRY_PATH.read_text())
+    except json.JSONDecodeError as e:
+        print(f"registry.json is broken JSON: {e}")
+        sys.exit(1)
+
+def save_registry(registry):
+    REGISTRY_PATH.write_text(json.dumps(registry, indent=2) + "\n")
+
+def pick_html_file():
+    script = '''
+    set pickedFile to choose file with prompt "Choose the finished GUV HTML file"
+    POSIX path of pickedFile
+    '''
+    try:
+        result = subprocess.check_output(["osascript", "-e", script], text=True).strip()
+        return Path(result)
+    except subprocess.CalledProcessError:
+        print("No file selected.")
+        sys.exit(1)
+
+def validate_html_file(path):
+    if not path.exists():
+        print(f"File not found: {path}")
+        sys.exit(1)
+
+    if path.suffix.lower() not in [".html", ".htm"]:
+        print("Selected file must be .html or .htm")
+        sys.exit(1)
+
+    text = path.read_text(errors="ignore")
+    lowered = text.lower()
+
+    if "<html" not in lowered and "<!doctype html" not in lowered:
+        print("Selected file does not look like a full HTML page.")
+        sys.exit(1)
+
+    if PLACEHOLDER_TEXT.lower() in lowered:
+        print("Selected file still contains placeholder text.")
+        sys.exit(1)
+
+def find_item(registry, key):
+    key = key.strip().lower().rstrip("/")
+    for i, item in enumerate(registry):
+        title = item.get("title", "").lower()
+        slug = item.get("slug", "").lower()
+        path = item.get("path", "").lower().rstrip("/")
+        if key in [title, slug, path]:
+            return i, item
+    return None, None
+
+def choose_item(registry, prompt="Choose a GUV"):
+    print("")
+    for i, item in enumerate(registry, start=1):
+        print(f"{i}. {item.get('title')}  [{item.get('path')}]")
+    print("")
+
+    choice = input(f"{prompt} number: ").strip()
+
+    if not choice.isdigit():
+        print("Choice must be a number.")
+        sys.exit(1)
+
+    index = int(choice) - 1
+
+    if index < 0 or index >= len(registry):
+        print("Invalid choice.")
+        sys.exit(1)
+
+    return index, registry[index]
+
+def validate_registry_pages():
+    registry = load_registry()
+    seen = set()
+
+    for item in registry:
+        slug = item.get("slug")
+        path = item.get("path")
+
+        if not slug or not path:
+            print(f"Registry item missing slug/path: {item}")
+            sys.exit(1)
+
+        if slug in seen:
+            print(f"Duplicate slug in registry: {slug}")
+            sys.exit(1)
+
+        seen.add(slug)
+
+        page = Path(path) / "index.html"
+
+        if not page.exists():
+            print(f"Registry points to missing page: {page}")
+            sys.exit(1)
+
+        text = page.read_text(errors="ignore")
+        if PLACEHOLDER_TEXT.lower() in text.lower():
+            print(f"Refusing to publish placeholder page: {page}")
+            sys.exit(1)
+
+def cmd_list():
+    registry = load_registry()
+    for item in registry:
+        print(f"- {item.get('title')} -> {item.get('path')}")
+
+def cmd_add(args):
+    title = args[0].strip() if len(args) >= 1 else input("Title: ").strip()
+    description = args[1].strip() if len(args) >= 2 else input("Description: ").strip()
+
+    if not title:
+        print("Missing title.")
+        sys.exit(1)
+
+    if not description:
+        print("Missing description.")
+        sys.exit(1)
+
+    source = pick_html_file()
+    validate_html_file(source)
+
+    slug = slugify(title)
+    folder = Path(slug)
+    page = folder / "index.html"
+
+    if folder.exists():
+        print(f"Folder already exists: {folder}")
+        sys.exit(1)
+
+    registry = load_registry()
+
+    if any(item.get("slug") == slug or item.get("path") == f"{slug}/" for item in registry):
+        print(f"Registry already contains: {slug}")
+        sys.exit(1)
+
+    folder.mkdir()
+    shutil.copyfile(source, page)
+
+    registry.append({
+        "title": title,
+        "fullName": title,
+        "slug": slug,
+        "type": ["GUV"],
+        "status": "working",
+        "path": f"{slug}/",
+        "description": description
+    })
+
+    save_registry(registry)
+
+    print("")
+    print(f"Created: {page}")
+    print("Added to registry.json")
+    print("")
+    print(f'Next: ./guv publish "Add {slug}"')
+
+def cmd_replace(args):
+    registry = load_registry()
+
+    if args:
+        index, item = find_item(registry, args[0])
+        if item is None:
+            print(f"Could not find GUV: {args[0]}")
+            sys.exit(1)
+    else:
+        index, item = choose_item(registry, "Replace")
+
+    source = pick_html_file()
+    validate_html_file(source)
+
+    page = Path(item["path"]) / "index.html"
+    page.parent.mkdir(exist_ok=True)
+    shutil.copyfile(source, page)
+
+    print("")
+    print(f"Replaced: {page}")
+    print(f'Next: ./guv publish "Update {item.get("slug")}"')
+
+def cmd_remove(args):
+    registry = load_registry()
+
+    if args:
+        index, item = find_item(registry, args[0])
+        if item is None:
+            print(f"Could not find GUV: {args[0]}")
+            sys.exit(1)
+    else:
+        index, item = choose_item(registry, "Remove")
+
+    print("")
+    print(f"Selected: {item.get('title')} -> {item.get('path')}")
+    confirm = input('Type "remove" to remove it from the homepage: ').strip()
+
+    if confirm != "remove":
+        print("Cancelled.")
+        sys.exit(0)
+
+    removed = registry.pop(index)
+    save_registry(registry)
+
+    folder = Path(removed["path"])
+    delete_folder = input(f"Delete folder too? {folder} [y/N]: ").strip().lower()
+
+    if delete_folder == "y":
+        shutil.rmtree(folder, ignore_errors=True)
+        print(f"Deleted folder: {folder}")
+    else:
+        print(f"Removed from registry only. Folder kept: {folder}")
+
+    print("")
+    print(f'Next: ./guv publish "Remove {removed.get("slug")}"')
+
+def cmd_publish(args):
+    validate_registry_pages()
+
+    status = subprocess.check_output(["git", "status", "--short"], text=True)
+
+    if not status.strip():
+        print("Nothing to publish.")
+        return
+
+    print("")
+    print("Changes:")
+    print(status)
+
+    msg = " ".join(args).strip() if args else input("Commit message: ").strip()
+    if not msg:
+        msg = "Update GUVs"
+
+    confirm = input("Publish these changes? [y/N]: ").strip().lower()
+    if confirm != "y":
+        print("Cancelled.")
+        sys.exit(0)
+
+    subprocess.check_call(["git", "add", "-A"])
+    subprocess.check_call(["git", "commit", "-m", msg])
+    subprocess.check_call(["git", "push"])
+
+    print("")
+    print("Published:")
+    print("https://coldysquares.github.io/guvs/")
+
+def usage():
+    print("""
+Usage:
+  ./guv add
+  ./guv add "Title" "Description"
+  ./guv replace
+  ./guv replace fam-star-map
+  ./guv remove
+  ./guv remove fam-star-map
+  ./guv list
+  ./guv publish "Commit message"
+
+Notes:
+  add and replace open a macOS file picker.
+  publish refuses to publish placeholder pages.
+""".strip())
+
+def main():
+    if len(sys.argv) < 2:
+        usage()
+        sys.exit(0)
+
+    command = sys.argv[1]
+    args = sys.argv[2:]
+
+    if command == "add":
+        cmd_add(args)
+    elif command == "replace":
+        cmd_replace(args)
+    elif command == "remove":
+        cmd_remove(args)
+    elif command == "list":
+        cmd_list()
+    elif command == "publish":
+        cmd_publish(args)
+    else:
+        usage()
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()

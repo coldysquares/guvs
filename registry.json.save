@@ -34,8 +34,7 @@
       "workbench"
     ],
     "status": "working",
-    "path": "router/",
-    "description": "Routes messy AI/browser work into cleaner downstream output paths."
+    "path": "router/",1``    "description": "Routes messy AI/browser work into cleaner downstream output paths."
   },
   {
     "title": "Substrate 001",
@@ -53,12 +52,12 @@
   {
     "title": "House of Atreus",
     "fullName": "House of Atreus",
-    "slug": "aster-graf",
+    "slug": "fam-star-map",
     "type": [
       "GUV"
     ],
     "status": "draft",
-    "path": "aster-graf/",
+    "path": "fam-star-map/",
     "description": "See your family lines in a whole new starlight."
   },
   {

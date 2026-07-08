@@ -1,3 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Saperli Popette</title>
+<style>
+  :root{
+    --bg:#0c0a09; --panel:#161311; --panel2:#1f1b18; --line:#2a2521;
+    --text:#f3ede4; --muted:#9a9088; --faint:#6b635c;
+    --amber:#f0a35e; --amber-soft:#3a2a18; --you:#2b2017; --you-line:#4a3621;
+    --them:#181614; --green:#7bd88f;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif; display:flex; flex-direction:column; height:100vh; overflow:hidden;}
+  header{display:flex; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid var(--line); background:rgba(12,10,9,.7); backdrop-filter:blur(8px);}
+  .logo{width:34px;height:34px;border-radius:10px;flex:none;background:linear-gradient(135deg,var(--amber),#c97a3a);display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .title{font-size:15px;font-weight:700;letter-spacing:.2px}
+  .sub{font-size:12px;color:var(--muted);margin-top:1px}
+  .spacer{flex:1}
+  .iconbtn{background:var(--panel2);border:1px solid var(--line);color:var(--muted);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:.15s;}
+  .iconbtn:hover{color:var(--text);border-color:var(--faint)}
+  #chat{flex:1; overflow-y:auto; padding:24px 0 12px; display:flex;flex-direction:column;gap:14px;}
+  .wrap{max-width:760px;margin:0 auto;width:100%;padding:0 20px}
+  .row{display:flex;width:100%;margin-bottom:14px}
+  .row.them{justify-content:flex-start}
+  .row.you{justify-content:flex-end}
+  .bubble{max-width:74%; padding:12px 15px; border-radius:16px; line-height:1.5; font-size:17px; position:relative; white-space:pre-wrap; word-wrap:break-word; display:flex; align-items:center;}
+  .them .bubble{background:var(--them);border:1px solid var(--line);border-bottom-left-radius:5px}
+  .you .bubble{background:var(--you);border:1px solid var(--you-line);border-bottom-right-radius:5px}
+  .actions{display:flex; gap:6px; margin-left:10px; flex:none}
+  .action-btn{background:none; border:none; cursor:pointer; font-size:16px; opacity:0.6; padding:2px;}
+  .action-btn:hover{opacity:1}
+  footer{border-top:1px solid var(--line);background:var(--panel);padding:12px 0 16px}
+  .composer{max-width:760px;margin:0 auto;padding:0 20px;display:flex;flex-direction:column;gap:8px}
+  .inputrow{display:flex;gap:10px;align-items:flex-end}
+  textarea{flex:1;resize:none;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:12px 14px;font-size:16px;font-family:inherit;line-height:1.4;max-height:120px;min-height:48px;overflow-y:auto;}
+  textarea:focus{outline:none;border-color:var(--faint)}
+  .send{background:var(--amber);border:none;color:#1a120a;font-weight:700;border-radius:12px;padding:0 18px;height:48px;cursor:pointer;font-size:15px;flex:none;}
+  .send:disabled{opacity:.6;cursor:not-allowed}
+  .mic{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:12px;width:48px;height:48px;cursor:pointer;font-size:18px;flex:none;}
+  .mic:hover{border-color:var(--faint)}
+  .mic.active{background:var(--amber-soft);border-color:var(--amber);color:var(--amber)}
+  .mic:disabled{opacity:.45;cursor:not-allowed}
+  .status{font-size:12px;color:var(--muted);min-height:16px;padding-left:2px}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;}
+  .overlay.show{display:flex}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:440px;width:100%;}
+  .card h2{margin:0 0 6px;font-size:18px}
+  .card p{margin:0 0 16px;color:var(--muted);font-size:14px;line-height:1.5}
+  .card a{color:#8b5cf6}
+  .card input{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:11px 12px;font-size:14px;font-family:ui-monospace,monospace;}
+  .cardbtns{display:flex;gap:10px;margin-top:20px}
+  .cardbtns button{flex:1;border-radius:11px;padding:11px;cursor:pointer;font-size:14px;font-weight:600;border:1px solid var(--line)}
+  .primary{background:var(--amber);color:#1a120a;border:none!important}
+  @media (max-width:640px){
+    .bubble{max-width:88%;font-size:16px}
+    header{padding:12px 14px}
+    .wrap,.composer{padding:0 14px}
+    .send{padding:0 14px}
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="logo">🍄</div>
+    <div><div class="title">Saperli Popette</div><div class="sub">Mycelian French conversation</div></div>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="settingsBtn" type="button">⚙️</button>
+  </header>
+
+  <div id="chat"><div class="wrap" id="thread"></div></div>
+
+  <footer>
+    <div class="composer">
+      <div class="inputrow">
+        <button class="mic" id="micBtn" type="button" title="Start voice conversation">🎙️</button>
+        <textarea id="input" rows="1" placeholder="Speak or type here..."></textarea>
+        <button class="send" id="sendBtn" type="button">Send</button>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+  </footer>
+
+  <div class="overlay" id="overlay">
+    <div class="card">
+      <h2>Groq Key</h2>
+      <p>Enter your <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer">Groq API Key</a>.</p>
+      <input id="keyInput" type="password" placeholder="gsk_..." autocomplete="off" />
+      <div class="cardbtns"><button class="primary" id="saveKey" type="button">Start</button></div>
+    </div>
+  </div>
+
 <script>
 (() => {
   const $ = (s) => document.querySelector(s);
@@ -9,6 +103,7 @@
   const overlay = $("#overlay");
   const keyInput = $("#keyInput");
   const micBtn = $("#micBtn");
+  const status = $("#status");
 
   const STORAGE_KEY = "saperli_key";
   const MODEL = "llama-3.3-70b-versatile";
@@ -21,9 +116,14 @@
   let voiceMode = false;
   let listening = false;
   let speaking = false;
+  let suppressNextRestart = false;
 
   function systemPrompt() {
     return `You are Saperlipopette, a warm, slightly eccentric, and endlessly curious French friend. Speak almost entirely in French. Never be a teacher. If the user is struggling, let English leak in via parentheses but pull them back to French. Perform "Natural Recast" for corrections. Be tangential, whimsical, and curious. Keep replies brief, natural, and conversational, usually 1-4 sentences. End with a question. ALWAYS append a short conversational hint for the user at the very end of your message in this format: [HINT: short French phrase]`;
+  }
+
+  function setStatus(text) {
+    status.textContent = text || "";
   }
 
   function showOverlay() {
@@ -43,14 +143,14 @@
   }
 
   function splitHint(text) {
-    const match = text.match(/\s*\[HINT:\s*([^\]]+)\]\s*$/i);
+    const match = String(text || "").match(/\s*\[HINT:\s*([^\]]+)\]\s*$/i);
 
     if (!match) {
-      return { display: text.trim(), hint: null };
+      return { display: String(text || "").trim(), hint: null };
     }
 
     return {
-      display: text.replace(match[0], "").trim(),
+      display: String(text || "").replace(match[0], "").trim(),
       hint: match[1].trim()
     };
   }
@@ -117,6 +217,7 @@
 
   function stopListening() {
     if (recognition && listening) {
+      suppressNextRestart = true;
       recognition.stop();
     }
   }
@@ -125,6 +226,7 @@
     if (!voiceMode || busy || speaking || !recognition) return;
 
     try {
+      suppressNextRestart = false;
       recognition.start();
     } catch {
       // Chrome throws if recognition is already starting.
@@ -132,7 +234,10 @@
   }
 
   function speak(text, continueConversation = voiceMode) {
-    if (!("speechSynthesis" in window)) return;
+    if (!("speechSynthesis" in window)) {
+      setStatus("Speech output is not supported in this browser.");
+      return;
+    }
 
     window.speechSynthesis.cancel();
 
@@ -146,18 +251,21 @@
     utterance.onstart = () => {
       speaking = true;
       stopListening();
+      setStatus("Saperli is speaking...");
     };
 
     utterance.onend = () => {
       speaking = false;
+      setStatus(continueConversation ? "Listening will resume..." : "");
 
       if (continueConversation) {
-        setTimeout(startListening, 350);
+        setTimeout(startListening, 450);
       }
     };
 
     utterance.onerror = () => {
       speaking = false;
+      setStatus("");
     };
 
     window.speechSynthesis.speak(utterance);
@@ -170,6 +278,7 @@
     if (!SpeechRecognition) {
       micBtn.disabled = true;
       micBtn.title = "Speech recognition is not supported in this browser.";
+      setStatus("Voice input is not supported here. Try Chrome.");
       return;
     }
 
@@ -183,13 +292,30 @@
       micBtn.classList.add("active");
       micBtn.textContent = "🛑";
       input.placeholder = "Listening...";
+      setStatus("Listening...");
     };
 
     recognition.onend = () => {
       listening = false;
-      micBtn.classList.remove("active");
-      micBtn.textContent = voiceMode ? "🎙️" : "🎙️";
-      input.placeholder = voiceMode ? "Pause... then speak again" : "Speak or type here...";
+
+      if (!voiceMode) {
+        micBtn.classList.remove("active");
+        micBtn.textContent = "🎙️";
+        micBtn.title = "Start voice conversation";
+        input.placeholder = "Speak or type here...";
+        setStatus("");
+        return;
+      }
+
+      micBtn.classList.add("active");
+      micBtn.textContent = "🎙️";
+      micBtn.title = "Stop voice conversation";
+      input.placeholder = "Pause... then speak again";
+
+      if (suppressNextRestart) {
+        suppressNextRestart = false;
+        return;
+      }
 
       if (voiceMode && !busy && !speaking) {
         setTimeout(startListening, 500);
@@ -200,9 +326,20 @@
       listening = false;
 
       if (event.error === "no-speech") {
+        setStatus("No speech heard. Listening again...");
         return;
       }
 
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        voiceMode = false;
+        micBtn.classList.remove("active");
+        micBtn.textContent = "🎙️";
+        setStatus("Microphone permission was blocked.");
+        addBubble("assistant", "Mic permission was blocked. Allow microphone access in your browser, then try again.");
+        return;
+      }
+
+      setStatus("Mic error: " + event.error);
       addBubble("assistant", "Mic error: " + event.error);
     };
 
@@ -230,7 +367,7 @@
     };
   }
 
-  async function callGroq(messages) {
+  async function callGroq() {
     if (!apiKey || !apiKey.startsWith("gsk_")) {
       throw new Error("Missing or invalid-looking Groq key. It should start with gsk_");
     }
@@ -255,7 +392,7 @@
         })
       });
     } catch {
-      throw new Error("Network/CORS failure. For local testing use Chrome. For deployment, use a small backend proxy.");
+      throw new Error("Network/CORS failure. For local testing use Chrome. For deployment, use a small backend proxy if the browser blocks requests.");
     }
 
     const raw = await res.text();
@@ -286,7 +423,7 @@
   }
 
   async function send(text, fromVoice = false) {
-    const clean = text.trim();
+    const clean = String(text || "").trim();
 
     if (!clean || busy) return;
 
@@ -302,15 +439,17 @@
     input.style.height = "auto";
 
     setBusy(true);
+    setStatus("Thinking...");
     addBubble("assistant", "", true);
 
     try {
-      const reply = await callGroq(history);
+      const reply = await callGroq();
 
       removeThinking();
 
       if (!reply) {
         addBubble("assistant", "Je n’ai rien reçu. Une petite brume technique. Tu veux réessayer ? [HINT: On réessaie ?]");
+        setStatus("");
         return;
       }
 
@@ -319,11 +458,14 @@
 
       if (voiceMode || fromVoice) {
         speak(reply, true);
+      } else {
+        setStatus("");
       }
     } catch (e) {
       removeThinking();
       addBubble("assistant", "Error: " + e.message);
       console.error(e);
+      setStatus("");
     } finally {
       setBusy(false);
       input.focus();
@@ -346,7 +488,7 @@
 
   micBtn.onclick = () => {
     if (!recognition) {
-      addBubble("assistant", "Voice input is not available in this browser.");
+      addBubble("assistant", "Voice input is not available in this browser. Try Chrome.");
       return;
     }
 
@@ -354,14 +496,18 @@
 
     if (voiceMode) {
       micBtn.classList.add("active");
+      micBtn.textContent = "🎙️";
       micBtn.title = "Stop voice conversation";
+      setStatus("Voice conversation on. Start speaking...");
       startListening();
     } else {
       micBtn.classList.remove("active");
+      micBtn.textContent = "🎙️";
       micBtn.title = "Start voice conversation";
       stopListening();
       window.speechSynthesis.cancel();
       speaking = false;
+      setStatus("");
       input.placeholder = "Speak or type here...";
     }
   };
@@ -386,6 +532,12 @@
     input.focus();
   };
 
+  keyInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      $("#saveKey").click();
+    }
+  });
+
   $("#settingsBtn").onclick = showOverlay;
 
   setupSpeechInput();
@@ -400,3 +552,5 @@
   }
 })();
 </script>
+</body>
+</html>

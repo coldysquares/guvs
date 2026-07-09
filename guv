@@ -74,7 +74,7 @@ def load_manifest():
     return data
 
 def changed_files():
-    status = git_output(["status", "--porcelain=v1"])
+    status = git_output(["status", "--porcelain=v1", "-uall"])
     files = []
     for line in status.splitlines():
         if not line:

@@ -1,6 +1,195 @@
-<!DOCTYPE html>
-<meta charset="utf-8">
-<title>Redirecting...</title>
-<meta http-equiv="refresh" content="0; URL=https://awd-pied.vercel.app/">
-<link rel="canonical" href="https://awd-pied.vercel.app/">
-<p>Opening AWD... <a href="https://awd-pied.vercel.app/">Click here</a></p>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AWD — AI Waste Deleter</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root {
+    --bg: #1a1a1a;
+    --panel: #242424;
+    --ink: #e8e8e8;
+    --dim: #8a8a8a;
+    --line: #333;
+    --accent: #6f9e6f;
+    --warn: #c97a4a;
+    --bad: #b15454;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); color: var(--ink); margin: 0; font: 15px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+  body { padding: 24px; max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 14px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); margin: 0 0 4px; }
+  .sub { color: var(--dim); font-size: 12px; margin-bottom: 24px; }
+  label { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--dim); margin: 16px 0 6px; }
+  textarea {
+    width: 100%; background: var(--panel); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 4px; padding: 10px 12px;
+    font: inherit; resize: none;
+  }
+  textarea:focus { outline: none; border-color: var(--accent); }
+  .counter { font-size: 12px; color: var(--dim); text-align: right; margin-top: 4px; }
+  .counter.near { color: var(--warn); }
+  .counter.over { color: var(--bad); }
+  .chips { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .chip {
+    background: transparent; color: var(--dim); border: 1px solid var(--line);
+    border-radius: 999px; padding: 4px 12px; font: inherit; font-size: 13px;
+    cursor: pointer;
+  }
+  .chip:hover { color: var(--ink); border-color: var(--dim); }
+  .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button {
+    background: var(--accent); color: #fff; border: none; border-radius: 4px;
+    padding: 10px 18px; font: inherit; font-weight: 600; cursor: pointer;
+    margin-top: 12px;
+  }
+  button:disabled { background: var(--line); color: var(--dim); cursor: not-allowed; }
+  .out {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 4px;
+    padding: 12px 14px; margin-top: 8px; min-height: 60px; white-space: pre-wrap;
+  }
+  .meta { font-size: 12px; color: var(--dim); margin-top: 6px; }
+  .err { color: var(--bad); }
+  .rules { color: var(--dim); font-size: 11px; line-height: 1.7; border-top: 1px solid var(--line); margin-top: 28px; padding-top: 16px; }
+  .rules b { color: var(--ink); font-weight: 500; }
+  details summary { cursor: pointer; color: var(--dim); font-size: 12px; margin-top: 16px; }
+</style>
+</head>
+<body>
+
+<h1>AWD — AI Waste Deleter</h1>
+<div class="sub">One sentence in. One paragraph out. No threads. No drift.</div>
+
+<label for="task">The task — one sentence, max 280 chars</label>
+<textarea id="task" rows="3" maxlength="280" placeholder="e.g. Tell me the WCTC version of this baby-name-generator pattern."></textarea>
+<div class="counter" id="counter">0 / 280</div>
+
+<div class="chips" id="chips">
+  <button class="chip active" data-shape="quick">Quick answer</button>
+  <button class="chip" data-shape="decide">Decide</button>
+  <button class="chip" data-shape="explain">Explain</button>
+  <button class="chip" data-shape="list">List</button>
+</div>
+
+<button id="go" disabled>Send</button>
+
+<label>Response</label>
+<div class="out" id="out">—</div>
+<div class="meta" id="meta"></div>
+
+<div class="rules">
+  <b>Hard structural limits — enforced in code, not by you:</b><br>
+  • Input capped at 280 characters by the textarea itself.<br>
+  • Output capped at 300 tokens by the API call (~200 words). Model cannot exceed it.<br>
+  • System prompt forces one paragraph, no lists, no headers.<br>
+  • One-shot per call. No conversation history is ever sent. Each Send is a fresh transaction.<br>
+  • Pressing Send clears the prior output. No editing, no continuation, no "while you're at it."<br>
+  • If the answer is bad: close the tab or refine the one-sentence task and resend. There is no in-place correction.
+</div>
+
+<script>
+  const task     = document.getElementById("task");
+  const counter  = document.getElementById("counter");
+  const go       = document.getElementById("go");
+  const out      = document.getElementById("out");
+  const meta     = document.getElementById("meta");
+
+  const MAX_INPUT  = 280;
+  const MAX_TOKENS = 300;
+  const MODEL      = "llama-3.3-70b-versatile";
+
+  const BASE_PROMPT =
+    "Answer the actual question asked — do not invent a broader task, do not add " +
+    "adjacent context, do not produce artifacts the user did not request. " +
+    "If the question is a reaction, not a request, acknowledge briefly and stop. " +
+    "No markdown. No tables. No code blocks unless the user explicitly asks for code.";
+
+  const SHAPES = {
+    quick:   "Respond in one short paragraph. No headers, no bullet lists. Stop at the end of the paragraph.",
+    decide:  "Pick one. State the choice in the first sentence, the reason in the second sentence, then stop. Do not list alternatives unless asked.",
+    explain: "Explain plainly in one paragraph. Define terms only if necessary. No headers, no lists. Stop at the end of the paragraph.",
+    list:    "Answer as a plain numbered list, maximum 5 items, one line each. No intro line, no outro line, no headers."
+  };
+
+  let activeShape = "quick";
+
+  function systemPrompt() {
+    return SHAPES[activeShape] + " " + BASE_PROMPT;
+  }
+
+  function refreshGo() {
+    const t = task.value.trim();
+    go.disabled = !(t.length > 0 && t.length <= MAX_INPUT);
+  }
+  function refreshCounter() {
+    const n = task.value.length;
+    counter.textContent = `${n} / ${MAX_INPUT}`;
+    counter.className = "counter" + (n >= MAX_INPUT ? " over" : n >= 250 ? " near" : "");
+    refreshGo();
+  }
+
+  task.addEventListener("input", refreshCounter);
+
+  document.getElementById("chips").addEventListener("click", (e) => {
+    const btn = e.target.closest(".chip");
+    if (!btn) return;
+    activeShape = btn.dataset.shape;
+    document.querySelectorAll(".chip").forEach(c => c.classList.toggle("active", c === btn));
+  });
+
+  go.addEventListener("click", async () => {
+    const userTask = task.value.trim();
+    if (!userTask) return;
+
+    out.textContent = "…";
+    meta.textContent = "";
+    go.disabled = true;
+    const t0 = performance.now();
+
+    try {
+      const res = await fetch("/api/groq", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          max_tokens: MAX_TOKENS,
+          system: systemPrompt(),
+          task: userTask,
+        }),
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        out.textContent = "API error " + res.status;
+        meta.innerHTML = `<span class="err">${escapeHtml(errText).slice(0, 400)}</span>`;
+        return;
+      }
+
+      const data = await res.json();
+      const reply = (data.choices?.[0]?.message?.content || "").trim();
+      const usage = data.usage || {};
+      const ms = Math.round(performance.now() - t0);
+
+      out.textContent = reply || "(empty response)";
+      meta.textContent =
+        `${ms} ms · in ${usage.prompt_tokens ?? "?"} tok · out ${usage.completion_tokens ?? "?"} tok` +
+        (usage.completion_tokens >= MAX_TOKENS ? " · HIT CAP" : "");
+    } catch (e) {
+      out.textContent = "Network error";
+      meta.innerHTML = `<span class="err">${escapeHtml(String(e))}</span>`;
+    } finally {
+      refreshGo();
+    }
+  });
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+  }
+
+  refreshCounter();
+</script>
+
+</body>
+</html>

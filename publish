@@ -1,21 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-msg="${*:-Update GUVs}"
-
-echo "Changes:"
-git status --short
-
-git add .
-
-if git diff --cached --quiet; then
-  echo "Nothing to publish."
-  exit 0
-fi
-
-git commit -m "$msg"
-git push
-
-echo ""
-echo "Published:"
-echo "https://coldysquares.github.io/guvs/"
+./guv publish "$@"

@@ -6,6 +6,15 @@ import subprocess
 from html import escape
 from pathlib import Path
 
+MANIFEST_PATH = Path(".guv-publish.json")
+
+def write_manifest(action, message, paths):
+    MANIFEST_PATH.write_text(json.dumps({
+        "action": action,
+        "message": message,
+        "paths": [str(path).lstrip("./") for path in paths],
+    }, indent=2) + "\n")
+
 def slugify(text):
     slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     return slug or "new-guv"
@@ -83,6 +92,7 @@ registry.append({
 })
 
 registry_path.write_text(json.dumps(registry, indent=2) + "\n")
+write_manifest("add-draft", f"Add {slug}", [registry_path, page])
 
 print(f"Created: {slug}/index.html")
 print(f"Added to registry.json")
@@ -90,6 +100,7 @@ print("")
 print("Next:")
 print(f"  code {slug}/index.html")
 print("  ./publish \"Add " + slug + "\"")
+print("Note: publish will only stage registry.json and this new page; unrelated edits are refused.")
 
 try:
     subprocess.run(["code", str(page)])

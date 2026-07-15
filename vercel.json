@@ -1,5 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/saperli-popette/index.html"
+    },
+    {
+      "source": "/app.js",
+      "destination": "/saperli-popette/app.js"
+    }
+  ],
   "functions": {
     "api/chat.js": {
       "maxDuration": 30

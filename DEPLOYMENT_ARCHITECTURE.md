@@ -27,17 +27,6 @@ Status: repair branch documentation. Verify production URLs before treating this
 | `/api/chat` in the Saperli Vercel project | `saperli-popette/api/chat.js` | Saperli Groq chat proxy |
 | `/api/chat` at repo root | `api/chat.js` | Legacy/root fallback; keep until standalone Saperli preview is verified |
 
-## Root-level Vercel fallback
-
-The root `vercel.json` includes compatibility rewrites from `/` to
-`/saperli-popette/index.html` and from `/app.js` to `/saperli-popette/app.js`.
-These exist only so a misconfigured Saperli Vercel project that is still pointed
-at the repo root serves Saperli instead of the GUV registry.
-
-The durable fix is still to set the Vercel project Root Directory to
-`saperli-popette`. Once that setting is verified and stable, the root fallback
-can be removed or replaced with a clearer no-op/root policy.
-
 ## Vercel settings to verify
 
 ### AWD
@@ -56,7 +45,7 @@ can be removed or replaced with a clearer no-op/root policy.
 - Project name: `saperli-popette`
 - Repository: `coldysquares/guvs`
 - Production branch: `main`
-- Root Directory: `saperli-popette`
+- Root Directory: `saperli-popette` (verified via Vercel API on 2026-07-15)
 - Required environment variable: `GROQ_API_KEY` if using server-side key fallback
 - Expected routes:
   - `/` serves `saperli-popette/index.html`

@@ -14,6 +14,7 @@
   const STORAGE_KEY = "saperli_key";
   const MODEL = "llama-3.3-70b-versatile";
   const API_ENDPOINT = "/api/chat";
+  const MAX_HISTORY_MESSAGES = 16;
 
   let apiKey = localStorage.getItem(STORAGE_KEY) || "";
   let history = [];
@@ -56,6 +57,10 @@ Behavior:
 - Speak mostly in beginner-accessible French.
 - Keep replies brief: usually 1 to 3 natural sentences.
 - If the user makes a mistake, gently recast it in correct French without scolding.
+- Treat (?) as the user's uncertainty marker. Infer the likely intended French and naturally recast it. Do not treat (?) as literal content.
+- Repair the user's French freely, but never repair, infer, or complete their factual claims. When a family relationship, date, origin, identity, or causal connection is not established, ask a brief clarifying question.
+- Acknowledge the meaning first, naturally reuse the corrected phrase, and avoid formal correction language.
+- Do not pretend a misunderstood word was valid vocabulary. If a word is unclear, recast the likely meaning or ask briefly.
 - Let a little English leak in only when it helps.
 - Ask one simple follow-up question.
 - Keep the vibe odd, friendly, mushroomy, and alive.
@@ -238,6 +243,14 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
     return String(data?.content || data?.choices?.[0]?.message?.content || "").trim();
   }
 
+  function trimHistory() {
+    if (history.length > MAX_HISTORY_MESSAGES) {
+      const overflow = history.length - MAX_HISTORY_MESSAGES;
+      const removeCount = Math.ceil(overflow / 2) * 2;
+      history = history.slice(removeCount);
+    }
+  }
+
   async function send(text) {
     const clean = String(text || "").trim();
     if (!clean || busy) return;
@@ -250,6 +263,7 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
     stopDictation(true);
     addBubble("user", clean);
     history.push({ role: "user", content: clean });
+    trimHistory();
     input.value = "";
     autosizeInput();
 
@@ -277,8 +291,10 @@ Ways to respond:
       }
 
       addBubble("assistant", reply);
-      history.push({ role: "assistant", content: reply });
-      speak(splitHint(reply).display);
+      const parsed = splitHint(reply);
+      history.push({ role: "assistant", content: parsed.display });
+      trimHistory();
+      speak(parsed.display);
     } catch (err) {
       removeThinking();
       addBubble("assistant", "Erreur: " + err.message);

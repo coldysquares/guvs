@@ -13,6 +13,18 @@
     "description": "Generates dense unrelated concept triplets and logs how AI systems define, bridge, cite, splice, or hallucinate."
   },
   {
+    "title": "AWD",
+    "fullName": "AI Waste Deleter",
+    "slug": "awd",
+    "type": [
+      "GUV",
+      "workbench"
+    ],
+    "status": "working",
+    "path": "awd/",
+    "description": "One-sentence-in, bounded-answer-out tool for deleting AI waste without threads or drift."
+  },
+  {
     "title": "Zero-Waste Router",
     "fullName": "Zero-Waste Router",
     "slug": "router",

@@ -7,10 +7,35 @@ import sys
 from pathlib import Path
 
 REGISTRY_PATH = Path("registry.json")
+MANIFEST_PATH = Path(".guv-publish.json")
 PLACEHOLDER_TEXT = "Replace this page with the actual GUV HTML"
 
 def slugify(text):
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-") or "new-guv"
+
+def run_git(args, **kwargs):
+    return subprocess.run(["git", *args], text=True, check=True, **kwargs)
+
+def git_output(args):
+    return subprocess.check_output(["git", *args], text=True)
+
+def repo_root():
+    try:
+        root = git_output(["rev-parse", "--show-toplevel"]).strip()
+        return Path(root)
+    except subprocess.CalledProcessError:
+        print("This command must be run inside the GUVs git repository.")
+        sys.exit(1)
+
+def relpath(path):
+    path = Path(path)
+    if path.is_absolute():
+        try:
+            return path.resolve().relative_to(repo_root()).as_posix()
+        except ValueError:
+            print(f"Path is outside this repo: {path}")
+            sys.exit(1)
+    return path.as_posix().lstrip("./")
 
 def load_registry():
     if not REGISTRY_PATH.exists():
@@ -24,6 +49,51 @@ def load_registry():
 
 def save_registry(registry):
     REGISTRY_PATH.write_text(json.dumps(registry, indent=2) + "\n")
+
+def write_manifest(action, message, paths):
+    clean_paths = sorted({relpath(path) for path in paths if str(path)})
+    MANIFEST_PATH.write_text(json.dumps({
+        "action": action,
+        "message": message,
+        "paths": clean_paths
+    }, indent=2) + "\n")
+
+def load_manifest():
+    if not MANIFEST_PATH.exists():
+        return None
+    try:
+        data = json.loads(MANIFEST_PATH.read_text())
+    except json.JSONDecodeError:
+        print(f"Publish manifest is broken: {MANIFEST_PATH}")
+        sys.exit(1)
+    paths = [relpath(path) for path in data.get("paths", [])]
+    if not paths:
+        print(f"Publish manifest has no paths: {MANIFEST_PATH}")
+        sys.exit(1)
+    data["paths"] = paths
+    return data
+
+def changed_files():
+    status = git_output(["status", "--porcelain=v1", "-uall"])
+    files = []
+    for line in status.splitlines():
+        if not line:
+            continue
+        value = line[3:]
+        if " -> " in value:
+            value = value.split(" -> ", 1)[1]
+        files.append(value)
+    return files
+
+def path_matches(path, allowed):
+    path = relpath(path)
+    for item in allowed:
+        item = relpath(item)
+        if path == item:
+            return True
+        if item.endswith("/") and path.startswith(item):
+            return True
+    return False
 
 def pick_html_file():
     script = '''
@@ -164,10 +234,12 @@ def cmd_add(args):
     })
 
     save_registry(registry)
+    write_manifest("add", f"Add {slug}", [REGISTRY_PATH, page])
 
     print("")
     print(f"Created: {page}")
     print("Added to registry.json")
+    print(f"Prepared publish manifest for: registry.json, {page}")
     print("")
     print(f'Next: ./guv publish "Add {slug}"')
 
@@ -188,9 +260,11 @@ def cmd_replace(args):
     page = Path(item["path"]) / "index.html"
     page.parent.mkdir(exist_ok=True)
     shutil.copyfile(source, page)
+    write_manifest("replace", f"Update {item.get('slug')}", [page])
 
     print("")
     print(f"Replaced: {page}")
+    print(f"Prepared publish manifest for: {page}")
     print(f'Next: ./guv publish "Update {item.get("slug")}"')
 
 def cmd_remove(args):
@@ -216,46 +290,100 @@ def cmd_remove(args):
     save_registry(registry)
 
     folder = Path(removed["path"])
+    manifest_paths = [REGISTRY_PATH]
     delete_folder = input(f"Delete folder too? {folder} [y/N]: ").strip().lower()
 
     if delete_folder == "y":
+        if folder.exists():
+            manifest_paths.extend(path for path in folder.rglob("*") if path.is_file())
         shutil.rmtree(folder, ignore_errors=True)
         print(f"Deleted folder: {folder}")
     else:
         print(f"Removed from registry only. Folder kept: {folder}")
 
+    write_manifest("remove", f"Remove {removed.get('slug')}", manifest_paths)
+
     print("")
+    print("Prepared publish manifest for:")
+    for path in sorted(relpath(path) for path in manifest_paths):
+        print(f"  {path}")
     print(f'Next: ./guv publish "Remove {removed.get("slug")}"')
 
 def cmd_publish(args):
     validate_registry_pages()
 
-    status = subprocess.check_output(["git", "status", "--short"], text=True)
+    manifest = load_manifest()
+    if manifest is None:
+        print("No publish manifest found.")
+        print("Run ./guv add, ./guv replace, or ./guv remove first so publish knows which files belong to this change.")
+        print("If you are publishing a manual edit, run: ./guv publish --paths path/to/file [another/file] \"Commit message\"")
+        sys.exit(1)
 
-    if not status.strip():
-        print("Nothing to publish.")
+    allowed = manifest["paths"]
+    changes = changed_files()
+    relevant = [path for path in changes if path_matches(path, allowed)]
+    unrelated = [path for path in changes if not path_matches(path, allowed) and path != MANIFEST_PATH.as_posix()]
+
+    if not relevant:
+        print("No manifest-listed changes to publish.")
         return
 
     print("")
-    print("Changes:")
-    print(status)
+    print("Will publish:")
+    for path in relevant:
+        print(f"  {path}")
 
-    msg = " ".join(args).strip() if args else input("Commit message: ").strip()
+    if unrelated:
+        print("")
+        print("Refusing to publish because these unrelated files are also modified:")
+        for path in unrelated:
+            print(f"  {path}")
+        print("")
+        print("Stash, restore, or publish those files separately before trying again.")
+        sys.exit(1)
+
+    msg = " ".join(args).strip() if args else manifest.get("message", "Update GUVs")
     if not msg:
-        msg = "Update GUVs"
+        msg = manifest.get("message", "Update GUVs")
 
-    confirm = input("Publish these changes? [y/N]: ").strip().lower()
+    confirm = input("Publish only the files above? [y/N]: ").strip().lower()
     if confirm != "y":
         print("Cancelled.")
         sys.exit(0)
 
-    subprocess.check_call(["git", "add", "-A"])
-    subprocess.check_call(["git", "commit", "-m", msg])
-    subprocess.check_call(["git", "push"])
+    run_git(["add", "--", *relevant])
+    if git_output(["diff", "--cached", "--name-only"]).strip() == "":
+        print("Nothing to publish.")
+        return
+
+    run_git(["commit", "-m", msg])
+    run_git(["push"])
+    MANIFEST_PATH.unlink(missing_ok=True)
 
     print("")
     print("Published:")
     print("https://coldysquares.github.io/guvs/")
+
+def cmd_publish_paths(args):
+    if not args:
+        print("Usage: ./guv publish --paths path/to/file [another/file] \"Commit message\"")
+        sys.exit(1)
+
+    paths = []
+    message_parts = []
+    for arg in args:
+        if Path(arg).exists() or arg in changed_files():
+            paths.append(arg)
+        else:
+            message_parts.append(arg)
+
+    if not paths:
+        print("No paths supplied.")
+        sys.exit(1)
+
+    message = " ".join(message_parts).strip() or "Update GUVs"
+    write_manifest("manual", message, paths)
+    cmd_publish([message])
 
 def usage():
     print("""
@@ -268,13 +396,18 @@ Usage:
   ./guv remove fam-star-map
   ./guv list
   ./guv publish "Commit message"
+  ./guv publish --paths path/to/file "Commit message"
 
 Notes:
   add and replace open a macOS file picker.
-  publish refuses to publish placeholder pages.
+  add, replace, and remove write a publish manifest so publish only stages expected files.
+  publish refuses unrelated modified files instead of committing the whole repo.
+  publish refuses placeholder pages that are still listed in registry.json.
 """.strip())
 
 def main():
+    repo_root()
+
     if len(sys.argv) < 2:
         usage()
         sys.exit(0)
@@ -291,7 +424,10 @@ def main():
     elif command == "list":
         cmd_list()
     elif command == "publish":
-        cmd_publish(args)
+        if args[:1] == ["--paths"]:
+            cmd_publish_paths(args[1:])
+        else:
+            cmd_publish(args)
     else:
         usage()
         sys.exit(1)

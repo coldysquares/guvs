@@ -20,7 +20,7 @@ footer{border-top:1px solid var(--line);background:var(--panel);padding:12px 0 1
 <div id="chat"><div class="wrap" id="thread"></div></div>
 <footer><div class="composer"><div class="inputrow"><button class="mic" id="micBtn" type="button">🎙️</button><textarea id="input" rows="1" placeholder="Speak, edit, then send..."></textarea><button class="send" id="sendBtn" type="button">Send</button></div><div class="status" id="status"></div></div></footer>
 <div class="toast" id="hintToast"></div>
-<div class="overlay" id="overlay"><div class="card"><h2>Groq Key</h2><p>Enter your <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer">Groq API Key</a>. On Vercel, this uses the local <code>/api/chat</code> proxy.</p><input id="keyInput" type="password" placeholder="gsk_..." autocomplete="off" /><div class="cardbtns"><button class="secondary" id="clearKey" type="button">Clear</button><button class="primary" id="saveKey" type="button">Start</button></div></div></div>
+<div class="overlay" id="overlay"><div class="card"><h2>Groq Key</h2><p>Saperli can use <code>GROQ_API_KEY</code> from Vercel when it is configured. If the server key is not set, enter your <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer">Groq API Key</a> here; it stays in this browser and is sent only to the local <code>/api/chat</code> proxy.</p><input id="keyInput" type="password" placeholder="gsk_..." autocomplete="off" /><div class="cardbtns"><button class="secondary" id="clearKey" type="button">Clear</button><button class="primary" id="saveKey" type="button">Start</button></div></div></div>
 <script src="./app.js"></script>
 </body>
 </html>

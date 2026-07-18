@@ -37,16 +37,17 @@ Ways to respond:
 - On parle de guitare ? = Shall we talk about guitar?
 ]`;
 
-  const welcomeNoKey = `Bonjour! Je suis Saperli Popette. Je suis prête à discuter. Mets ta clé Groq, puis on parle. [HINT:
-Saperli is saying: She is ready to talk, but you need to add your Groq key first.
+  const welcomeHybrid = `Bonjour! Je suis Saperli Popette. Je suis prête à discuter. Si la clé du serveur est réveillée, écris-moi tout de suite; sinon, ajoute ta clé Groq avec l’engrenage. [HINT:
+Saperli is saying: She is ready to talk; the app can use a server key if configured, or you can add your own key in settings.
 Useful words:
 - prête = ready
 - discuter = to chat
-- clé = key
+- clé du serveur = server key
+- engrenage = gear / settings
 Ways to respond:
 - Bonjour. = Hello.
 - Je veux parler français. = I want to speak French.
-- Un moment. = One moment.
+- On essaie. = Let’s try.
 ]`;
 
   function systemPrompt() {
@@ -217,12 +218,12 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
   }
 
   async function callChatApi(messages) {
+    const headers = { "Content-Type": "application/json" };
+    if (apiKey && apiKey.startsWith("gsk_")) headers["x-groq-key"] = apiKey;
+
     const response = await fetch(API_ENDPOINT, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-groq-key": apiKey
-      },
+      headers,
       body: JSON.stringify({
         model: MODEL,
         messages: [{ role: "system", content: systemPrompt() }, ...messages],
@@ -237,7 +238,9 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
 
     if (!response.ok) {
       const msg = data?.error || data?.message || raw || ("API status " + response.status);
-      throw new Error(msg);
+      const error = new Error(msg);
+      error.status = response.status;
+      throw error;
     }
 
     return String(data?.content || data?.choices?.[0]?.message?.content || "").trim();
@@ -254,11 +257,6 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
   async function send(text) {
     const clean = String(text || "").trim();
     if (!clean || busy) return;
-
-    if (!apiKey || !apiKey.startsWith("gsk_")) {
-      showOverlay();
-      return setStatus("Add your Groq key first.", true);
-    }
 
     stopDictation(true);
     addBubble("user", clean);
@@ -297,6 +295,9 @@ Ways to respond:
       speak(parsed.display);
     } catch (err) {
       removeThinking();
+      if (err.status === 401 || /groq key|api key|missing key/i.test(err.message || "")) {
+        showOverlay();
+      }
       addBubble("assistant", "Erreur: " + err.message);
       setStatus(err.message, true);
     } finally {
@@ -400,11 +401,7 @@ Ways to respond:
   if ("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged = pickFrenchVoice;
   setupSpeechRecognition();
 
-  if (apiKey && apiKey.startsWith("gsk_")) addBubble("assistant", welcomeWithKey);
-  else {
-    addBubble("assistant", welcomeNoKey);
-    showOverlay();
-  }
+  addBubble("assistant", apiKey && apiKey.startsWith("gsk_") ? welcomeWithKey : welcomeHybrid);
 
   input.focus();
 })();

@@ -17,18 +17,24 @@
     textarea { width:100%; min-height:132px; resize:vertical; padding:14px; border:1px solid var(--line); border-radius:14px; background:#0b0f0d; color:var(--ink); font:inherit;font-size:16px;line-height:1.45; }
     textarea:focus { outline:3px solid rgba(140,255,193,.22); border-color:var(--accent); }
     .counter { margin-top:6px; color:var(--muted); font-size:12px; text-align:right; }
-    .actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:18px; }
+    .actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:18px; }
     button { min-height:48px; border:1px solid var(--line); border-radius:12px; background:#18211b; color:var(--ink); font:inherit;font-size:14px;font-weight:600;line-height:1.2; cursor:pointer; }
     button.primary { background:var(--accent); color:#08100b; border-color:transparent; }
+    button:disabled { opacity:.45; cursor:not-allowed; filter:none; }
     button:hover { filter:brightness(1.08); }
     button:focus-visible { outline:3px solid rgba(140,255,193,.5); outline-offset:2px; }
     .note { margin:18px 0 0; color:var(--muted); font-size:12px; }
-    @media(max-width:520px){ .actions{grid-template-columns:1fr} main{border-radius:16px} }
+    .guv-nav { min-height:40px; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
+    .guv-nav a { min-height:40px; display:inline-flex; align-items:center; padding:8px 11px; border:1px solid var(--line); border-radius:999px; color:var(--muted); text-decoration:none; }
+    .guv-nav a:hover { color:var(--ink); border-color:var(--accent); }
+    .guv-nav a:focus-visible { outline:3px solid rgba(140,255,193,.5); outline-offset:2px; }
+    @media(max-width:620px){ .actions{grid-template-columns:1fr} main{border-radius:16px} .guv-nav span{display:none} }
     @media(prefers-reduced-motion:reduce){ *,*::before,*::after{transition-duration:.01ms!important} }
   </style>
 </head>
 <body>
   <main>
+    <nav class="guv-nav" aria-label="Collection navigation"><a id="guvHome" href="../" hidden>← GUVs</a><span>Bound once · route cleanly</span></nav>
     <p class="eyebrow">GUV / router</p>
     <h1>Zero-Waste Router</h1>
     <p class="dek">Wrap one bounded task in the AWD protocol, then open it in a clean temporary chat.</p>
@@ -36,15 +42,21 @@
     <textarea id="prompt" maxlength="280" placeholder="Describe the exact task and desired endpoint…"></textarea>
     <div class="counter" id="char-count" aria-live="polite">0 / 280</div>
     <div class="actions">
-      <button type="button" onclick="route('claude')">Open in Claude</button>
-      <button class="primary" type="button" onclick="route('chatgpt')">Open in ChatGPT</button>
+      <button class="primary route-button" type="button" onclick="route('awd')" disabled>Shape in AWD</button>
+      <button class="route-button" type="button" onclick="route('chatgpt')" disabled>Open ChatGPT</button>
+      <button class="route-button" type="button" onclick="route('claude')" disabled>Open Claude</button>
     </div>
-    <p class="note">The router opens a new tab and clears this field. It does not retain a thread here.</p>
+    <p class="note">AWD keeps the task inside the GUV collection. External routes open a fresh temporary surface and clear this field.</p>
   </main>
   <script>
     const ta = document.getElementById('prompt');
     const count = document.getElementById('char-count');
-    ta.addEventListener('input', () => { count.textContent = `${ta.value.length} / 280`; });
+    const routeButtons = [...document.querySelectorAll('.route-button')];
+    function refresh() {
+      count.textContent = `${ta.value.length} / 280`;
+      routeButtons.forEach((button) => { button.disabled = !ta.value.trim(); });
+    }
+    ta.addEventListener('input', refresh);
     ta.addEventListener('keydown', (event) => {
       if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') route('chatgpt');
     });
@@ -52,6 +64,10 @@
     function route(dest) {
       const text = ta.value.trim();
       if (!text) { ta.focus(); return; }
+      if (dest === 'awd') {
+        window.location.href = `../awd/?shape=quick&task=${encodeURIComponent(text)}`;
+        return;
+      }
       const system = `CONTEXT: You are executing the AWD protocol.
 CONSTRAINT: Do not provide conversational filler. Adhere strictly to Zero-Waste Fidelity.
 USER DELTA: ${text}`;
@@ -59,8 +75,12 @@ USER DELTA: ${text}`;
       const target = dest === 'claude' ? `https://claude.ai/new?q=${encoded}` : `https://chatgpt.com/?q=${encoded}&temporary-chat=true`;
       window.open(target, '_blank', 'noopener,noreferrer');
       ta.value = '';
-      count.textContent = '0 / 280';
+      refresh();
     }
+
+    const normalizedPath = window.location.pathname.replace(/\/index\.html$/, '').replace(/\/$/, '');
+    document.getElementById('guvHome').hidden = !normalizedPath.endsWith('/router');
+    refresh();
   </script>
 </body>
 </html>

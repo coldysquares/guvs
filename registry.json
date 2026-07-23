@@ -52,25 +52,25 @@
   },
   {
     "title": "Aster Graf",
-    "fullName": "House of Atreus",
+    "fullName": "Skywalker family · familiar demo",
     "slug": "aster-graf",
     "type": [
       "GUV"
     ],
     "status": "working",
     "path": "aster-graf/",
-    "description": "Explore the prototype House of Atreus constellation."
+    "description": "Explore a deliberately simplified family map rendered as a constellation. Aster means star; graf means graph."
   },
   {
-    "title": "fungi_cell_map",
-    "fullName": "fungi_cell_map",
+    "title": "Fungi Cell Map",
+    "fullName": "Protocellular–Mycelian Internals Monitor",
     "slug": "fungi-cell-map",
     "type": [
       "GUV"
     ],
     "status": "working",
     "path": "fungi-cell-map/",
-    "description": "Protocellular-Mycelian Internals Monitor"
+    "description": "Inspect connected compartments, phase states, and hyphal flux in an interactive systems map."
   },
   {
     "title": "Saperli Popette",

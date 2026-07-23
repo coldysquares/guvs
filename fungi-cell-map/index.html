@@ -2,66 +2,243 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Fungi Cell Map</title>
     <style>
         :root {
+            color-scheme: dark;
             --bg-deep: #090d18;
-            --panel-bg: rgba(14, 25, 48, 0.85);
-            --border-glow: rgba(124, 92, 255, 0.4);
+            --panel-bg: rgba(14, 25, 48, 0.94);
+            --border-glow: rgba(124, 92, 255, 0.42);
             --ink: #e0e6ed;
-            --muted: #8892b0;
+            --muted: #99a4c0;
             --teal: #7ee4d2;
             --gold: #f4c430;
             --flux-high: #7ee4d2;
-            --flux-mid: #7c5cff;
-            --flux-low: #4a5d8c;
+            --flux-mid: #9d83ff;
+            --flux-low: #6074a5;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body, html {
-            width: 100%; height: 100%; background-color: var(--bg-deep);
-            color: var(--ink); font-family: -apple-system, monospace;
-            overflow: hidden; display: flex;
+
+        * { box-sizing: border-box; }
+
+        html, body { margin: 0; width: 100%; min-height: 100%; }
+
+        body {
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            background: var(--bg-deep);
+            color: var(--ink);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         }
-        #canvas-wrapper { position: relative; flex: 1; height: 100%; }
-        canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+
+        button, select { font: inherit; }
+
+        #canvas-wrapper {
+            position: relative;
+            flex: 1 1 auto;
+            min-width: 0;
+            min-height: 0;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 20% 15%, rgba(124, 92, 255, 0.12), transparent 32rem),
+                var(--bg-deep);
+        }
+
+        .map-title {
+            position: absolute;
+            z-index: 2;
+            top: max(18px, env(safe-area-inset-top));
+            left: max(18px, env(safe-area-inset-left));
+            max-width: min(420px, calc(100% - 36px));
+            pointer-events: none;
+        }
+
+        .map-title h1 {
+            margin: 0 0 5px;
+            color: #fff;
+            font-size: clamp(18px, 3vw, 27px);
+            letter-spacing: -0.04em;
+        }
+
+        .map-title p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: grab;
+            touch-action: none;
+        }
+
         canvas.dragging { cursor: grabbing; }
+
+        canvas:focus-visible, select:focus-visible, .hyphal-link:focus-visible {
+            outline: 2px solid var(--teal);
+            outline-offset: 3px;
+        }
+
         #inspector {
-            width: 380px; height: 100%; background: var(--panel-bg);
-            border-left: 1px solid var(--border-glow); backdrop-filter: blur(12px);
-            padding: 24px; overflow-y: auto; display: flex; flex-direction: column;
-            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+            width: min(390px, 42vw);
+            height: 100%;
+            min-width: 300px;
+            overflow-y: auto;
+            padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) 24px;
+            border-left: 1px solid var(--border-glow);
+            background: var(--panel-bg);
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(14px);
         }
+
         .eyebrow {
-            font-family: monospace; font-size: 11px; text-transform: uppercase;
-            letter-spacing: 1.5px; color: var(--muted); margin-bottom: 8px;
+            margin: 0 0 8px;
+            color: var(--muted);
+            font-size: 11px;
+            letter-spacing: 0.13em;
+            text-transform: uppercase;
         }
-        .compartment-name { font-size: 22px; font-weight: 600; color: #fff; margin-bottom: 4px; }
-        .compartment-status { font-family: monospace; font-size: 12px; color: var(--teal); margin-bottom: 24px; }
-        .field { border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 12px 0; font-size: 13px; }
-        .field b { display: block; color: var(--muted); font-weight: 500; margin-bottom: 4px; }
-        .hyphal-conns { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+
+        .picker { display: block; margin-bottom: 24px; }
+
+        .picker span {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        select {
+            width: 100%;
+            min-height: 44px;
+            padding: 9px 38px 9px 12px;
+            border: 1px solid var(--border-glow);
+            border-radius: 10px;
+            background: #0c1427;
+            color: var(--ink);
+        }
+
+        .compartment-name {
+            overflow-wrap: anywhere;
+            margin: 0 0 5px;
+            color: #fff;
+            font-size: 22px;
+            line-height: 1.15;
+        }
+
+        .compartment-status {
+            margin-bottom: 20px;
+            color: var(--teal);
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
+        .field {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            font-size: 13px;
+        }
+
+        .field b {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .hyphal-conns { display: grid; gap: 8px; margin-top: 12px; }
+
         .hyphal-link {
-            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 10px 14px; border-radius: 6px; display: flex; align-items: center;
-            gap: 12px; cursor: pointer; transition: all 0.2s ease;
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--ink);
+            text-align: left;
+            cursor: pointer;
+            transition: background 160ms ease, border-color 160ms ease;
         }
-        .hyphal-link:hover { background: rgba(124, 92, 255, 0.15); border-color: var(--border-glow); }
-        .hyphal-link .dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
-        .hyphal-link span { font-size: 13px; flex: 1; }
-        .hyphal-link small { font-family: monospace; color: var(--muted); }
-        .empty { font-size: 13px; color: var(--muted); font-style: italic; padding: 12px 0; }
+
+        .hyphal-link:hover {
+            border-color: var(--border-glow);
+            background: rgba(124, 92, 255, 0.15);
+        }
+
+        .hyphal-link .dot {
+            width: 9px;
+            height: 9px;
+            flex: 0 0 auto;
+            border-radius: 50%;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .hyphal-link span { min-width: 0; flex: 1; overflow-wrap: anywhere; font-size: 12px; }
+        .hyphal-link small { flex: 0 0 auto; color: var(--muted); }
+        .empty { padding: 12px 0; color: var(--muted); font-size: 13px; font-style: italic; }
+
+        @media (max-width: 760px) {
+            body { flex-direction: column; }
+
+            #canvas-wrapper {
+                flex: 0 0 min(54dvh, 520px);
+                width: 100%;
+                min-height: 320px;
+            }
+
+            #inspector {
+                width: 100%;
+                min-width: 0;
+                height: auto;
+                flex: 1 1 auto;
+                padding: 18px max(16px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+                border-top: 1px solid var(--border-glow);
+                border-left: 0;
+                box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.4);
+            }
+
+            .map-title { top: max(14px, env(safe-area-inset-top)); }
+            .picker { margin-bottom: 18px; }
+            .hyphal-conns { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 380px), (max-height: 640px) {
+            #canvas-wrapper { flex-basis: 46dvh; min-height: 250px; }
+            .map-title p { max-width: 270px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .hyphal-link { transition: none; }
+        }
     </style>
 </head>
 <body>
-    <div id="canvas-wrapper"><canvas id="constellation"></canvas></div>
-    <div id="inspector">
-        <div id="inspector-content">
-            <div class="eyebrow">System Live Runtime</div>
-            <h2 class="compartment-name" style="color: var(--muted);">No Selection</h2>
-            <div class="compartment-status">// Target a Coacervate node to open its structural profile.</div>
+    <main id="canvas-wrapper">
+        <div class="map-title">
+            <h1>Fungi Cell Map</h1>
+            <p id="canvas-help">Tap or drag a compartment. Drag empty space to pan; use the picker for a precise target.</p>
         </div>
-    </div>
+        <canvas id="constellation" tabindex="0" role="img" aria-label="Interactive map of four connected fungal compartments" aria-describedby="canvas-help"></canvas>
+    </main>
+
+    <aside id="inspector" aria-label="Compartment inspector">
+        <p class="eyebrow">System live runtime</p>
+        <label class="picker">
+            <span>Jump to a compartment</span>
+            <select id="compartment-select" aria-label="Choose a compartment"></select>
+        </label>
+        <div id="inspector-content" aria-live="polite"></div>
+    </aside>
+
     <script>
         const compartments = [
             { id: 0, name: "Source-Compiler-Core", type: "Fluid-Dense", tokens: "42,500", volume: "0.425", valency: "7.842", entropy: "1.214", desc: "Houses core architecture scripts." },
@@ -79,102 +256,227 @@
 
         const canvas = document.getElementById("constellation");
         const ctx = canvas.getContext("2d");
-        let width = canvas.width = canvas.parentElement.offsetWidth;
-        let height = canvas.height = canvas.parentElement.offsetHeight;
+        const inspector = document.getElementById("inspector-content");
+        const compartmentSelect = document.getElementById("compartment-select");
+        let width = 0;
+        let height = 0;
+        let selectedNodeId = 0;
+        let dragNode = null;
+        let panX = 0;
+        let panY = 0;
+        let isPanning = false;
+        let startX = 0;
+        let startY = 0;
 
-        const nodes = compartments.map((c, i) => ({
-            ...c, x: width/2 + (Math.cos(i*1.5)*120), y: height/2 + (Math.sin(i*1.5)*120),
-            vx: 0, vy: 0, radius: parseFloat(c.volume)*40 + 20
+        function resizeCanvas() {
+            const oldWidth = width;
+            const oldHeight = height;
+            width = Math.max(1, canvas.parentElement.clientWidth);
+            height = Math.max(1, canvas.parentElement.clientHeight);
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            canvas.width = Math.round(width * dpr);
+            canvas.height = Math.round(height * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            if (oldWidth && oldHeight) {
+                const shiftX = (width - oldWidth) / 2;
+                const shiftY = (height - oldHeight) / 2;
+                nodes.forEach((node) => {
+                    node.x += shiftX;
+                    node.y += shiftY;
+                });
+            }
+        }
+
+        resizeCanvas();
+
+        const nodes = compartments.map((compartment, index) => ({
+            ...compartment,
+            x: width / 2 + Math.cos(index * 1.55) * Math.min(130, width * 0.25),
+            y: height / 2 + Math.sin(index * 1.55) * Math.min(130, height * 0.25),
+            vx: 0,
+            vy: 0,
+            radius: Number.parseFloat(compartment.volume) * 40 + 22
         }));
 
-        let selectedNodeId = null, dragNode = null, panX = 0, panY = 0, isPanning = false, startX, startY;
-
-        window.addEventListener("resize", () => {
-            width = canvas.width = canvas.parentElement.offsetWidth;
-            height = canvas.height = canvas.parentElement.offsetHeight;
+        compartments.forEach((compartment) => {
+            const option = document.createElement("option");
+            option.value = String(compartment.id);
+            option.textContent = compartment.name;
+            compartmentSelect.append(option);
         });
 
-        canvas.addEventListener("mousedown", (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const mx = e.clientX - rect.left - panX;
-            const my = e.clientY - rect.top - panY;
-            dragNode = nodes.find(n => Math.sqrt((n.x-mx)**2 + (n.y-my)**2) < n.radius);
-            if(dragNode) { selectedNodeId = dragNode.id; updateInspector(dragNode.id); canvas.classList.add("dragging"); }
-            else { isPanning = true; startX = e.clientX - panX; startY = e.clientY - panY; }
-        });
-
-        canvas.addEventListener("mousemove", (e) => {
-            if(dragNode) { const r = canvas.getBoundingClientRect(); dragNode.x = e.clientX - r.left - panX; dragNode.y = e.clientY - r.top - panY; }
-            else if(isPanning) { panX = e.clientX - startX; panY = e.clientY - startY; }
-        });
-
-        canvas.addEventListener("mouseup", () => { dragNode = null; isPanning = false; canvas.classList.remove("dragging"); });
-
-        window.navigateToNode = function(id) { selectedNodeId = id; updateInspector(id); };
+        function selectNode(id) {
+            const node = nodes.find((candidate) => candidate.id === Number(id));
+            if (!node) return;
+            selectedNodeId = node.id;
+            compartmentSelect.value = String(node.id);
+            updateInspector(node.id);
+        }
 
         function updateInspector(id) {
-            const node = nodes.find(n => n.id === id);
-            const activeLinks = hyphalLinks.filter(l => l.source === id || l.target === id);
-            let linksHTML = activeLinks.map(l => {
-                const targetId = l.source === id ? l.target : l.source;
-                const targetNode = nodes.find(n => n.id === targetId);
-                let colorClass = `var(--flux-${l.type})`;
-                return `<div class="hyphal-link" onclick="navigateToNode(${targetId})">
-                        <div class="dot" style="background: ${colorClass}"></div>
-                        <span>${targetNode.name}</span><small>Ψ: ${l.flux}</small></div>`;
+            const node = nodes.find((candidate) => candidate.id === id);
+            const activeLinks = hyphalLinks.filter((link) => link.source === id || link.target === id);
+            const linksHTML = activeLinks.map((link) => {
+                const targetId = link.source === id ? link.target : link.source;
+                const targetNode = nodes.find((candidate) => candidate.id === targetId);
+                const color = `var(--flux-${link.type})`;
+                return `<button class="hyphal-link" type="button" data-node-id="${targetId}">
+                    <span class="dot" aria-hidden="true" style="background:${color};color:${color}"></span>
+                    <span>${targetNode.name}</span><small>Ψ ${link.flux}</small>
+                </button>`;
             }).join("");
-            
-            document.getElementById("inspector-content").innerHTML = `
-                <div class="eyebrow">Active Compartment Profile</div>
+
+            inspector.innerHTML = `
+                <p class="eyebrow">Active compartment profile</p>
                 <h2 class="compartment-name">${node.name}</h2>
-                <div class="compartment-status">// Phase State: ${node.type}</div>
-                <div class="field"><b>Token Volume (Φ)</b><span>${node.volume}</span></div>
-                <div class="field"><b>Valency (V_p)</b><span>${node.valency}</span></div>
+                <div class="compartment-status">// Phase state: ${node.type}</div>
+                <div class="field"><b>Token volume</b><span>${node.tokens} tokens · Φ ${node.volume}</span></div>
+                <div class="field"><b>Valency</b><span>Vₚ ${node.valency}</span></div>
                 <div class="field"><b>Entropy</b><span>${node.entropy}</span></div>
-                <div class="field"><b>Substrate Profile</b><div style="font-size:12px; color:var(--muted); margin-top:4px;">${node.desc}</div></div>
-                <div class="eyebrow" style="margin-top:20px;">Hyphal Links</div>
+                <div class="field"><b>Substrate profile</b><span>${node.desc}</span></div>
+                <p class="eyebrow" style="margin-top:20px">Hyphal links</p>
                 <div class="hyphal-conns">${linksHTML || '<div class="empty">No active links.</div>'}</div>
             `;
         }
 
-        function step() {
-            ctx.clearRect(0, 0, width, height); ctx.save(); ctx.translate(panX, panY);
-            
-            // Physics
-            hyphalLinks.forEach(l => {
-                const s = nodes[l.source], t = nodes[l.target];
-                const dx = t.x - s.x, dy = t.y - s.y, dist = Math.sqrt(dx*dx + dy*dy) || 1;
-                const f = (dist - 180) * (0.015 * parseFloat(l.flux));
-                if(s !== dragNode) { s.vx += (dx/dist)*f; s.vy += (dy/dist)*f; }
-                if(t !== dragNode) { t.vx -= (dx/dist)*f; t.vy -= (dy/dist)*f; }
-            });
-
-            nodes.forEach(n => {
-                if(n !== dragNode) { n.x += n.vx; n.y += n.vy; n.vx *= 0.85; n.vy *= 0.85; }
-                
-                // Draw Connections
-                hyphalLinks.forEach(l => {
-                   if(nodes[l.source] === n || nodes[l.target] === n) {
-                       const t = nodes[l.source] === n ? nodes[l.target] : nodes[l.source];
-                       ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(t.x, t.y);
-                       ctx.strokeStyle = l.type === 'high' ? "rgba(126,228,210,0.4)" : "rgba(124,92,255,0.2)";
-                       ctx.lineWidth = parseFloat(l.flux) * 3; ctx.stroke();
-                   }
-                });
-
-                // Draw Nodes
-                ctx.beginPath(); ctx.arc(n.x, n.y, n.radius, 0, Math.PI*2);
-                let g = ctx.createRadialGradient(n.x, n.y, 2, n.x, n.y, n.radius);
-                g.addColorStop(0, 'rgba(14,25,48,0.95)'); g.addColorStop(1, 'rgba(9,13,24,0.9)');
-                ctx.fillStyle = g; ctx.fill();
-                ctx.strokeStyle = (n.id === selectedNodeId) ? "#7ee4d2" : "rgba(124,92,255,0.4)";
-                ctx.lineWidth = 2; ctx.stroke();
-                
-                ctx.fillStyle = "#e0e6ed"; ctx.font = "11px monospace"; ctx.textAlign = "center";
-                ctx.fillText(n.name, n.x, n.y - 2);
-            });
-            ctx.restore(); requestAnimationFrame(step);
+        function pointerPosition(event) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: event.clientX - rect.left - panX,
+                y: event.clientY - rect.top - panY
+            };
         }
+
+        canvas.addEventListener("pointerdown", (event) => {
+            canvas.setPointerCapture(event.pointerId);
+            const point = pointerPosition(event);
+            dragNode = nodes.find((node) => Math.hypot(node.x - point.x, node.y - point.y) < node.radius + 10);
+
+            if (dragNode) {
+                selectNode(dragNode.id);
+                canvas.classList.add("dragging");
+            } else {
+                isPanning = true;
+                startX = event.clientX - panX;
+                startY = event.clientY - panY;
+            }
+        });
+
+        canvas.addEventListener("pointermove", (event) => {
+            if (dragNode) {
+                const rect = canvas.getBoundingClientRect();
+                dragNode.x = event.clientX - rect.left - panX;
+                dragNode.y = event.clientY - rect.top - panY;
+            } else if (isPanning) {
+                panX = event.clientX - startX;
+                panY = event.clientY - startY;
+            }
+        });
+
+        function endPointer(event) {
+            if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+            dragNode = null;
+            isPanning = false;
+            canvas.classList.remove("dragging");
+        }
+
+        canvas.addEventListener("pointerup", endPointer);
+        canvas.addEventListener("pointercancel", endPointer);
+
+        canvas.addEventListener("keydown", (event) => {
+            const amount = event.shiftKey ? 40 : 18;
+            if (event.key === "ArrowLeft") panX += amount;
+            else if (event.key === "ArrowRight") panX -= amount;
+            else if (event.key === "ArrowUp") panY += amount;
+            else if (event.key === "ArrowDown") panY -= amount;
+            else return;
+            event.preventDefault();
+        });
+
+        compartmentSelect.addEventListener("change", () => selectNode(compartmentSelect.value));
+        inspector.addEventListener("click", (event) => {
+            const button = event.target.closest("[data-node-id]");
+            if (button) selectNode(button.dataset.nodeId);
+        });
+        window.addEventListener("resize", resizeCanvas);
+
+        function drawNodeLabel(node) {
+            ctx.fillStyle = "#e0e6ed";
+            ctx.font = "600 12px ui-monospace, monospace";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(`C${node.id + 1}`, node.x, node.y);
+
+            const shortName = node.name.split("-").slice(0, 2).join("-");
+            ctx.font = "10px ui-monospace, monospace";
+            ctx.fillStyle = "#aab4cb";
+            ctx.fillText(shortName, node.x, node.y + node.radius + 14);
+        }
+
+        function step() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.save();
+            ctx.translate(panX, panY);
+
+            hyphalLinks.forEach((link) => {
+                const source = nodes[link.source];
+                const target = nodes[link.target];
+                const dx = target.x - source.x;
+                const dy = target.y - source.y;
+                const distance = Math.hypot(dx, dy) || 1;
+                const force = (distance - Math.min(180, width * 0.36)) * (0.015 * Number.parseFloat(link.flux));
+                if (source !== dragNode) {
+                    source.vx += (dx / distance) * force;
+                    source.vy += (dy / distance) * force;
+                }
+                if (target !== dragNode) {
+                    target.vx -= (dx / distance) * force;
+                    target.vy -= (dy / distance) * force;
+                }
+            });
+
+            nodes.forEach((node) => {
+                if (node !== dragNode) {
+                    node.vx += (width / 2 - node.x) * 0.0004;
+                    node.vy += (height / 2 - node.y) * 0.0004;
+                    node.x += node.vx;
+                    node.y += node.vy;
+                    node.vx *= 0.85;
+                    node.vy *= 0.85;
+                }
+            });
+
+            hyphalLinks.forEach((link) => {
+                const source = nodes[link.source];
+                const target = nodes[link.target];
+                ctx.beginPath();
+                ctx.moveTo(source.x, source.y);
+                ctx.lineTo(target.x, target.y);
+                ctx.strokeStyle = link.type === "high" ? "rgba(126,228,210,0.5)" : "rgba(124,92,255,0.3)";
+                ctx.lineWidth = Number.parseFloat(link.flux) * 3;
+                ctx.stroke();
+            });
+
+            nodes.forEach((node) => {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+                const gradient = ctx.createRadialGradient(node.x, node.y, 2, node.x, node.y, node.radius);
+                gradient.addColorStop(0, "rgba(26,43,73,0.98)");
+                gradient.addColorStop(1, "rgba(9,13,24,0.94)");
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                ctx.strokeStyle = node.id === selectedNodeId ? "#7ee4d2" : "rgba(124,92,255,0.5)";
+                ctx.lineWidth = node.id === selectedNodeId ? 3 : 2;
+                ctx.stroke();
+                drawNodeLabel(node);
+            });
+
+            ctx.restore();
+            requestAnimationFrame(step);
+        }
+
+        selectNode(0);
         requestAnimationFrame(step);
     </script>
 </body>

@@ -2,20 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>House of Atreus</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Aster Graf — Skywalker Family</title>
   <style>
     /*
-      This file implements a flagship demo of the House of Atreus for the
-      House of Atreus dataset. It keeps the dark/violet/gold palette,
-      starfield and spring physics from previous iterations, but improves
-      the mobile experience by introducing a floating bottom sheet on
-      small screens. The bottom sheet displays selected node details and
-      related chips, allowing for tap‑to‑traverse storytelling without
-      scrolling away from the constellation. On wider screens the
-      inspector remains in a right‑hand panel as before.  The entire
-      application is self contained in this single HTML file and is
-      suitable for deployment on GitHub Pages.
+      Aster Graf renders family relationships as a navigable constellation.
+      This familiar demo uses a simplified Skywalker family map so the
+      interaction reads before the user learns the internal vocabulary.
+      The application is self-contained and suitable for GitHub Pages.
     */
 
     :root {
@@ -361,7 +355,7 @@
     }
 
     /* responsive layout adjustments */
-    @media (max-width: 980px) {
+    @media (max-width: 1180px) {
       #app {
         grid-template-columns: 1fr;
         grid-template-rows: auto minmax(56vh, 1fr);
@@ -388,93 +382,154 @@
         padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
       }
     }
+
+
+    /* 2026 mobile-first product pass */
+    #app { height: 100dvh; min-height: 560px; }
+    .identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .name-note { color: var(--muted); border: 1px solid var(--line); background: rgba(124,92,255,.06); border-radius: 12px; font-size: 12px; }
+    .name-note summary { min-height: 42px; padding: 10px 12px; display: flex; align-items: center; cursor: pointer; color: var(--ink); white-space: nowrap; }
+    .name-note p { max-width: 520px; margin: 0; padding: 0 12px 12px; line-height: 1.5; }
+    #search, #personSelect { height: 44px; padding: 10px 14px; border-radius: 14px; border: 1px solid rgba(124,92,255,.22); background: rgba(7,11,20,.78); color: var(--ink); outline: none; }
+    #search { width: 260px; max-width: 32vw; }
+    #personSelect { width: 190px; max-width: 24vw; }
+    #search:focus, #personSelect:focus { border-color: rgba(124,92,255,.5); box-shadow: 0 0 0 4px rgba(124,92,255,.14); }
+    .control-buttons { display: flex; gap: 8px; }
+    .btn { min-width: 44px; min-height: 44px; }
+    .btn:focus-visible, .rel:focus-visible, #sheet .chip:focus-visible, .name-note summary:focus-visible { outline: 3px solid rgba(126,228,210,.55); outline-offset: 2px; }
+    .rel { width: 100%; border: 0; color: inherit; background: transparent; font: inherit; text-align: left; }
+    #sheet { max-height: min(62dvh, 620px); overflow: auto; }
+    #sheet .chip { min-height: 42px; }
+
+    @media (max-width: 1180px) {
+      html, body { height: auto; min-height: 100%; overflow: auto; }
+      #app { grid-template-columns: 1fr; grid-template-rows: auto minmax(420px, 58dvh) auto; height: auto; min-height: 100dvh; }
+      header { grid-column: 1; flex-wrap: wrap; align-items: stretch; padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 12px max(12px, env(safe-area-inset-left)); }
+      .identity { width: 100%; justify-content: space-between; }
+      .name-note { order: 3; flex: 1 0 100%; }
+      .controls { order: 2; width: 100%; margin-left: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+      #search { width: 100%; max-width: none; grid-column: 1 / -1; }
+      #personSelect { width: 100%; max-width: none; }
+      .control-buttons { overflow-x: auto; }
+      aside#panel { display: none; }
+      #sheet { position: static; display: none; grid-column: 1; transform: none; max-height: none; overflow: visible; box-shadow: none; padding: 18px max(18px, env(safe-area-inset-right)) calc(22px + env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); }
+      #sheet.show { display: block; transform: none; }
+      .hint { left: 10px; right: 10px; bottom: 10px; text-align: center; }
+    }
+
+    @media (max-width: 560px) {
+      #app { grid-template-rows: auto minmax(390px, 54dvh) auto; }
+      h1 { font-size: 20px; }
+      .tag { font-size: 10px; padding: 4px 8px; }
+      .btn { padding-inline: 11px; }
+      #freeze { min-width: 78px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+
   </style>
 </head>
 <body>
 <div id="app">
   <header>
-    <h1><span class="spark">✦</span> House of Atreus</h1>
-    <span class="tag">House of Atreus · mythic demo</span>
-    <div class="controls">
-      <input id="search" type="text" placeholder="Search the constellation…" autocomplete="off" />
-      <button class="btn" id="zoomOut">−</button>
-      <button class="btn" id="zoomIn">+</button>
-      <button class="btn" id="freeze">Freeze</button>
-      <button class="btn" id="fit">Fit</button>
+    <div class="identity">
+      <h1><span class="spark">✦</span> Aster Graf</h1>
+      <span class="tag">Skywalker family · familiar demo</span>
     </div>
+    <div class="controls">
+      <input id="search" type="search" placeholder="Search the family…" autocomplete="off" aria-label="Search the family" />
+      <select id="personSelect" aria-label="Jump to a person"><option value="">Jump to a person…</option></select>
+      <div class="control-buttons" aria-label="Graph controls">
+        <button class="btn" id="zoomOut" type="button" aria-label="Zoom out">−</button>
+        <button class="btn" id="zoomIn" type="button" aria-label="Zoom in">+</button>
+        <button class="btn" id="freeze" type="button">Freeze</button>
+        <button class="btn" id="fit" type="button">Fit</button>
+      </div>
+    </div>
+    <details class="name-note">
+      <summary>Why “Aster Graf”?</summary>
+      <p><strong>Aster</strong> comes from the Greek word for star; <strong>graf</strong> is a compact spelling of graph. The result is a family map drawn as a constellation.</p>
+    </details>
   </header>
   <div id="stage">
-    <canvas id="c"></canvas>
-    <div class="hint">drag stars · scroll to zoom · tap to inspect · chips navigate</div>
+    <canvas id="c" role="img" aria-label="Interactive constellation showing a simplified Skywalker family graph"></canvas>
+    <div class="hint">drag to move · use + / − to zoom · tap a person to inspect</div>
   </div>
   <aside id="panel">
-    <div class="eyebrow">Mythic demo data</div>
-    <p class="empty">Tap a star to explore its connections.</p>
+    <div class="eyebrow">Familiar demo data</div>
+    <h2 class="person-name">The Skywalker family</h2>
+    <p class="empty">Choose a person in the graph or use “Jump to a person” to explore a simplified, recognizable family map.</p>
+    <div class="field"><b>Why Aster Graf?</b>Aster means star; graf means graph. Family relationships become a navigable constellation.</div>
+    <p class="empty">This is a compact interaction demo, not a complete canon genealogy.</p>
   </aside>
-  <div id="sheet"></div>
+  <div id="sheet" aria-live="polite"></div>
 </div>
 <script>
-// Data for the House of Atreus.
+// Familiar demo data: a deliberately simplified Skywalker family graph.
 const DATA = {
   people: [
-    { id: "tantalus", name: "Tantalus", gen: 0, role: "Origin node", note: "Mythic origin point of the cursed line." },
-    { id: "pelops", name: "Pelops", gen: 1, role: "Dynastic node", note: "Central ancestor whose descendants define the House of Atreus." },
-    { id: "hippodamia", name: "Hippodamia", gen: 1, role: "Partner node", note: "Paired with Pelops in the founding branch." },
-    { id: "atreus", name: "Atreus", gen: 2, role: "Primary branch", note: "One of the two defining brothers in the central rupture." },
-    { id: "thyestes", name: "Thyestes", gen: 2, role: "Counter-branch", note: "Sibling rival to Atreus. A core fracture point in the constellation." },
-    { id: "aerope", name: "Aerope", gen: 3, role: "Partner node", note: "Connected to Atreus; entangled in the line’s instability." },
-    { id: "pelopia", name: "Pelopia", gen: 3, role: "Partner node", note: "Linked to Thyestes and the shadow branch below." },
-    { id: "agamemnon", name: "Agamemnon", gen: 4, role: "Descendant node", note: "One of Atreus’s most famous descendants." },
-    { id: "menelaus", name: "Menelaus", gen: 4, role: "Descendant node", note: "Brother of Agamemnon; another highly visible branch." },
-    { id: "aegisthus", name: "Aegisthus", gen: 4, role: "Shadow descendant", note: "A destabilizing line emerging from the counter-branch." },
-    { id: "helen", name: "Helen", gen: 4, role: "Partner node", note: "Paired here as the Menelaus branch’s most recognizable counterpart." },
-    { id: "clytemnestra", name: "Clytemnestra", gen: 5, role: "Partner node", note: "Partner of Agamemnon and a major node in the tragic continuation." },
-    { id: "orestes", name: "Orestes", gen: 6, role: "Descendant node", note: "A continuation point where the family curse remains legible." },
-    { id: "electra", name: "Electra", gen: 6, role: "Descendant node", note: "Sibling branch tied tightly to the Orestes line." },
-    { id: "hermione", name: "Hermione", gen: 5, role: "Descendant node", note: "A child branch extending from Menelaus and Helen." }
+    { id: "shmi", name: "Shmi Skywalker", gen: 0, slot: -1.2, role: "Origin generation", note: "Anakin’s mother and the earliest Skywalker shown in this compact map." },
+    { id: "cliegg", name: "Cliegg Lars", gen: 0, slot: 1.2, role: "Partner branch", note: "Shmi’s later partner and Owen Lars’s father." },
+    { id: "anakin", name: "Anakin Skywalker", gen: 1, slot: -2.4, role: "Central branch", note: "Shmi’s son; partner of Padmé; father of Luke and Leia." },
+    { id: "padme", name: "Padmé Amidala", gen: 1, slot: -1.2, role: "Partner node", note: "Anakin’s partner and mother of Luke and Leia." },
+    { id: "owen", name: "Owen Lars", gen: 1, slot: 0.2, role: "Stepfamily branch", note: "Cliegg’s son and Anakin’s stepbrother." },
+    { id: "beru", name: "Beru Lars", gen: 1, slot: 1.2, role: "Partner node", note: "Owen’s partner and one of Luke’s guardians on Tatooine." },
+    { id: "bail", name: "Bail Organa", gen: 1, slot: 2.5, role: "Adoptive branch", note: "Leia’s adoptive father." },
+    { id: "breha", name: "Breha Organa", gen: 1, slot: 3.5, role: "Adoptive branch", note: "Leia’s adoptive mother." },
+    { id: "luke", name: "Luke Skywalker", gen: 2, slot: -1.2, role: "Descendant node", note: "Child of Anakin and Padmé; twin brother of Leia." },
+    { id: "leia", name: "Leia Organa", gen: 2, slot: 0.4, role: "Descendant node", note: "Child of Anakin and Padmé; adopted by Bail and Breha; twin sister of Luke." },
+    { id: "han", name: "Han Solo", gen: 2, slot: 1.7, role: "Partner node", note: "Leia’s partner and Ben Solo’s father." },
+    { id: "ben", name: "Ben Solo", gen: 3, slot: 0.7, role: "Descendant node", note: "Child of Leia Organa and Han Solo." }
   ],
   links: [
-    { source: "tantalus", target: "pelops", type: "parent" },
-    { source: "pelops", target: "hippodamia", type: "partner" },
-    { source: "pelops", target: "atreus", type: "parent" },
-    { source: "hippodamia", target: "atreus", type: "parent" },
-    { source: "pelops", target: "thyestes", type: "parent" },
-    { source: "hippodamia", target: "thyestes", type: "parent" },
-    { source: "atreus", target: "aerope", type: "partner" },
-    { source: "thyestes", target: "pelopia", type: "partner" },
-    { source: "atreus", target: "agamemnon", type: "parent" },
-    { source: "aerope", target: "agamemnon", type: "parent" },
-    { source: "atreus", target: "menelaus", type: "parent" },
-    { source: "aerope", target: "menelaus", type: "parent" },
-    { source: "thyestes", target: "aegisthus", type: "parent" },
-    { source: "pelopia", target: "aegisthus", type: "parent" },
-    { source: "menelaus", target: "helen", type: "partner" },
-    { source: "agamemnon", target: "clytemnestra", type: "partner" },
-    { source: "agamemnon", target: "orestes", type: "parent" },
-    { source: "clytemnestra", target: "orestes", type: "parent" },
-    { source: "agamemnon", target: "electra", type: "parent" },
-    { source: "clytemnestra", target: "electra", type: "parent" },
-    { source: "menelaus", target: "hermione", type: "parent" },
-    { source: "helen", target: "hermione", type: "parent" }
+    { source: "shmi", target: "cliegg", type: "partner" },
+    { source: "shmi", target: "anakin", type: "parent" },
+    { source: "cliegg", target: "owen", type: "parent" },
+    { source: "anakin", target: "owen", type: "step" },
+    { source: "anakin", target: "padme", type: "partner" },
+    { source: "owen", target: "beru", type: "partner" },
+    { source: "anakin", target: "luke", type: "parent" },
+    { source: "padme", target: "luke", type: "parent" },
+    { source: "anakin", target: "leia", type: "parent" },
+    { source: "padme", target: "leia", type: "parent" },
+    { source: "bail", target: "breha", type: "partner" },
+    { source: "bail", target: "leia", type: "adoptive" },
+    { source: "breha", target: "leia", type: "adoptive" },
+    { source: "leia", target: "han", type: "partner" },
+    { source: "leia", target: "ben", type: "parent" },
+    { source: "han", target: "ben", type: "parent" }
   ]
 };
 
 // Relationship labels for display.
 const REL_LABEL = {
-  parent: "parent / child",
-  child: "child / parent",
+  parent: "parent",
+  child: "child",
   partner: "partner",
   sibling: "sibling",
-  half: "partial sibling line"
+  half: "partial sibling line",
+  adoptiveParent: "adoptive parent",
+  adoptiveChild: "adopted child",
+  adoptive: "adoptive line",
+  step: "stepfamily"
 };
 
 // Prepare graph structures.
 const byId = {};
 const nodes = DATA.people.map((p) => {
-  const n = { ...p, x: 0, y: 0, vx: 0, vy: 0, r: 23 };
+  const n = { ...p, x: 0, y: 0, vx: 0, vy: 0, r: 25 };
   byId[n.id] = n;
   return n;
 });
+
+for (const person of [...DATA.people].sort((a, b) => a.name.localeCompare(b.name))) {
+  const option = document.createElement('option');
+  option.value = person.id;
+  option.textContent = person.name;
+  document.getElementById('personSelect').appendChild(option);
+}
 
 // Primary (direct) links from the dataset.
 const directLinks = DATA.links
@@ -542,6 +597,7 @@ const cv = document.getElementById('c');
 const ctx = cv.getContext('2d');
 const panel = document.getElementById('panel');
 const sheet = document.getElementById('sheet');
+const personSelect = document.getElementById('personSelect');
 let W = 0;
 let H = 0;
 let DPR = 1;
@@ -577,18 +633,11 @@ function positionNodesByGeneration() {
   }
   for (const [gen, group] of groups.entries()) {
     group.forEach((n, i) => {
-      const spread = 170;
-      n.x = (i - (group.length - 1) / 2) * spread;
-      n.y = (gen - 2.2) * 140;
+      const spread = 150;
+      n.x = Number.isFinite(n.slot) ? n.slot * spread : (i - (group.length - 1) / 2) * spread;
+      n.y = (gen - 1.45) * 150;
     });
   }
-  // custom offsets for key nodes for clarity
-  if (byId.agamemnon) byId.agamemnon.x -= 50;
-  if (byId.menelaus) byId.menelaus.x += 50;
-  if (byId.aegisthus) byId.aegisthus.x -= 130;
-  if (byId.helen) byId.helen.x += 120;
-  if (byId.hermione) byId.hermione.x += 120;
-  if (byId.clytemnestra) byId.clytemnestra.x -= 60;
 }
 
 // Initialise starfield based on canvas size.
@@ -680,7 +729,7 @@ function tickPhysics() {
   }
   // centring by generation and x axis
   for (const n of nodes) {
-    const targetY = (n.gen - 2.2) * 140;
+    const targetY = (n.gen - 1.45) * 150;
     n.vy += (targetY - n.y) * 0.0035;
     n.vx += (0 - n.x) * 0.0019;
     if (n !== dragNode) {
@@ -711,10 +760,12 @@ function drawBackground() {
 
 // Relationship color helper.
 function relationColor(type) {
-  if (type === 'parent') return 'rgba(105,166,255,0.78)';
+  if (type === 'parent' || type === 'child') return 'rgba(105,166,255,0.78)';
   if (type === 'partner') return 'rgba(244,206,115,0.72)';
   if (type === 'sibling') return 'rgba(126,228,210,0.62)';
   if (type === 'half') return 'rgba(162,123,255,0.72)';
+  if (type === 'adoptive' || type === 'adoptiveParent' || type === 'adoptiveChild') return 'rgba(255,158,178,0.74)';
+  if (type === 'step') return 'rgba(200,176,255,0.72)';
   return 'rgba(150,170,220,0.45)';
 }
 
@@ -748,8 +799,8 @@ function draw() {
     ctx.strokeStyle = relationColor(l.type);
     ctx.lineWidth = l.type === 'half' ? 2.1 : l.type === 'sibling' ? 1.8 : 1.6;
     ctx.globalAlpha = dim ? 0.08 : l.type === 'half' ? 0.52 : l.type === 'sibling' ? 0.52 : 0.68;
-    if (l.type === 'half') ctx.setLineDash([5, 7]);
-    else if (l.type === 'sibling') ctx.setLineDash([2, 7]);
+    if (l.type === 'half' || l.type === 'adoptive') ctx.setLineDash([5, 7]);
+    else if (l.type === 'sibling' || l.type === 'step') ctx.setLineDash([2, 7]);
     else ctx.setLineDash([]);
     if (selected && (l.source === selected || l.target === selected)) {
       ctx.globalAlpha = 0.85;
@@ -788,7 +839,7 @@ function draw() {
     if (n === selected) {
       lineWidth = 3;
       lineColor = '#ffffff';
-    } else if (selected && (parentsOf(selected).includes(n) || childrenOf(selected).includes(n) || partnersOf(selected).includes(n) || sharedParents(selected, n).length)) {
+    } else if (selected && getRelations(selected).some((relation) => relation.other === n)) {
       lineWidth = 2.2;
       lineColor = '#ffffff';
     } else if (hover === n) {
@@ -851,8 +902,7 @@ function escapeHtml(str) {
 // Show details in panel and sheet. Also update trail.
 function selectNode(n) {
   selected = n;
-  updatePanel();
-  updateSheet();
+  personSelect.value = n ? n.id : '';
   if (n) {
     if (selectionTrail.length === 0 || selectionTrail[selectionTrail.length - 1].id !== n.id) {
       selectionTrail.push(n);
@@ -862,41 +912,45 @@ function selectNode(n) {
   } else {
     selectionTrail.length = 0;
   }
+  updatePanel();
+  updateSheet();
 }
 
 // Update desktop side panel content.
 function updatePanel() {
-  if (window.matchMedia('(max-width: 980px)').matches) return;
+  if (window.matchMedia('(max-width: 1180px)').matches) return;
   if (!selected) {
-    panel.innerHTML = '<div class="eyebrow">Mythic demo data</div><p class="empty">Tap a star to explore its connections.</p>';
+    panel.innerHTML = `
+      <div class="eyebrow">Familiar demo data</div>
+      <h2 class="person-name">The Skywalker family</h2>
+      <p class="empty">Choose a person in the graph or use “Jump to a person” to explore a simplified, recognizable family map.</p>
+      <div class="field"><b>Why Aster Graf?</b>Aster means star; graf means graph. Family relationships become a navigable constellation.</div>
+      <p class="empty">This is a compact interaction demo, not a complete canon genealogy.</p>`;
     return;
   }
   const rels = getRelations(selected);
   const relHtml = rels.length ? rels.map((rel) => {
     const color = relationColor(rel.type);
-    return `<div class="rel" data-id="${escapeHtml(rel.other.id)}"><span class="dot" style="background:${color}"></span><span>${escapeHtml(rel.other.name)}</span><small>${escapeHtml(REL_LABEL[rel.type] || rel.type)}</small></div>`;
+    return `<button class="rel" type="button" data-id="${escapeHtml(rel.other.id)}"><span class="dot" style="background:${color}"></span><span>${escapeHtml(rel.other.name)}</span><small>${escapeHtml(REL_LABEL[rel.type] || rel.type)}</small></button>`;
   }).join('') : '<div class="empty">No recorded connections.</div>';
   panel.innerHTML = `
-    <div class="eyebrow">Mythic demo data</div>
+    <div class="eyebrow">Familiar demo data</div>
     <h2 class="person-name">${escapeHtml(selected.name)}</h2>
-    <div class="person-meta">generation ${escapeHtml(selected.gen)} · ${escapeHtml(selected.role)}</div>
+    <div class="person-meta">generation ${escapeHtml(selected.gen + 1)} · ${escapeHtml(selected.role)}</div>
     <div class="field"><b>Note</b>${escapeHtml(selected.note)}</div>
     <div class="field"><b>Connections</b><div class="rels">${relHtml}</div></div>
     <div class="legend">
       <h3>Relationship lines</h3>
       <div class="leg-row"><span class="dot" style="background:${relationColor('parent')}"></span>parent / child</div>
       <div class="leg-row"><span class="dot" style="background:${relationColor('partner')}"></span>partner</div>
+      <div class="leg-row"><span class="dot" style="background:${relationColor('adoptive')}"></span>adoptive parent / child</div>
+      <div class="leg-row"><span class="dot" style="background:${relationColor('step')}"></span>stepfamily</div>
       <div class="leg-row"><span class="dot" style="background:${relationColor('sibling')}"></span>sibling</div>
-      <div class="leg-row"><span class="dot" style="background:${relationColor('half')}"></span>partial sibling line</div>
     </div>`;
   panel.querySelectorAll('.rel').forEach(el => {
-    el.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = el.getAttribute('data-id');
-      const t = byId[id];
-      if (t) {
-        selectNode(t);
-      }
+    el.addEventListener('click', () => {
+      const target = byId[el.getAttribute('data-id')];
+      if (target) selectNode(target);
     });
   });
 }
@@ -907,6 +961,12 @@ function getRelations(n) {
   for (const p of parentsOf(n)) out.push({ other: p, type: 'parent' });
   for (const c of childrenOf(n)) out.push({ other: c, type: 'child' });
   for (const p of partnersOf(n)) out.push({ other: p, type: 'partner' });
+  for (const link of directLinks) {
+    if (link.type === 'adoptive' && link.target === n) out.push({ other: link.source, type: 'adoptiveParent' });
+    if (link.type === 'adoptive' && link.source === n) out.push({ other: link.target, type: 'adoptiveChild' });
+    if (link.type === 'step' && link.source === n) out.push({ other: link.target, type: 'step' });
+    if (link.type === 'step' && link.target === n) out.push({ other: link.source, type: 'step' });
+  }
   for (const link of siblingLinks) {
     if (link.source === n) out.push({ other: link.target, type: link.type });
     if (link.target === n) out.push({ other: link.source, type: link.type });
@@ -916,7 +976,7 @@ function getRelations(n) {
 
 // Update bottom sheet for mobile. Show/hide accordingly.
 function updateSheet() {
-  if (!window.matchMedia('(max-width: 980px)').matches) {
+  if (!window.matchMedia('(max-width: 1180px)').matches) {
     sheet.classList.remove('show');
     sheet.innerHTML = '';
     return;
@@ -930,30 +990,25 @@ function updateSheet() {
   const chips = rels.map(rel => {
     const color = relationColor(rel.type);
     const label = REL_LABEL[rel.type] || rel.type;
-    return `<div class="chip" data-id="${escapeHtml(rel.other.id)}"><span style="background:${color}" class="dot"></span>${escapeHtml(label)} · ${escapeHtml(rel.other.name)}</div>`;
+    return `<button class="chip" type="button" data-id="${escapeHtml(rel.other.id)}"><span style="background:${color}" class="dot"></span>${escapeHtml(label)} · ${escapeHtml(rel.other.name)}</button>`;
   }).join('');
   let trailStr = '';
   if (selectionTrail.length > 1) {
-    trailStr = selectionTrail.map(n => escapeHtml(n.name)).join(' → ');
-    trailStr = `<div class="trail"><span>${trailStr}</span></div>`;
+    const trail = selectionTrail.map(n => escapeHtml(n.name)).join(' → ');
+    trailStr = `<div class="trail"><span>${trail}</span></div>`;
   }
   sheet.innerHTML = `
-    <div class="eyebrow">Mythic demo data</div>
+    <div class="eyebrow">Familiar demo data</div>
     <h2 class="person-name">${escapeHtml(selected.name)}</h2>
-    <div class="person-meta">generation ${escapeHtml(selected.gen)} · ${escapeHtml(selected.role)}</div>
+    <div class="person-meta">generation ${escapeHtml(selected.gen + 1)} · ${escapeHtml(selected.role)}</div>
     <div class="field"><b>Note</b>${escapeHtml(selected.note)}</div>
     <div class="field"><b>Connections</b><div class="chips">${chips || '<div class="empty">No recorded connections.</div>'}</div></div>
-    ${trailStr}
-  `;
+    ${trailStr}`;
   sheet.classList.add('show');
   sheet.querySelectorAll('.chip').forEach(el => {
-    el.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = el.getAttribute('data-id');
-      const t = byId[id];
-      if (t) {
-        selectNode(t);
-      }
+    el.addEventListener('click', () => {
+      const target = byId[el.getAttribute('data-id')];
+      if (target) selectNode(target);
     });
   });
 }
@@ -1021,6 +1076,13 @@ cv.addEventListener('pointerup', (e) => {
   cv.classList.remove('dragging');
 });
 
+cv.addEventListener('pointercancel', () => {
+  dragNode = null;
+  panning = false;
+  moved = false;
+  cv.classList.remove('dragging');
+});
+
 cv.addEventListener('wheel', (e) => {
   e.preventDefault();
   const zoomFactor = Math.exp(-e.deltaY * 0.0012);
@@ -1036,6 +1098,10 @@ cv.addEventListener('wheel', (e) => {
 let query = '';
 document.getElementById('search').addEventListener('input', (e) => {
   query = e.target.value.trim().toLowerCase();
+});
+personSelect.addEventListener('change', () => {
+  const target = byId[personSelect.value];
+  if (target) selectNode(target);
 });
 
 // Button actions.
@@ -1067,7 +1133,11 @@ document.getElementById('zoomIn').addEventListener('click', () => {
 });
 
 // Window resize handler.
-window.addEventListener('resize', resize);
+window.addEventListener('resize', () => {
+  resize();
+  updatePanel();
+  updateSheet();
+});
 
 // Initial setup.
 positionNodesByGeneration();

@@ -91,11 +91,13 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
   function showOverlay() {
     keyInput.value = "";
     overlay.classList.add("show");
+    overlay.setAttribute("aria-hidden", "false");
     setTimeout(() => keyInput.focus(), 50);
   }
 
   function hideOverlay() {
     overlay.classList.remove("show");
+    overlay.setAttribute("aria-hidden", "true");
   }
 
   function splitHint(text) {
@@ -150,6 +152,7 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
         speakBtn.className = "action-btn";
         speakBtn.textContent = "🔊";
         speakBtn.title = "Speak";
+        speakBtn.setAttribute("aria-label", "Speak this reply");
         speakBtn.onclick = () => speak(parsed.display);
         actions.appendChild(speakBtn);
 
@@ -159,6 +162,7 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
           hintBtn.className = "action-btn";
           hintBtn.textContent = "💡";
           hintBtn.title = "Show hint";
+          hintBtn.setAttribute("aria-label", "Show a hint for this reply");
           hintBtn.onclick = () => showHint(parsed.hint);
           actions.appendChild(hintBtn);
         }
@@ -380,8 +384,9 @@ Ways to respond:
     apiKey = "";
     localStorage.removeItem(STORAGE_KEY);
     keyInput.value = "";
-    setStatus("Groq key cleared.");
-    keyInput.focus();
+    hideOverlay();
+    setStatus("Browser key cleared. Saperli will use the server key when available.");
+    input.focus();
   }
 
   sendBtn.onclick = () => send(input.value);
@@ -394,9 +399,19 @@ Ways to respond:
   });
   micBtn.onclick = () => dictating ? stopDictation() : startDictation();
   $("#settingsBtn").onclick = showOverlay;
+  $("#closeSettings").onclick = () => { hideOverlay(); $("#settingsBtn").focus(); };
   $("#saveKey").onclick = saveKey;
   $("#clearKey").onclick = clearKey;
   keyInput.addEventListener("keydown", (event) => { if (event.key === "Enter") saveKey(); });
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) { hideOverlay(); $("#settingsBtn").focus(); }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && overlay.classList.contains("show")) {
+      hideOverlay();
+      $("#settingsBtn").focus();
+    }
+  });
 
   if ("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged = pickFrenchVoice;
   setupSpeechRecognition();

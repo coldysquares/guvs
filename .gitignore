@@ -1,2 +1,4 @@
 .DS_Store
 .guv-publish.json
+.vercel/
+dist/

@@ -342,15 +342,91 @@
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
     }
 
+
+    /* 2026 collection navigation + shorter mobile workflow */
+    .guv-nav {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .guv-nav a {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .guv-nav a:hover { color: var(--text); border-color: var(--accent); }
+    .process {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .process li {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel2);
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .process b {
+      width: 24px;
+      height: 24px;
+      display: inline-grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: rgba(214,255,107,.12);
+      color: var(--accent);
+    }
+    .guv-nav a:focus-visible { outline: 3px solid rgba(214,255,107,.5); outline-offset: 2px; }
+    @media (max-width: 600px) {
+      .guv-nav span { display: none; }
+      .process {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        overflow: visible;
+        padding-bottom: 0;
+        scroll-snap-type: none;
+      }
+      .process li { scroll-snap-align: none; }
+    }
+
   </style>
 </head>
 
 <body>
   <main>
+    <nav class="guv-nav" aria-label="Collection navigation">
+      <a id="guvHome" href="../" hidden>← GUVs</a>
+      <span>Generate → test → document → archive</span>
+    </nav>
     <section class="shell">
       <header>
         <h1>PSR</h1>
         <p><b>Post-Slop Reagent</b>: a small GUV for exposing how AI systems react when dense, unrelated concepts are introduced into the prompt substrate. It pairs naturally with AWD as a test reagent: generate, expose, observe, score, export.</p>
+        <ol class="process" aria-label="PSR workflow">
+          <li><b>1</b> Generate reagent</li>
+          <li><b>2</b> Test elsewhere</li>
+          <li><b>3</b> Score result</li>
+          <li><b>4</b> Export archive</li>
+        </ol>
       </header>
 
       <div class="stat-row">
@@ -377,6 +453,7 @@
           <button class="primary" id="generate">generate reagent</button>
           <button id="copyTriplet">copy triplet</button>
           <button id="copyCleanPrompt">copy audit prompt</button>
+          <button id="openAwd">open bounded test in AWD</button>
           <button class="warn" id="copyWildPrompt">copy bridge prompt</button>
           <button id="chaos">chaos × 10</button>
         </div>
@@ -904,6 +981,11 @@ ${item.notes || ""}
 
     document.getElementById("copyCleanPrompt").addEventListener("click", () => copyText(auditPrompt(current.triplet), "audit prompt"));
 
+    document.getElementById("openAwd").addEventListener("click", () => {
+      const boundedTask = `Assess this PSR reagent without inventing a field: ${current.triplet}. Separate factual, metaphorical, and speculative links.`;
+      window.location.href = `../awd/?shape=explain&task=${encodeURIComponent(boundedTask)}`;
+    });
+
     document.getElementById("copyWildPrompt").addEventListener("click", () => copyText(bridgePrompt(current.triplet), "bridge prompt"));
 
     document.getElementById("chaos").addEventListener("click", () => {
@@ -952,6 +1034,12 @@ ${item.notes || ""}
         render(triplet());
       }
     });
+
+    const normalizedPath = window.location.pathname.replace(/\/index\.html$/, "").replace(/\/$/, "");
+    document.getElementById("guvHome").hidden = !normalizedPath.endsWith("/psr");
+    if (window.matchMedia("(max-width: 700px)").matches) {
+      document.querySelector(".workflow")?.removeAttribute("open");
+    }
 
     render(current, false);
     renderCases();

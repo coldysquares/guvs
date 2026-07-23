@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>PSR — Post-Slop Reagent</title>
   <style>
     :root {
@@ -295,6 +295,53 @@
     }
 
     .hidden { display: none; }
+
+
+    button, select, input, textarea { min-height: 44px; }
+    button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible {
+      outline: 3px solid rgba(214,255,107,.5);
+      outline-offset: 2px;
+    }
+
+    .workflow > summary, .prompt-box > summary {
+      list-style: none;
+      cursor: pointer;
+    }
+    .workflow > summary::-webkit-details-marker, .prompt-box > summary::-webkit-details-marker { display: none; }
+    .workflow > summary {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .workflow > summary .summary-heading { color: var(--muted); font-size: 16px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+    .workflow > summary span { color: var(--muted); font-size: 12px; }
+    .workflow > summary::after { content: "+"; color: var(--accent); font-size: 20px; }
+    .workflow[open] > summary::after { content: "−"; }
+    .workflow-body { padding-top: 14px; }
+    .prompt-box > summary { min-height: 32px; display: flex; align-items: center; margin-bottom: 0; }
+    .prompt-box[open] > summary { margin-bottom: 8px; }
+
+    @media (max-width: 600px) {
+      body { padding: 12px; padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
+      main { gap: 12px; }
+      .shell { padding: 16px; border-radius: 16px; }
+      h1 { font-size: clamp(38px, 16vw, 52px); }
+      #output { min-height: 104px; padding: 18px 14px; margin: 14px 0; font-size: clamp(26px, 9vw, 40px); overflow-wrap: anywhere; }
+      .controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .controls button { width: 100%; margin: 0; padding-inline: 10px; }
+      .controls > .primary { grid-column: 1 / -1; }
+      .form-grid { grid-template-columns: 1fr; }
+      .meta { gap: 6px; }
+      .pill { max-width: 100%; overflow-wrap: anywhere; }
+      #promptPreview { max-height: 42dvh; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+
   </style>
 </head>
 
@@ -324,7 +371,7 @@
           <span class="pill" id="generatedAt">not saved yet</span>
         </div>
 
-        <div id="output">mycorrhizal byzantine tachyon</div>
+        <div id="output" aria-live="polite">mycorrhizal byzantine tachyon</div>
 
         <div class="controls">
           <button class="primary" id="generate">generate reagent</button>
@@ -334,15 +381,16 @@
           <button id="chaos">chaos × 10</button>
         </div>
 
-        <div class="prompt-box">
-          <div class="prompt-label">AI Search prompt preview</div>
+        <details class="prompt-box">
+          <summary class="prompt-label">AI Search prompt preview</summary>
           <div id="promptPreview"></div>
-          <div class="status" id="status"></div>
-        </div>
+        </details>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
       </div>
 
-      <div class="shell">
-        <h2>Document result</h2>
+      <details class="shell workflow" open>
+        <summary><span class="summary-heading">Document result</span><span>Score and save this reagent</span></summary>
+        <div class="workflow-body">
 
         <div class="form-grid">
           <label>
@@ -416,11 +464,13 @@
           <button id="clearNotes">clear notes</button>
           <button class="danger" id="clearAll">clear all saved cases</button>
         </div>
-      </div>
+        </div>
+      </details>
     </section>
 
-    <section class="shell">
-      <h2>Archive</h2>
+    <details class="shell workflow archive-workflow">
+      <summary><span class="summary-heading">Archive</span><span>Filter, export, or import saved cases</span></summary>
+      <div class="workflow-body">
 
       <div class="form-grid">
         <label>
@@ -448,7 +498,8 @@
       <p class="mini">Saved locally in this browser via localStorage. Export regularly if you want a durable research log.</p>
 
       <div class="case-list" id="caseList"></div>
-    </section>
+      </div>
+    </details>
   </main>
 
   <script>

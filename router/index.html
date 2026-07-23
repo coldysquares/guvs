@@ -1,47 +1,66 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<title>AWD Gateway</title>
-<style>
-  body { font-family: monospace; background: #111; color: #0f0; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-  .box { width: 400px; padding: 20px; border: 1px solid #333; background: #000; box-shadow: 0 4px 15px rgba(0,255,0,0.1); }
-  h3 { margin-top: 0; font-size: 14px; letter-spacing: 2px; }
-  textarea { width: 95%; height: 80px; background: #111; color: #0f0; border: 1px solid #333; margin-bottom: 15px; padding: 10px; font-family: monospace; resize: none; }
-  textarea:focus { outline: none; border-color: #0f0; }
-  button { background: #222; color: #0f0; border: 1px solid #333; padding: 10px; cursor: pointer; font-family: monospace; width: 48%; margin-right: 2%; transition: 0.2s; }
-  button:hover { background: #0f0; color: #000; }
-  #char-count { font-size: 12px; color: #555; text-align: right; display: block; margin-top: -10px; margin-bottom: 15px; }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Zero-Waste Router</title>
+  <style>
+    :root { color-scheme: dark; --bg:#080b09; --panel:#101512; --line:#28342d; --ink:#edf7f0; --muted:#93a59a; --accent:#8cffc1; }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body { margin:0; min-height:100dvh; display:grid; place-items:center; padding:clamp(16px,5vw,40px); padding-bottom:calc(clamp(20px,5vw,40px) + env(safe-area-inset-bottom)); background:radial-gradient(circle at 15% 0%,rgba(140,255,193,.12),transparent 32rem),var(--bg); color:var(--ink); font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    main { width:min(620px,100%); padding:clamp(20px,5vw,36px); border:1px solid var(--line); border-radius:20px; background:rgba(16,21,18,.94); box-shadow:0 28px 90px rgba(0,0,0,.45); }
+    .eyebrow { margin:0 0 8px; color:var(--accent); font-size:11px; letter-spacing:.14em; text-transform:uppercase; }
+    h1 { margin:0; font-size:clamp(28px,8vw,48px); line-height:1; letter-spacing:-.055em; }
+    .dek { margin:12px 0 24px; color:var(--muted); max-width:54ch; }
+    label { display:block; margin-bottom:7px; color:var(--muted); font-size:12px; letter-spacing:.06em; text-transform:uppercase; }
+    textarea { width:100%; min-height:132px; resize:vertical; padding:14px; border:1px solid var(--line); border-radius:14px; background:#0b0f0d; color:var(--ink); font:inherit;font-size:16px;line-height:1.45; }
+    textarea:focus { outline:3px solid rgba(140,255,193,.22); border-color:var(--accent); }
+    .counter { margin-top:6px; color:var(--muted); font-size:12px; text-align:right; }
+    .actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:18px; }
+    button { min-height:48px; border:1px solid var(--line); border-radius:12px; background:#18211b; color:var(--ink); font:inherit;font-size:14px;font-weight:600;line-height:1.2; cursor:pointer; }
+    button.primary { background:var(--accent); color:#08100b; border-color:transparent; }
+    button:hover { filter:brightness(1.08); }
+    button:focus-visible { outline:3px solid rgba(140,255,193,.5); outline-offset:2px; }
+    .note { margin:18px 0 0; color:var(--muted); font-size:12px; }
+    @media(max-width:520px){ .actions{grid-template-columns:1fr} main{border-radius:16px} }
+    @media(prefers-reduced-motion:reduce){ *,*::before,*::after{transition-duration:.01ms!important} }
+  </style>
 </head>
 <body>
-<div class="box">
-  <h3>AWD // ZERO-WASTE ROUTER</h3>
-  <textarea id="prompt" maxlength="280" placeholder="Type the delta... (Max 280 chars)"></textarea>
-  <span id="char-count">0 / 280</span>
-  <div>
-    <button onclick="route('claude')">SEND // CLAUDE</button><button onclick="route('chatgpt')" style="margin-right:0;">SEND // GPT BURNER</button>
-  </div>
-</div>
-<script>
-  const ta = document.getElementById('prompt');
-  const count = document.getElementById('char-count');
-  ta.addEventListener('input', () => count.textContent = `${ta.value.length} / 280`);
+  <main>
+    <p class="eyebrow">GUV / router</p>
+    <h1>Zero-Waste Router</h1>
+    <p class="dek">Wrap one bounded task in the AWD protocol, then open it in a clean temporary chat.</p>
+    <label for="prompt">Task delta · maximum 280 characters</label>
+    <textarea id="prompt" maxlength="280" placeholder="Describe the exact task and desired endpoint…"></textarea>
+    <div class="counter" id="char-count" aria-live="polite">0 / 280</div>
+    <div class="actions">
+      <button type="button" onclick="route('claude')">Open in Claude</button>
+      <button class="primary" type="button" onclick="route('chatgpt')">Open in ChatGPT</button>
+    </div>
+    <p class="note">The router opens a new tab and clears this field. It does not retain a thread here.</p>
+  </main>
+  <script>
+    const ta = document.getElementById('prompt');
+    const count = document.getElementById('char-count');
+    ta.addEventListener('input', () => { count.textContent = `${ta.value.length} / 280`; });
+    ta.addEventListener('keydown', (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') route('chatgpt');
+    });
 
-  function route(dest) {
-    let text = ta.value;
-    if (!text) return;
-    
-    let sys = `CONTEXT: You are executing the AWD protocol.\nCONSTRAINT: Do not provide conversational filler. Adhere strictly to Zero-Waste Fidelity.\nUSER DELTA: ${text}`;
-    let encoded = encodeURIComponent(sys);
-    
-    if (dest === 'claude') {
-      window.open(`https://claude.ai/new?q=${encoded}`, '_blank');
-    } else {
-      window.open(`https://chatgpt.com/?q=${encoded}&temporary-chat=true`, '_blank');
+    function route(dest) {
+      const text = ta.value.trim();
+      if (!text) { ta.focus(); return; }
+      const system = `CONTEXT: You are executing the AWD protocol.
+CONSTRAINT: Do not provide conversational filler. Adhere strictly to Zero-Waste Fidelity.
+USER DELTA: ${text}`;
+      const encoded = encodeURIComponent(system);
+      const target = dest === 'claude' ? `https://claude.ai/new?q=${encoded}` : `https://chatgpt.com/?q=${encoded}&temporary-chat=true`;
+      window.open(target, '_blank', 'noopener,noreferrer');
+      ta.value = '';
+      count.textContent = '0 / 280';
     }
-    ta.value = '';
-    count.textContent = '0 / 280';
-  }
-</script>
+  </script>
 </body>
 </html>

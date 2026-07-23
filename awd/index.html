@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <title>AWD — AI Waste Deleter</title>
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <style>
   :root {
     --bg: #1a1a1a;
@@ -53,6 +53,19 @@
   .rules { color: var(--dim); font-size: 11px; line-height: 1.7; border-top: 1px solid var(--line); margin-top: 28px; padding-top: 16px; }
   .rules b { color: var(--ink); font-weight: 500; }
   details summary { cursor: pointer; color: var(--dim); font-size: 12px; margin-top: 16px; }
+
+  body { padding: clamp(16px, 5vw, 32px); padding-bottom: calc(clamp(20px, 5vw, 36px) + env(safe-area-inset-bottom)); }
+  textarea { min-height: 112px; font-size: 16px; }
+  button, .chip { min-height: 44px; }
+  button:focus-visible, .chip:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 3px solid rgba(111,158,111,.55); outline-offset: 2px; }
+  .rules summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--ink); }
+  .rules-body { padding-top: 8px; }
+  @media (max-width: 520px) {
+    .chips { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .chip { width: 100%; padding-inline: 8px; }
+    #go { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition-duration: .01ms !important; } }
 </style>
 </head>
 <body>
@@ -65,27 +78,29 @@
 <div class="counter" id="counter">0 / 280</div>
 
 <div class="chips" id="chips">
-  <button class="chip active" data-shape="quick">Quick answer</button>
-  <button class="chip" data-shape="decide">Decide</button>
-  <button class="chip" data-shape="explain">Explain</button>
-  <button class="chip" data-shape="list">List</button>
+  <button class="chip active" data-shape="quick" aria-pressed="true">Quick answer</button>
+  <button class="chip" data-shape="decide" aria-pressed="false">Decide</button>
+  <button class="chip" data-shape="explain" aria-pressed="false">Explain</button>
+  <button class="chip" data-shape="list" aria-pressed="false">List</button>
 </div>
 
 <button id="go" disabled>Send</button>
 
-<label>Response</label>
-<div class="out" id="out">—</div>
-<div class="meta" id="meta"></div>
+<label id="responseLabel">Response</label>
+<div class="out" id="out" role="status" aria-live="polite" aria-labelledby="responseLabel">—</div>
+<div class="meta" id="meta" aria-live="polite"></div>
 
-<div class="rules">
-  <b>Hard structural limits — enforced in code, not by you:</b><br>
-  • Input capped at 280 characters by the textarea itself.<br>
-  • Output capped at 300 tokens by the API call (~200 words). Model cannot exceed it.<br>
-  • System prompt forces one paragraph, no lists, no headers.<br>
-  • One-shot per call. No conversation history is ever sent. Each Send is a fresh transaction.<br>
-  • Pressing Send clears the prior output. No editing, no continuation, no "while you're at it."<br>
-  • If the answer is bad: close the tab or refine the one-sentence task and resend. There is no in-place correction.
-</div>
+<details class="rules">
+  <summary>Hard structural limits</summary>
+  <div class="rules-body">
+    • Input capped at 280 characters by the textarea itself.<br>
+    • Output capped at 300 tokens by the API call (~200 words). Model cannot exceed it.<br>
+    • System prompt forces one paragraph, no lists, no headers.<br>
+    • One-shot per call. No conversation history is ever sent. Each Send is a fresh transaction.<br>
+    • Pressing Send clears the prior output. No editing, no continuation, no “while you’re at it.”<br>
+    • If the answer is bad, refine the one-sentence task and resend.
+  </div>
+</details>
 
 <script>
   const task     = document.getElementById("task");
@@ -129,12 +144,22 @@
   }
 
   task.addEventListener("input", refreshCounter);
+  task.addEventListener("keydown", (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !go.disabled) {
+      event.preventDefault();
+      go.click();
+    }
+  });
 
   document.getElementById("chips").addEventListener("click", (e) => {
     const btn = e.target.closest(".chip");
     if (!btn) return;
     activeShape = btn.dataset.shape;
-    document.querySelectorAll(".chip").forEach(c => c.classList.toggle("active", c === btn));
+    document.querySelectorAll(".chip").forEach(c => {
+      const active = c === btn;
+      c.classList.toggle("active", active);
+      c.setAttribute("aria-pressed", String(active));
+    });
   });
 
   go.addEventListener("click", async () => {

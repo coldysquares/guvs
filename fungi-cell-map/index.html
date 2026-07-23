@@ -219,6 +219,56 @@
         @media (prefers-reduced-motion: reduce) {
             .hyphal-link { transition: none; }
         }
+
+        /* 2026 collection navigation + map recovery controls */
+        .map-actions {
+            position: absolute;
+            z-index: 3;
+            top: max(16px, env(safe-area-inset-top));
+            right: max(16px, env(safe-area-inset-right));
+            display: flex;
+            gap: 8px;
+        }
+        .map-action,
+        .guv-home {
+            min-height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 11px;
+            border: 1px solid var(--border-glow);
+            border-radius: 12px;
+            background: rgba(9, 13, 24, 0.82);
+            color: var(--muted);
+            text-decoration: none;
+            font: inherit;
+            font-size: 11px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        .map-action:hover,
+        .guv-home:hover { color: var(--ink); border-color: var(--teal); }
+        .runtime-summary {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin: 0 0 18px;
+        }
+        .runtime-summary div {
+            padding: 10px;
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 10px;
+            background: rgba(255,255,255,.035);
+        }
+        .runtime-summary b { display: block; color: var(--ink); font-size: 16px; }
+        .runtime-summary span { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .07em; }
+        .map-action:focus-visible, .guv-home:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+        @media (max-width: 760px) {
+            .map-title { padding-right: 92px; }
+            .guv-home { display: none; }
+            .map-actions { top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); }
+        }
+
     </style>
 </head>
 <body>
@@ -227,11 +277,19 @@
             <h1>Fungi Cell Map</h1>
             <p id="canvas-help">Tap or drag a compartment. Drag empty space to pan; use the picker for a precise target.</p>
         </div>
+        <div class="map-actions" aria-label="Map controls">
+            <a class="guv-home" id="guvHome" href="../" hidden>← GUVs</a>
+            <button class="map-action" id="resetMap" type="button">Reset map</button>
+        </div>
         <canvas id="constellation" tabindex="0" role="img" aria-label="Interactive map of four connected fungal compartments" aria-describedby="canvas-help"></canvas>
     </main>
 
     <aside id="inspector" aria-label="Compartment inspector">
         <p class="eyebrow">System live runtime</p>
+        <div class="runtime-summary" aria-label="Runtime summary">
+            <div><b>4</b><span>compartments</span></div>
+            <div><b>4</b><span>active links</span></div>
+        </div>
         <label class="picker">
             <span>Jump to a compartment</span>
             <select id="compartment-select" aria-label="Choose a compartment"></select>
@@ -394,6 +452,20 @@
             event.preventDefault();
         });
 
+        function resetMap() {
+            panX = 0;
+            panY = 0;
+            nodes.forEach((node, index) => {
+                node.x = width / 2 + Math.cos(index * 1.55) * Math.min(130, width * 0.25);
+                node.y = height / 2 + Math.sin(index * 1.55) * Math.min(130, height * 0.25);
+                node.vx = 0;
+                node.vy = 0;
+            });
+            selectNode(selectedNodeId);
+            canvas.focus({ preventScroll: true });
+        }
+
+        document.getElementById("resetMap").addEventListener("click", resetMap);
         compartmentSelect.addEventListener("change", () => selectNode(compartmentSelect.value));
         inspector.addEventListener("click", (event) => {
             const button = event.target.closest("[data-node-id]");
@@ -407,6 +479,8 @@
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(`C${node.id + 1}`, node.x, node.y);
+
+            if (width <= 520) return;
 
             const shortName = node.name.split("-").slice(0, 2).join("-");
             ctx.font = "10px ui-monospace, monospace";
@@ -476,6 +550,8 @@
             requestAnimationFrame(step);
         }
 
+        const normalizedPath = window.location.pathname.replace(/\/index\.html$/, "").replace(/\/$/, "");
+        document.getElementById("guvHome").hidden = !normalizedPath.endsWith("/fungi-cell-map");
         selectNode(0);
         requestAnimationFrame(step);
     </script>

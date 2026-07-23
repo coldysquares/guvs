@@ -1,20 +1,35 @@
-# GUVs / Saperli Smoke Checklist
+# GUVs Smoke Checklist
 
-Run this after changing Saperli, AWD, registry routing, Vercel project settings, or production aliases.
+## Local artifact
 
 ```bash
-node scripts/smoke-check.mjs
+npm run build
 ```
 
-Manual checks:
+Confirm `dist/` contains the root registry plus exactly six registered app directories: PSR, AWD, Router, Aster Graf, Fungi Cell Map, and Saperli Popette. `substrate-001/`, app-local `api/`, `.vercel`, backup, and deployment-config files must not appear in the static artifact.
 
-- `https://saperli-popette.vercel.app/` serves the Saperli Popette page, not the GUVs registry.
-- `https://saperli-popette.vercel.app/api/chat` exists. A `GET` should return an API-style status such as `405`, not the static app shell or a registry page.
-- `https://coldysquares.github.io/guvs/registry.json` includes both `AWD` and `Saperli Popette`.
-- If Vercel has `GROQ_API_KEY` set for the `saperli-popette` project, the app should chat without a browser key.
-- If Vercel does not have `GROQ_API_KEY`, the app should open the key panel after the first chat attempt and accept a local browser key.
+## Current production baseline
 
-Current recommended posture:
+```bash
+npm run smoke
+```
 
-- Groq key mode: hybrid. Prefer a Vercel `GROQ_API_KEY` for Nick/demo use; keep the browser-key fallback for easy personal/local testing.
-- Access mode: keep the stable public share URL `https://saperli-popette.vercel.app` public. Team-scoped Vercel aliases can remain SSO-protected unless every alias needs to be shareable.
+This checks the GitHub Pages registry and the standalone public Saperli surface.
+
+## Unified Vercel preview
+
+```bash
+GUVS_BASE_URL=https://<preview-url>/ \
+GUVS_EXPECT_UNIFIED=1 \
+npm run smoke
+```
+
+The unified check requires:
+
+- `/` serves the GUVs title.
+- `registry.json` contains all six GUVs and excludes Substrate 001.
+- `/psr/`, `/awd/`, `/router/`, `/aster-graf/`, `/fungi-cell-map/`, and `/saperli-popette/` serve the correct applications.
+- `/api/chat` and `/api/groq` return API-style statuses on `GET`, not static HTML or `404`.
+- The standalone `https://saperli-popette.vercel.app` route and API remain healthy.
+
+Before production cutover, also verify AWD and Saperli can make real POST requests with the project environment configured.

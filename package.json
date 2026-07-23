@@ -1,0 +1,11 @@
+{
+  "name": "guvs",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-site.mjs",
+    "smoke": "node scripts/smoke-check.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

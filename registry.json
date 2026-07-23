@@ -38,28 +38,18 @@
     "description": "Routes messy AI/browser work into cleaner downstream output paths."
   },
   {
-    "title": "Substrate 001",
-    "fullName": "Issue 001",
-    "slug": "substrate-001",
-    "type": [
-      "GUV",
-      "artifact",
-      "journal"
-    ],
-    "status": "working",
-    "path": "substrate-001/",
-    "description": "Early substrate journal/artifact experiment."
-  },
-  {
     "title": "Aster Graf",
-    "fullName": "Skywalker family · familiar demo",
+    "fullName": "Skywalker family · constellation + relationship matrix",
     "slug": "aster-graf",
     "type": [
-      "GUV"
+      "GUV",
+      "graph",
+      "matrix"
     ],
     "status": "working",
     "path": "aster-graf/",
-    "description": "Explore a deliberately simplified family map rendered as a constellation. Aster means star; graf means graph."
+    "description": "Explore a recognizable family as both a living constellation and a readable relationship substrate.",
+    "featured": true
   },
   {
     "title": "Fungi Cell Map",

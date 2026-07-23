@@ -176,6 +176,26 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
     chat.scrollTop = chat.scrollHeight;
   }
 
+  function addStarters() {
+    const tray = document.createElement("div");
+    tray.className = "starters";
+    tray.id = "starters";
+    tray.setAttribute("aria-label", "Conversation starters");
+    [
+      "Je veux pratiquer le français.",
+      "On parle de musique ?",
+      "Corrige-moi doucement, s’il te plaît."
+    ].forEach((phrase) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "starter";
+      button.textContent = phrase;
+      button.addEventListener("click", () => send(phrase));
+      tray.appendChild(button);
+    });
+    thread.appendChild(tray);
+  }
+
   function removeThinking() {
     const thinking = $("#thinking");
     if (thinking) thinking.remove();
@@ -263,6 +283,7 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
     if (!clean || busy) return;
 
     stopDictation(true);
+    $("#starters")?.remove();
     addBubble("user", clean);
     history.push({ role: "user", content: clean });
     trimHistory();
@@ -416,7 +437,10 @@ Ways to respond:
   if ("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged = pickFrenchVoice;
   setupSpeechRecognition();
 
+  const normalizedPath = window.location.pathname.replace(/\/index\.html$/, "").replace(/\/$/, "");
+  document.getElementById("guvHome").hidden = !normalizedPath.endsWith("/saperli-popette");
   addBubble("assistant", apiKey && apiKey.startsWith("gsk_") ? welcomeWithKey : welcomeHybrid);
+  addStarters();
 
   input.focus();
 })();

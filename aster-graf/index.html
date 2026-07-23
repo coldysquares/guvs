@@ -429,6 +429,243 @@
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
     }
 
+
+    /* 2026 constellation + substrate matrix pass */
+    header {
+      display: grid;
+      grid-template-columns: auto auto minmax(0, 1fr);
+      grid-template-areas: "identity views controls" "note note note";
+    }
+    .identity { grid-area: identity; }
+    .view-switch {
+      grid-area: views;
+      display: inline-grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 3px;
+      padding: 3px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(6, 9, 17, 0.54);
+    }
+    .view-tab {
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 650;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .view-tab[aria-selected="true"] {
+      background: rgba(124, 92, 255, 0.22);
+      color: var(--ink);
+      box-shadow: inset 0 0 0 1px rgba(124, 92, 255, 0.3);
+    }
+    .controls { grid-area: controls; }
+    #app[data-view="matrix"] .control-buttons { display: none; }
+    .name-note { grid-area: note; }
+    .guv-home {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .guv-home:hover { color: var(--ink); border-color: rgba(124, 92, 255, 0.48); }
+    .search-status {
+      min-width: 110px;
+      color: var(--muted);
+      font-size: 11px;
+      text-align: right;
+    }
+    #stage,
+    #matrixView { grid-column: 1; grid-row: 2; }
+    #matrixView {
+      min-width: 0;
+      overflow: auto;
+      padding: clamp(18px, 3vw, 34px);
+      background:
+        radial-gradient(circle at 12% 0%, rgba(126, 228, 210, 0.08), transparent 28rem),
+        linear-gradient(180deg, #0b1120 0%, #0a1020 100%);
+    }
+    [hidden] { display: none !important; }
+    .matrix-shell { width: min(1160px, 100%); margin: 0 auto; }
+    .matrix-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+    .matrix-kicker {
+      margin: 0 0 6px;
+      color: var(--teal);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .matrix-head h2 {
+      margin: 0;
+      font-size: clamp(22px, 3vw, 34px);
+      letter-spacing: -0.04em;
+    }
+    .matrix-head p {
+      max-width: 64ch;
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .metric-strip {
+      display: grid;
+      grid-template-columns: repeat(3, auto);
+      gap: 8px;
+    }
+    .metric {
+      min-width: 88px;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(8, 12, 23, 0.72);
+    }
+    .metric b { display: block; font-size: 16px; }
+    .metric span {
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+    .matrix-table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(7, 11, 20, 0.62);
+    }
+    .matrix-table {
+      width: 100%;
+      min-width: 880px;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .matrix-table th,
+    .matrix-table td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(108, 133, 204, 0.14);
+      text-align: left;
+      vertical-align: top;
+    }
+    .matrix-table th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #10172a;
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .matrix-table tr:last-child td { border-bottom: 0; }
+    .matrix-table tr.is-selected td { background: rgba(124, 92, 255, 0.1); }
+    .matrix-person,
+    .matrix-link {
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      text-align: left;
+    }
+    .matrix-person {
+      padding: 0;
+      color: var(--ink);
+      font-weight: 750;
+    }
+    .matrix-person small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .matrix-links { display: flex; flex-wrap: wrap; gap: 5px; }
+    .matrix-link {
+      min-height: 32px;
+      padding: 5px 8px;
+      border: 1px solid rgba(124, 92, 255, 0.22);
+      border-radius: 999px;
+      background: rgba(124, 92, 255, 0.07);
+      font-size: 11px;
+    }
+    .matrix-person:hover,
+    .matrix-link:hover { color: var(--teal); }
+    .view-tab:focus-visible,
+    .matrix-person:focus-visible,
+    .matrix-link:focus-visible,
+    .guv-home:focus-visible {
+      outline: 3px solid rgba(126, 228, 210, 0.55);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 1180px) {
+      header {
+        grid-template-columns: 1fr;
+        grid-template-areas: "identity" "views" "controls" "note";
+      }
+      .view-switch { width: 100%; }
+      .search-status { grid-column: 1 / -1; text-align: left; }
+      #matrixView { min-height: 420px; overflow: visible; }
+      .matrix-head { align-items: start; flex-direction: column; }
+      .metric-strip { width: 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .metric { min-width: 0; }
+    }
+
+    @media (max-width: 560px) {
+      .guv-home { display: none; }
+      #matrixView { padding: 16px 12px calc(22px + env(safe-area-inset-bottom)); }
+      .matrix-table-wrap { border: 0; background: transparent; overflow: visible; }
+      .matrix-table { min-width: 0; display: block; }
+      .matrix-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+      }
+      .matrix-table tbody,
+      .matrix-table tr,
+      .matrix-table td { display: block; width: 100%; }
+      .matrix-table tr {
+        margin-bottom: 10px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgba(7, 11, 20, 0.72);
+      }
+      .matrix-table td {
+        display: grid;
+        grid-template-columns: 92px minmax(0, 1fr);
+        gap: 10px;
+        padding: 8px 0;
+        border: 0;
+      }
+      .matrix-table td::before {
+        content: attr(data-label);
+        color: var(--muted);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+      }
+      .matrix-table td:first-child { padding-top: 0; }
+      .matrix-table td:last-child { padding-bottom: 0; }
+    }
+
   </style>
 </head>
 <body>
@@ -437,6 +674,11 @@
     <div class="identity">
       <h1><span class="spark">✦</span> Aster Graf</h1>
       <span class="tag">Skywalker family · familiar demo</span>
+      <a class="guv-home" id="guvHome" href="../" hidden>← GUVs</a>
+    </div>
+    <div class="view-switch" role="tablist" aria-label="Aster Graf view">
+      <button class="view-tab" id="constellationTab" type="button" role="tab" aria-selected="true" aria-controls="stage">Constellation</button>
+      <button class="view-tab" id="matrixTab" type="button" role="tab" aria-selected="false" aria-controls="matrixView">Relationship matrix</button>
     </div>
     <div class="controls">
       <input id="search" type="search" placeholder="Search the family…" autocomplete="off" aria-label="Search the family" />
@@ -444,19 +686,42 @@
       <div class="control-buttons" aria-label="Graph controls">
         <button class="btn" id="zoomOut" type="button" aria-label="Zoom out">−</button>
         <button class="btn" id="zoomIn" type="button" aria-label="Zoom in">+</button>
-        <button class="btn" id="freeze" type="button">Freeze</button>
+        <button class="btn" id="freeze" type="button" aria-pressed="false">Freeze</button>
         <button class="btn" id="fit" type="button">Fit</button>
       </div>
+      <div class="search-status" id="searchStatus" role="status" aria-live="polite"></div>
     </div>
     <details class="name-note">
-      <summary>Why “Aster Graf”?</summary>
+      <summary>Aster = star · graf = graph</summary>
       <p><strong>Aster</strong> comes from the Greek word for star; <strong>graf</strong> is a compact spelling of graph. The result is a family map drawn as a constellation.</p>
     </details>
   </header>
-  <div id="stage">
-    <canvas id="c" role="img" aria-label="Interactive constellation showing a simplified Skywalker family graph"></canvas>
-    <div class="hint">drag to move · use + / − to zoom · tap a person to inspect</div>
+  <div id="stage" role="tabpanel" aria-labelledby="constellationTab">
+    <canvas id="c" tabindex="0" role="img" aria-label="Interactive constellation showing a simplified Skywalker family graph" aria-describedby="graphHelp"></canvas>
+    <div class="hint" id="graphHelp">drag to move · use + / − to zoom · tap a person to inspect · matrix view is the accessible data alternative</div>
   </div>
+  <section id="matrixView" role="tabpanel" aria-labelledby="matrixTab" hidden>
+    <div class="matrix-shell">
+      <div class="matrix-head">
+        <div>
+          <p class="matrix-kicker">Readable substrate</p>
+          <h2>Skywalker relationship matrix</h2>
+          <p>The same constellation expressed as inspectable rows: people, generations, direct family ties, and the relationship substrate connecting them.</p>
+        </div>
+        <div class="metric-strip" aria-label="Family graph summary">
+          <div class="metric"><b id="peopleMetric">0</b><span>people</span></div>
+          <div class="metric"><b id="generationMetric">0</b><span>generations</span></div>
+          <div class="metric"><b id="linkMetric">0</b><span>direct links</span></div>
+        </div>
+      </div>
+      <div class="matrix-table-wrap">
+        <table class="matrix-table">
+          <thead><tr><th>Person</th><th>Parents</th><th>Partners</th><th>Children</th><th>Other ties</th></tr></thead>
+          <tbody id="matrixBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
   <aside id="panel">
     <div class="eyebrow">Familiar demo data</div>
     <h2 class="person-name">The Skywalker family</h2>
@@ -598,6 +863,11 @@ const ctx = cv.getContext('2d');
 const panel = document.getElementById('panel');
 const sheet = document.getElementById('sheet');
 const personSelect = document.getElementById('personSelect');
+const stage = document.getElementById('stage');
+const matrixView = document.getElementById('matrixView');
+const matrixBody = document.getElementById('matrixBody');
+const searchStatus = document.getElementById('searchStatus');
+let activeViewMode = 'constellation';
 let W = 0;
 let H = 0;
 let DPR = 1;
@@ -914,6 +1184,7 @@ function selectNode(n) {
   }
   updatePanel();
   updateSheet();
+  updateMatrixSelection();
 }
 
 // Update desktop side panel content.
@@ -974,8 +1245,106 @@ function getRelations(n) {
   return out;
 }
 
+
+function matrixButtons(relations, includeType = false) {
+  if (!relations.length) return '<span class="empty">—</span>';
+  return `<div class="matrix-links">${relations.map((rel) => {
+    const label = includeType ? `${REL_LABEL[rel.type] || rel.type}: ` : '';
+    return `<button class="matrix-link" type="button" data-id="${escapeHtml(rel.other.id)}">${escapeHtml(label + rel.other.name)}</button>`;
+  }).join('')}</div>`;
+}
+
+function buildMatrix() {
+  const rows = [...nodes]
+    .sort((a, b) => a.gen - b.gen || a.name.localeCompare(b.name))
+    .map((node) => {
+      const relations = getRelations(node);
+      const parents = relations.filter((rel) => rel.type === 'parent' || rel.type === 'adoptiveParent');
+      const partners = relations.filter((rel) => rel.type === 'partner');
+      const children = relations.filter((rel) => rel.type === 'child' || rel.type === 'adoptiveChild');
+      const other = relations.filter((rel) => !parents.includes(rel) && !partners.includes(rel) && !children.includes(rel));
+      const searchable = [node.name, node.role, node.note, ...relations.map((rel) => rel.other.name)].join(' ').toLowerCase();
+      return `<tr data-person-id="${escapeHtml(node.id)}" data-search="${escapeHtml(searchable)}">
+        <td data-label="Person"><button class="matrix-person" type="button" data-id="${escapeHtml(node.id)}">${escapeHtml(node.name)}<small>generation ${node.gen + 1} · ${escapeHtml(node.role)}</small></button></td>
+        <td data-label="Parents">${matrixButtons(parents)}</td>
+        <td data-label="Partners">${matrixButtons(partners)}</td>
+        <td data-label="Children">${matrixButtons(children)}</td>
+        <td data-label="Other ties">${matrixButtons(other, true)}</td>
+      </tr>`;
+    }).join('');
+
+  matrixBody.innerHTML = rows;
+  document.getElementById('peopleMetric').textContent = String(nodes.length);
+  document.getElementById('generationMetric').textContent = String(Math.max(...nodes.map((node) => node.gen)) + 1);
+  document.getElementById('linkMetric').textContent = String(directLinks.length);
+  updateMatrixSelection();
+  updateSearchUI();
+}
+
+function updateMatrixSelection() {
+  if (!matrixBody) return;
+  matrixBody.querySelectorAll('tr[data-person-id]').forEach((row) => {
+    row.classList.toggle('is-selected', Boolean(selected && row.dataset.personId === selected.id));
+  });
+}
+
+function setViewMode(mode) {
+  activeViewMode = mode === 'matrix' ? 'matrix' : 'constellation';
+  const graphActive = activeViewMode === 'constellation';
+  stage.hidden = !graphActive;
+  matrixView.hidden = graphActive;
+  document.getElementById('app').dataset.view = activeViewMode;
+  const constellationTab = document.getElementById('constellationTab');
+  const matrixTab = document.getElementById('matrixTab');
+  constellationTab.setAttribute('aria-selected', String(graphActive));
+  matrixTab.setAttribute('aria-selected', String(!graphActive));
+  constellationTab.tabIndex = graphActive ? 0 : -1;
+  matrixTab.tabIndex = graphActive ? -1 : 0;
+  updateSheet();
+  if (graphActive) {
+    requestAnimationFrame(() => {
+      resize();
+      if (selected && window.matchMedia('(max-width: 1180px)').matches) {
+        flyToNode(selected, 0.8);
+      }
+    });
+  }
+}
+
+function updateSearchUI() {
+  const matched = nodes.filter((node) => !query || matches(node));
+  searchStatus.textContent = query
+    ? `${matched.length} ${matched.length === 1 ? 'match' : 'matches'} · Enter to inspect`
+    : `${nodes.length} people · ${directLinks.length} direct links`;
+  matrixBody.querySelectorAll('tr[data-search]').forEach((row) => {
+    row.hidden = Boolean(query && !row.dataset.search.includes(query));
+  });
+}
+
+matrixBody.addEventListener('click', (event) => {
+  const target = event.target.closest('[data-id]');
+  if (!target) return;
+  const node = byId[target.dataset.id];
+  if (node) selectNode(node);
+});
+
+document.getElementById('constellationTab').addEventListener('click', () => setViewMode('constellation'));
+document.getElementById('matrixTab').addEventListener('click', () => setViewMode('matrix'));
+document.querySelector('.view-switch').addEventListener('keydown', (event) => {
+  if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+  event.preventDefault();
+  const nextMode = activeViewMode === 'constellation' ? 'matrix' : 'constellation';
+  setViewMode(nextMode);
+  document.getElementById(nextMode === 'matrix' ? 'matrixTab' : 'constellationTab').focus();
+});
+
 // Update bottom sheet for mobile. Show/hide accordingly.
 function updateSheet() {
+  if (activeViewMode === 'matrix') {
+    sheet.classList.remove('show');
+    sheet.innerHTML = '';
+    return;
+  }
   if (!window.matchMedia('(max-width: 1180px)').matches) {
     sheet.classList.remove('show');
     sheet.innerHTML = '';
@@ -1098,6 +1467,15 @@ cv.addEventListener('wheel', (e) => {
 let query = '';
 document.getElementById('search').addEventListener('input', (e) => {
   query = e.target.value.trim().toLowerCase();
+  updateSearchUI();
+});
+document.getElementById('search').addEventListener('keydown', (event) => {
+  if (event.key !== 'Enter') return;
+  const target = nodes.find((node) => matches(node));
+  if (target) {
+    event.preventDefault();
+    selectNode(target);
+  }
 });
 personSelect.addEventListener('change', () => {
   const target = byId[personSelect.value];
@@ -1111,6 +1489,7 @@ document.getElementById('fit').addEventListener('click', () => {
 document.getElementById('freeze').addEventListener('click', (e) => {
   physicsFrozen = !physicsFrozen;
   e.currentTarget.classList.toggle('active', physicsFrozen);
+  e.currentTarget.setAttribute('aria-pressed', String(physicsFrozen));
   e.currentTarget.textContent = physicsFrozen ? 'Unfreeze' : 'Freeze';
 });
 document.getElementById('zoomOut').addEventListener('click', () => {
@@ -1140,10 +1519,13 @@ window.addEventListener('resize', () => {
 });
 
 // Initial setup.
+const normalizedPath = window.location.pathname.replace(/\/index\.html$/, '').replace(/\/$/, '');
+document.getElementById('guvHome').hidden = !normalizedPath.endsWith('/aster-graf');
 positionNodesByGeneration();
 resize();
-updatePanel();
-updateSheet();
+buildMatrix();
+setViewMode('constellation');
+selectNode(byId.luke);
 requestAnimationFrame(loop);
 </script>
 </body>

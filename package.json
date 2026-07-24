@@ -3,7 +3,9 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build-site.mjs",
-    "smoke": "node scripts/smoke-check.mjs"
+    "smoke": "node scripts/smoke-check.mjs",
+    "test": "node --no-warnings --test tests/*.test.mjs",
+    "verify": "npm test && npm run build && node scripts/verify-build.mjs"
   },
   "engines": {
     "node": ">=20"

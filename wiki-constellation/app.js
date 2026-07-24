@@ -117,6 +117,7 @@ function fragmentFromPayload(payload, options = {}) {
           description:
             "Enter any article membrane; each sourced ring accumulates while the exact route back is preserved.",
           sourceLabel: "English Wikipedia",
+          fieldMode: "focus-ring",
           layout: "radial"
         }
       : {}),
@@ -145,6 +146,7 @@ const placeholder = {
   kicker: "Wiki lens / live public source",
   description:
     "A searched article becomes the first membrane; its outgoing links become sourced paths.",
+  fieldMode: "focus-ring",
   layout: "radial",
   rootId: "wiki-preparing",
   initiallyVisible: ["wiki-preparing"],

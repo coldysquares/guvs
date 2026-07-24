@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const checks = [];
-const guvsBase = normalizeBase(process.env.GUVS_BASE_URL || "https://coldysquares.github.io/guvs/");
+const guvsBase = normalizeBase(process.env.GUVS_BASE_URL || "https://guvs.vercel.app/");
 const saperliBase = normalizeBase(process.env.SAPERLI_BASE_URL || "https://saperli-popette.vercel.app/");
 const expectUnified = /^(1|true|yes)$/i.test(process.env.GUVS_EXPECT_UNIFIED || "");
 
@@ -48,19 +48,51 @@ async function checkApiRoute(name, url) {
   }
 }
 
+async function checkWikiQuery() {
+  const name = "Unified Wiki API resolves a live constellation";
+  try {
+    const { response, text } = await fetchText(
+      target(guvsBase, "api/wiki?q=Paul%20Thomas%20Anderson")
+    );
+    const payload = JSON.parse(text);
+    const valid =
+      response.ok &&
+      payload.title === "Paul Thomas Anderson" &&
+      Array.isArray(payload.links) &&
+      payload.links.length > 0;
+    if (valid) pass(name, `HTTP ${response.status}; ${payload.links.length} linked pages`);
+    else fail(name, `HTTP ${response.status}; incomplete Wikipedia payload`);
+  } catch (error) {
+    fail(name, error.message);
+  }
+}
+
 async function checkRegistry() {
   const name = "GUVs registry contains the active applications";
   try {
     const { response, text } = await fetchText(target(guvsBase, "registry.json"));
     const registry = JSON.parse(text);
     const titles = new Set(registry.map((entry) => entry.title));
-    const expected = ["PSR", "AWD", "Zero-Waste Router", "Aster Graf", "Fungi Cell Map", "Saperli Popette"];
+    const expected = [
+      "PSR",
+      "AWD",
+      "Zero-Waste Router",
+      "Aster Graf",
+      "Fungi Cell Map",
+      "Wiki Constellation",
+      "Saperli Popette"
+    ];
     const missing = expected.filter((title) => !titles.has(title));
-    const substratePresent = titles.has("Substrate 001") || registry.some((entry) => entry.slug === "substrate-001");
+    const substratePresent =
+      titles.has("Substrate 001") || registry.some((entry) => entry.slug === "substrate-001");
     if (response.ok && missing.length === 0 && !substratePresent && registry.length === expected.length) {
       pass(name, `HTTP ${response.status}; ${registry.length} entries; Substrate excluded`);
     } else {
-      fail(name, `HTTP ${response.status}; missing ${missing.join(", ") || "none"}; Substrate ${substratePresent ? "present" : "absent"}; ${registry.length} entries`);
+      fail(
+        name,
+        `HTTP ${response.status}; missing ${missing.join(", ") || "none"}; ` +
+          `Substrate ${substratePresent ? "present" : "absent"}; ${registry.length} entries`
+      );
     }
   } catch (error) {
     fail(name, error.message);
@@ -78,9 +110,16 @@ if (expectUnified) {
   await checkTitle("Unified Router route serves Router", target(guvsBase, "router/"), "Zero-Waste Router");
   await checkTitle("Unified Aster route serves Aster", target(guvsBase, "aster-graf/"), "Aster Graf — Skywalker Family");
   await checkTitle("Unified Fungi route serves Fungi", target(guvsBase, "fungi-cell-map/"), "Fungi Cell Map");
+  await checkTitle(
+    "Unified Wiki route serves Wiki Constellation",
+    target(guvsBase, "wiki-constellation/"),
+    "Wiki Constellation — Wikipedia Link Explorer"
+  );
   await checkTitle("Unified Saperli route serves Saperli", target(guvsBase, "saperli-popette/"), "Saperli Popette");
   await checkApiRoute("Unified /api/chat exists", target(guvsBase, "api/chat"));
   await checkApiRoute("Unified /api/groq exists", target(guvsBase, "api/groq"));
+  await checkApiRoute("Unified /api/wiki exists", target(guvsBase, "api/wiki"));
+  await checkWikiQuery();
 }
 
 console.log(`GUVs target: ${guvsBase}`);

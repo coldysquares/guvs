@@ -19,6 +19,7 @@
       margin: 0;
       min-height: 100vh;
       min-height: 100dvh;
+      overflow-x: hidden;
       background: radial-gradient(circle at top left, #142020 0, var(--bg) 38rem);
       color: var(--text);
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -67,10 +68,12 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
       gap: 14px;
+      min-width: 0;
     }
 
     .card {
       display: block;
+      min-width: 0;
       min-height: 180px;
       padding: 18px;
       border: 1px solid var(--line);
@@ -143,6 +146,12 @@
       font-size: 13px;
     }
 
+    .dek,
+    .full-name,
+    .description {
+      overflow-wrap: anywhere;
+    }
+
     .status {
       display: inline-block;
       margin-top: 18px;
@@ -160,14 +169,48 @@
 
     @media (max-width: 600px) {
       main {
-        width: min(100% - 24px, 920px);
-        padding-top: max(36px, env(safe-area-inset-top));
+        width: min(calc(100% - 24px), 920px);
+        padding-top: max(24px, env(safe-area-inset-top));
+        padding-bottom: max(32px, env(safe-area-inset-bottom));
       }
 
-      .dek { margin-bottom: 16px; }
-      .collection-meta { margin-bottom: 26px; }
+      h1 { margin-bottom: 8px; font-size: 52px; }
+      .dek {
+        margin-bottom: 12px;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      .collection-meta {
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 16px;
+      }
+      .collection-meta span { padding: 5px 8px; font-size: 9px; }
       .grid { grid-template-columns: 1fr; }
-      .card, .card.featured { grid-column: auto; min-height: 0; }
+      .card, .card.featured {
+        grid-column: auto;
+        min-height: 0;
+        padding: 15px 16px;
+        border-radius: 16px;
+      }
+      .card.featured {
+        padding: 18px;
+        border-color: rgba(183, 255, 244, 0.45);
+      }
+      .eyebrow { margin-bottom: 10px; font-size: 9px; }
+      .title { font-size: 20px; }
+      .full-name { margin-bottom: 8px; font-size: 11px; }
+      .description {
+        display: -webkit-box;
+        overflow: hidden;
+        font-size: 11px;
+        line-height: 1.45;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+      }
+      .status { display: none; }
+      .open-label { margin-top: 10px; font-size: 9px; }
+      footer { margin-top: 26px; }
     }
 
     @media (prefers-reduced-motion: reduce) {

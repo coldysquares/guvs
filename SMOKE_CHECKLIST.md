@@ -6,7 +6,7 @@
 npm run build
 ```
 
-Confirm `dist/` contains the root registry plus exactly six registered app directories: PSR, AWD, Router, Aster Graf, Fungi Cell Map, and Saperli Popette. `substrate-001/`, app-local `api/`, `.vercel`, backup, and deployment-config files must not appear in the static artifact.
+Confirm `dist/` contains the root registry plus exactly seven registered app directories: PSR, AWD, Router, Aster Graf, Fungi Cell Map, Wiki Constellation, and Saperli Popette. `substrate-001/`, app-local `api/`, `.vercel`, backup, and deployment-config files must not appear in the static artifact.
 
 ## Current production baseline
 
@@ -14,7 +14,7 @@ Confirm `dist/` contains the root registry plus exactly six registered app direc
 npm run smoke
 ```
 
-This checks the GitHub Pages registry and the standalone public Saperli surface.
+This checks the public GUVs registry and the standalone public Saperli surface.
 
 ## Unified Vercel preview
 
@@ -27,9 +27,10 @@ npm run smoke
 The unified check requires:
 
 - `/` serves the GUVs title.
-- `registry.json` contains all six GUVs and excludes Substrate 001.
-- `/psr/`, `/awd/`, `/router/`, `/aster-graf/`, `/fungi-cell-map/`, and `/saperli-popette/` serve the correct applications.
-- `/api/chat` and `/api/groq` return API-style statuses on `GET`, not static HTML or `404`.
+- `registry.json` contains all seven GUVs and excludes Substrate 001.
+- `/psr/`, `/awd/`, `/router/`, `/aster-graf/`, `/fungi-cell-map/`, `/wiki-constellation/`, and `/saperli-popette/` serve the correct applications.
+- `/api/chat`, `/api/groq`, and `/api/wiki` return API-style statuses on incomplete or unsupported requests, not static HTML or `404`.
+- `/api/wiki?q=Paul%20Thomas%20Anderson` returns a resolved origin article and a linked-page array.
 - The standalone `https://saperli-popette.vercel.app` route and API remain healthy.
 
-Before production cutover, also verify AWD and Saperli can make real POST requests with the project environment configured.
+Before production promotion, also verify AWD and Saperli can make real POST requests with the project environment configured, and verify at least two Wiki Constellation searches on desktop and mobile.

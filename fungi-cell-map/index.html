@@ -96,6 +96,9 @@
             backdrop-filter: blur(14px);
         }
 
+        .inspector-grip { display: none; }
+        .inspector-body { min-height: 0; }
+
         .eyebrow {
             margin: 0 0 8px;
             color: var(--muted);
@@ -187,33 +190,128 @@
         .empty { padding: 12px 0; color: var(--muted); font-size: 13px; font-style: italic; }
 
         @media (max-width: 760px) {
-            body { flex-direction: column; }
+            body {
+                display: block;
+                height: 100dvh;
+                min-height: 0;
+                overflow: hidden;
+            }
 
             #canvas-wrapper {
-                flex: 0 0 min(54dvh, 520px);
                 width: 100%;
-                min-height: 320px;
+                height: 100dvh;
+                min-height: 0;
             }
 
             #inspector {
-                width: 100%;
+                position: fixed;
+                z-index: 6;
+                right: max(10px, env(safe-area-inset-right));
+                bottom: max(10px, env(safe-area-inset-bottom));
+                left: max(10px, env(safe-area-inset-left));
+                width: auto;
                 min-width: 0;
-                height: auto;
-                flex: 1 1 auto;
-                padding: 18px max(16px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
-                border-top: 1px solid var(--border-glow);
-                border-left: 0;
-                box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.4);
+                height: min(39dvh, 340px);
+                padding: 0;
+                overflow: hidden;
+                border: 1px solid var(--border-glow);
+                border-radius: 24px;
+                box-shadow: 0 -12px 42px rgba(0, 0, 0, 0.58);
+                transition: transform 220ms ease;
             }
 
+            #inspector.collapsed {
+                transform: translateY(calc(100% - 64px));
+            }
+
+            .inspector-grip {
+                min-height: 64px;
+                padding: 10px 12px 10px 17px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+                background: rgba(10, 18, 34, 0.96);
+            }
+
+            .inspector-grip span {
+                min-width: 0;
+                overflow: hidden;
+                color: var(--teal);
+                font-size: 11px;
+                letter-spacing: 0.12em;
+                text-overflow: ellipsis;
+                text-transform: uppercase;
+                white-space: nowrap;
+            }
+
+            .inspector-toggle {
+                min-width: 74px;
+                min-height: 44px;
+                padding: 8px 12px;
+                border: 1px solid var(--border-glow);
+                border-radius: 999px;
+                background: rgba(124, 92, 255, 0.12);
+                color: var(--ink);
+                cursor: pointer;
+            }
+
+            .inspector-body {
+                height: calc(100% - 64px);
+                padding: 14px 16px 24px;
+                overflow: auto;
+                overscroll-behavior: contain;
+            }
+
+            #inspector > .eyebrow,
+            #inspector > .runtime-summary {
+                display: none;
+            }
+
+            .picker { margin: 0 0 12px; }
+
+            .picker span {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip: rect(0 0 0 0);
+                white-space: nowrap;
+            }
+
+            select {
+                min-height: 44px;
+                border-radius: 14px;
+            }
+
+            .compartment-name { font-size: 18px; }
+
+            .compartment-status {
+                margin-bottom: 8px;
+                font-size: 11px;
+            }
+
+            .field {
+                padding: 8px 0;
+                font-size: 12px;
+            }
+
+            .hyphal-conns {
+                grid-auto-flow: column;
+                grid-auto-columns: minmax(210px, 82%);
+                grid-template-columns: none;
+                overflow-x: auto;
+                scroll-snap-type: x proximity;
+            }
+
+            .hyphal-link { scroll-snap-align: start; }
             .map-title { top: max(14px, env(safe-area-inset-top)); }
-            .picker { margin-bottom: 18px; }
-            .hyphal-conns { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 380px), (max-height: 640px) {
-            #canvas-wrapper { flex-basis: 46dvh; min-height: 250px; }
             .map-title p { max-width: 270px; }
+            #inspector { height: min(44dvh, 300px); }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -267,6 +365,7 @@
             .map-title { padding-right: 92px; }
             .guv-home { display: none; }
             .map-actions { top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); }
+            .map-action { min-height: 44px; border-radius: 999px; }
         }
 
     </style>
@@ -284,17 +383,23 @@
         <canvas id="constellation" tabindex="0" role="img" aria-label="Interactive map of four connected fungal compartments" aria-describedby="canvas-help"></canvas>
     </main>
 
-    <aside id="inspector" aria-label="Compartment inspector">
+    <aside id="inspector" class="collapsed" aria-label="Compartment inspector">
+        <div class="inspector-grip">
+            <span id="activeMembraneLabel">Active membrane</span>
+            <button class="inspector-toggle" id="inspectorToggle" type="button" aria-expanded="false">Inspect</button>
+        </div>
         <p class="eyebrow">System live runtime</p>
         <div class="runtime-summary" aria-label="Runtime summary">
             <div><b>4</b><span>compartments</span></div>
             <div><b>4</b><span>active links</span></div>
         </div>
-        <label class="picker">
-            <span>Jump to a compartment</span>
-            <select id="compartment-select" aria-label="Choose a compartment"></select>
-        </label>
-        <div id="inspector-content" aria-live="polite"></div>
+        <div class="inspector-body">
+            <label class="picker">
+                <span>Jump to a compartment</span>
+                <select id="compartment-select" aria-label="Choose a compartment"></select>
+            </label>
+            <div id="inspector-content" aria-live="polite"></div>
+        </div>
     </aside>
 
     <script>
@@ -314,7 +419,10 @@
 
         const canvas = document.getElementById("constellation");
         const ctx = canvas.getContext("2d");
+        const inspectorShell = document.getElementById("inspector");
         const inspector = document.getElementById("inspector-content");
+        const inspectorToggle = document.getElementById("inspectorToggle");
+        const activeMembraneLabel = document.getElementById("activeMembraneLabel");
         const compartmentSelect = document.getElementById("compartment-select");
         let width = 0;
         let height = 0;
@@ -325,6 +433,8 @@
         let isPanning = false;
         let startX = 0;
         let startY = 0;
+        let pointerStart = null;
+        let pointerMoved = false;
 
         function resizeCanvas() {
             const oldWidth = width;
@@ -364,12 +474,25 @@
             compartmentSelect.append(option);
         });
 
-        function selectNode(id) {
+        function isMobilePond() {
+            return window.matchMedia("(max-width: 760px)").matches;
+        }
+
+        function setInspectorExpanded(expanded) {
+            if (!isMobilePond()) expanded = true;
+            inspectorShell.classList.toggle("collapsed", !expanded);
+            inspectorToggle.setAttribute("aria-expanded", String(expanded));
+            inspectorToggle.textContent = expanded ? "Map" : "Inspect";
+        }
+
+        function selectNode(id, { open = true } = {}) {
             const node = nodes.find((candidate) => candidate.id === Number(id));
             if (!node) return;
             selectedNodeId = node.id;
             compartmentSelect.value = String(node.id);
+            activeMembraneLabel.textContent = `C${node.id + 1} · ${node.name}`;
             updateInspector(node.id);
+            if (open) setInspectorExpanded(true);
         }
 
         function updateInspector(id) {
@@ -409,10 +532,11 @@
         canvas.addEventListener("pointerdown", (event) => {
             canvas.setPointerCapture(event.pointerId);
             const point = pointerPosition(event);
+            pointerStart = { x: event.clientX, y: event.clientY };
+            pointerMoved = false;
             dragNode = nodes.find((node) => Math.hypot(node.x - point.x, node.y - point.y) < node.radius + 10);
 
             if (dragNode) {
-                selectNode(dragNode.id);
                 canvas.classList.add("dragging");
             } else {
                 isPanning = true;
@@ -422,6 +546,15 @@
         });
 
         canvas.addEventListener("pointermove", (event) => {
+            if (
+                pointerStart &&
+                !pointerMoved &&
+                Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y) < 8
+            ) {
+                return;
+            }
+            if (pointerStart) pointerMoved = true;
+
             if (dragNode) {
                 const rect = canvas.getBoundingClientRect();
                 dragNode.x = event.clientX - rect.left - panX;
@@ -434,8 +567,11 @@
 
         function endPointer(event) {
             if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+            if (event.type === "pointerup" && dragNode && !pointerMoved) selectNode(dragNode.id);
             dragNode = null;
             isPanning = false;
+            pointerStart = null;
+            pointerMoved = false;
             canvas.classList.remove("dragging");
         }
 
@@ -466,6 +602,11 @@
         }
 
         document.getElementById("resetMap").addEventListener("click", resetMap);
+        inspectorToggle.addEventListener("click", () => {
+            const shouldExpand = inspectorShell.classList.contains("collapsed");
+            setInspectorExpanded(shouldExpand);
+            if (!shouldExpand) canvas.focus({ preventScroll: true });
+        });
         compartmentSelect.addEventListener("change", () => selectNode(compartmentSelect.value));
         inspector.addEventListener("click", (event) => {
             const button = event.target.closest("[data-node-id]");
@@ -552,7 +693,8 @@
 
         const normalizedPath = window.location.pathname.replace(/\/index\.html$/, "").replace(/\/$/, "");
         document.getElementById("guvHome").hidden = !normalizedPath.endsWith("/fungi-cell-map");
-        selectNode(0);
+        selectNode(0, { open: false });
+        setInspectorExpanded(false);
         requestAnimationFrame(step);
     </script>
 </body>

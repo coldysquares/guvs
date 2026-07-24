@@ -1,39 +1,28 @@
 # GUVs Deployment Architecture
 
-Status: candidate unified-root migration. Current production surfaces remain unchanged.
+Status: unified Vercel front door active.
 
 Last architecture pass: 2026-07-23.
 
 ## Direct observations
 
-- `https://coldysquares.github.io/guvs/` currently serves the GUVs registry.
-- GitHub Pages currently returns `404` for `/api/chat` and `/api/groq`.
-- The repository is approximately 1 MB, so GitHub Pages size and bandwidth limits are not the immediate constraint.
-- Vercel projects `awd` and `saperli-popette` are connected to this repository with app-specific root directories and create branch previews on push.
-- No Vercel project named `guvs` was present when projects were enumerated on 2026-07-23.
+- `https://guvs.vercel.app/` is the public GUVs production front door.
+- The root Vercel project is linked locally as project `guvs`.
+- The root build runs `npm run build` and serves `dist/`.
+- Root Vercel Functions own the unified `/api/chat`, `/api/groq`, and `/api/wiki` routes.
+- Standalone AWD and Saperli Vercel projects remain available as direct-entry surfaces.
+- GitHub Pages can serve the static collection but cannot execute the API routes.
 
-## Current production surfaces
+## Production surfaces
 
-| Surface | Repo path | Current production owner | State |
+| Surface | Repo path | Production owner | State |
 | --- | --- | --- | --- |
-| GUVs registry and static apps | `/` and registered app folders | GitHub Pages from `main` | active |
-| AWD | `/awd` | Vercel project `awd`, Root Directory `awd` | active |
-| Saperli Popette | `/saperli-popette` | Vercel project `saperli-popette`, Root Directory `saperli-popette` | active |
+| GUVs registry and registered apps | `/` and registry paths | Vercel project `guvs` | active |
+| AWD direct entry | `/awd` | Vercel project `awd` | active |
+| Saperli direct entry | `/saperli-popette` | Vercel project `saperli-popette` | active |
+| GitHub Pages static copy | registered static paths | GitHub Pages from `main` | fallback |
 
-## Recommended target
-
-Create one additional Vercel project as the GUVs front door:
-
-- Candidate project name: `guvs`
-- Repository: `coldysquares/guvs`
-- Production branch: `main`
-- Root Directory: `.`
-- Build command: `npm run build`
-- Output directory: `dist`
-- Required production secret for AWD: `GROQ_API_KEY`
-- Preview protection: team-protected is acceptable; the final public production alias should be explicitly verified
-
-Expected unified routes:
+## Unified routes
 
 | Route | Owner |
 | --- | --- |
@@ -41,12 +30,13 @@ Expected unified routes:
 | `/<registered-slug>/` | Registered static GUV |
 | `/api/chat` | Root Saperli-compatible function |
 | `/api/groq` | Root adapter to the canonical AWD handler |
+| `/api/wiki` | Bounded English Wikipedia lookup for Wiki Constellation |
 
-The standalone AWD and Saperli projects remain in place. They preserve their stable direct URLs, independent environment variables, and rollback histories. The unified project becomes the coherent browse-and-try front door.
+The standalone AWD and Saperli projects preserve stable direct URLs, independent environment variables, and rollback histories. The unified project is the coherent browse-and-try front door.
 
-## Why Vercel is the bounded recommendation
+## Why Vercel is the bounded host
 
-GitHub Pages remains a good static fallback, but it cannot execute the two API handlers and does not provide this repo with per-branch application previews. Cloudflare Pages could supply both features, but it would add a second deployment account and require adapting the existing Node/Vercel function workflow. Vercel already owns both server-backed apps, already receives Git branch previews, and can serve the current static HTML without a framework rewrite.
+GitHub Pages remains a useful static fallback, but it cannot execute the API handlers and does not provide this repository with one server-backed branch-preview surface. Vercel already owns the server-backed GUV routes and serves the current static HTML without a framework rewrite.
 
 ## Build boundary
 
@@ -63,7 +53,7 @@ This keeps source, tooling, historical material, and app-local server code out o
 
 `substrate-001/` is intentionally absent from `registry.json`, and the build rejects that top-level path if it is accidentally re-added. This changes only GUV classification and publishing scope; it does not modify the Substrate source.
 
-Substrate should receive its own standalone publication project for media, working ideas, issue pages, and the full magazine. That project creation, content model, domain, and deployment are a separate approved action—not an implicit part of the GUV cutover.
+Substrate should receive its own standalone publication project for media, working ideas, issue pages, and the full magazine. That project creation, content model, domain, and deployment are a separate approved action—not an implicit part of GUV work.
 
 ## API ownership
 
@@ -71,22 +61,30 @@ Substrate should receive its own standalone publication project for media, worki
 | --- | --- | --- |
 | `/api/chat` | `api/chat.js` | Kept compatible with `saperli-popette/api/chat.js` |
 | `/api/groq` | `api/groq.js` | Adapter to `awd/api/groq.js` |
+| `/api/wiki` | `api/wiki.js` | Root-owned, read-only MediaWiki Action API adapter |
 
-Do not commit API keys. Configure `GROQ_API_KEY` in the candidate root project before production verification.
+`GROQ_API_KEY` remains a Vercel environment secret. No credential is required for the read-only Wikipedia endpoint.
 
-## Migration sequence
+The Wiki adapter:
+
+- accepts only `GET` and `OPTIONS`;
+- bounds query length and returned links;
+- sends a descriptive Wikimedia user agent;
+- times out slow upstream requests;
+- caches successful responses at the Vercel edge.
+
+## Change sequence
 
 1. Build and validate `dist/` locally.
-2. Create the root `guvs` Vercel project and attach it to this repository.
-3. Configure preview/production environment variables.
-4. Deploy the current branch as a preview.
+2. Verify the changed GUV locally on desktop and mobile.
+3. Commit and push only the scoped files.
+4. Deploy the feature branch as a Vercel Preview.
 5. Run `GUVS_BASE_URL=<preview> GUVS_EXPECT_UNIFIED=1 npm run smoke`.
-6. Verify the registry, Aster, AWD, Saperli, and both API routes.
-7. Only then merge to `main` or promote the verified deployment.
-8. Keep GitHub Pages and the two standalone Vercel projects available as rollback surfaces during cutover.
+6. Repeat the changed-route browser check on the Preview.
+7. Promote the exact verified Preview only after explicit approval.
 
 ## Rollback
 
-Do not delete existing deployments or projects during migration. If the unified front door fails, leave or restore the GitHub Pages URL as the registry entry point and roll back only the affected Vercel project alias.
+Do not delete existing deployments or projects during a feature rollout. If a promotion fails, restore the last known-good GUVs production deployment; standalone AWD, standalone Saperli, and the GitHub Pages static surface remain separate fallback paths.
 
 Branch cleanup remains a separate tidy pass.

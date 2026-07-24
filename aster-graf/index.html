@@ -487,6 +487,9 @@
       font-size: 11px;
       text-align: right;
     }
+    @media (max-width: 1500px) {
+      .search-status { display: none; }
+    }
     #stage,
     #matrixView { grid-column: 1; grid-row: 2; }
     #matrixView {
@@ -666,6 +669,284 @@
       .matrix-table td:last-child { padding-bottom: 0; }
     }
 
+    .mobile-name-note { display: none; }
+
+    /* Mobile pond: one active family membrane owns the viewport. */
+    @media (max-width: 760px) {
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+        overscroll-behavior: none;
+      }
+
+      #app {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto minmax(0, 1fr);
+        width: 100%;
+        height: 100dvh;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      header {
+        position: relative;
+        grid-column: 1;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+          "identity views"
+          "controls controls";
+        gap: 7px 9px;
+        padding:
+          max(9px, env(safe-area-inset-top))
+          max(10px, env(safe-area-inset-right))
+          9px
+          max(10px, env(safe-area-inset-left));
+      }
+
+      .identity {
+        width: auto;
+        min-width: 0;
+        justify-content: flex-start;
+        gap: 7px;
+      }
+
+      h1 {
+        flex: 0 0 auto;
+        font-size: clamp(19px, 5.4vw, 23px);
+      }
+
+      .tag {
+        display: none;
+      }
+
+      .mobile-name-note {
+        display: none;
+      }
+
+      .view-switch {
+        width: auto;
+        align-self: center;
+        justify-self: end;
+        border-radius: 12px;
+      }
+
+      .view-tab {
+        min-height: 34px;
+        padding: 6px 8px;
+        border-radius: 9px;
+        font-size: 10px;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        width: 100%;
+        gap: 7px;
+      }
+
+      #search,
+      #zoomOut,
+      #zoomIn,
+      #freeze,
+      .search-status,
+      .name-note {
+        display: none;
+      }
+
+      #personSelect {
+        width: 100%;
+        max-width: none;
+        height: 42px;
+        min-height: 42px;
+        grid-column: 1;
+        padding: 8px 12px;
+        border-radius: 12px;
+      }
+
+      .control-buttons {
+        display: flex;
+        grid-column: 2;
+        overflow: visible;
+      }
+
+      #fit {
+        min-width: 64px;
+        min-height: 42px;
+        padding: 8px 11px;
+        border-radius: 12px;
+      }
+
+      #stage,
+      #matrixView {
+        grid-column: 1;
+        grid-row: 2;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+      }
+
+      #stage {
+        overflow: hidden;
+      }
+
+      .hint {
+        right: 8px;
+        bottom: max(8px, env(safe-area-inset-bottom));
+        left: 8px;
+        padding: 7px 9px;
+        font-size: 10px;
+      }
+
+      #sheet {
+        position: fixed;
+        z-index: 20;
+        right: 9px;
+        bottom: max(9px, env(safe-area-inset-bottom));
+        left: 9px;
+        display: block;
+        width: auto;
+        max-height: min(35dvh, 285px);
+        padding: 15px;
+        overflow: auto;
+        border: 1px solid rgba(244, 206, 115, 0.48);
+        border-radius: 26px;
+        background:
+          radial-gradient(circle at 18% 0%, rgba(244, 206, 115, 0.12), transparent 16rem),
+          rgba(10, 15, 29, 0.95);
+        box-shadow:
+          0 0 0 5px rgba(244, 206, 115, 0.05),
+          0 20px 55px rgba(0, 0, 0, 0.52);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(calc(100% + 22px)) scale(0.96);
+        transform-origin: 50% 100%;
+        transition: opacity 180ms ease, transform 220ms ease;
+        backdrop-filter: blur(18px);
+      }
+
+      #sheet.show {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0) scale(1);
+      }
+
+      #sheet .membrane-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      #sheet .membrane-nav {
+        display: flex;
+        gap: 7px;
+      }
+
+      #sheet .membrane-nav button {
+        min-height: 40px;
+        padding: 7px 10px;
+        border: 1px solid rgba(124, 92, 255, 0.34);
+        border-radius: 11px;
+        background: rgba(8, 12, 23, 0.76);
+        color: var(--muted);
+        font: inherit;
+        font-size: 11px;
+      }
+
+      #sheet .person-name {
+        margin: 0;
+        font-size: clamp(19px, 5.4vw, 24px);
+      }
+
+      #sheet .person-meta {
+        margin: 3px 0 8px;
+      }
+
+      #sheet .field {
+        margin-bottom: 8px;
+      }
+
+      #sheet .field.note {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+      }
+
+      #sheet .chips {
+        flex-wrap: nowrap;
+        margin: 0;
+        padding-bottom: 2px;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+
+      #sheet .chips::-webkit-scrollbar { display: none; }
+      #sheet .chip { flex: 0 0 auto; }
+      #sheet .trail { display: none; }
+      #app[data-membrane="open"] .hint { opacity: 0; }
+
+      #matrixView {
+        padding: 12px 10px max(12px, env(safe-area-inset-bottom));
+        overflow: auto;
+        overscroll-behavior: contain;
+      }
+
+      .matrix-shell {
+        height: 100%;
+      }
+
+      .matrix-head {
+        display: block;
+        margin-bottom: 9px;
+      }
+
+      .matrix-kicker,
+      .matrix-head p,
+      .metric-strip {
+        display: none;
+      }
+
+      .matrix-head h2 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      .matrix-table tr:not(.is-selected) {
+        display: none;
+      }
+
+      .matrix-table tr.is-selected {
+        margin: 0;
+        padding: 14px;
+        border-color: rgba(124, 92, 255, 0.42);
+        border-radius: 20px;
+      }
+
+      .matrix-table td {
+        grid-template-columns: 78px minmax(0, 1fr);
+        gap: 9px;
+        padding: 7px 0;
+      }
+
+      .matrix-link {
+        min-height: 38px;
+      }
+    }
+
+    @media (max-width: 760px) and (max-height: 690px) {
+      .tag { display: none; }
+      #sheet { max-height: 31dvh; }
+      #sheet .field.note { -webkit-line-clamp: 1; }
+    }
+
   </style>
 </head>
 <body>
@@ -674,11 +955,12 @@
     <div class="identity">
       <h1><span class="spark">✦</span> Aster Graf</h1>
       <span class="tag">Skywalker family · familiar demo</span>
+      <span class="mobile-name-note">aster = star · graf = graph</span>
       <a class="guv-home" id="guvHome" href="../" hidden>← GUVs</a>
     </div>
     <div class="view-switch" role="tablist" aria-label="Aster Graf view">
       <button class="view-tab" id="constellationTab" type="button" role="tab" aria-selected="true" aria-controls="stage">Constellation</button>
-      <button class="view-tab" id="matrixTab" type="button" role="tab" aria-selected="false" aria-controls="matrixView">Relationship matrix</button>
+      <button class="view-tab" id="matrixTab" type="button" role="tab" aria-selected="false" aria-controls="matrixView" aria-label="Relationship matrix">Matrix</button>
     </div>
     <div class="controls">
       <input id="search" type="search" placeholder="Search the family…" autocomplete="off" aria-label="Search the family" />
@@ -698,7 +980,7 @@
   </header>
   <div id="stage" role="tabpanel" aria-labelledby="constellationTab">
     <canvas id="c" tabindex="0" role="img" aria-label="Interactive constellation showing a simplified Skywalker family graph" aria-describedby="graphHelp"></canvas>
-    <div class="hint" id="graphHelp">drag to move · use + / − to zoom · tap a person to inspect · matrix view is the accessible data alternative</div>
+    <div class="hint" id="graphHelp">Aster = star · graf = graph · tap a person to enter their family membrane</div>
   </div>
   <section id="matrixView" role="tabpanel" aria-labelledby="matrixTab" hidden>
     <div class="matrix-shell">
@@ -883,8 +1165,12 @@ let dragNode = null;
 let panning = false;
 let moved = false;
 let last = { x: 0, y: 0 };
+let pointerStart = { x: 0, y: 0 };
 let physicsFrozen = false;
 let firstFitDone = false;
+let membraneOpen = false;
+let familyViewSnapshot = null;
+const membraneTrail = [];
 
 // Keep a trail of selected nodes for narrative.
 const selectionTrail = [];
@@ -892,6 +1178,37 @@ const selectionTrail = [];
 // Utility to clamp values.
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
+}
+
+function isMobilePond() {
+  return window.matchMedia('(max-width: 760px)').matches;
+}
+
+function membraneNodes(node) {
+  if (!node) return [];
+  return [node, ...getRelations(node).map((relation) => relation.other)]
+    .filter((candidate, index, all) => all.indexOf(candidate) === index);
+}
+
+function fitToMembrane(node, immediate = false) {
+  const focusNodes = membraneNodes(node);
+  if (!focusNodes.length || !W || !H) return;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  focusNodes.forEach((candidate) => {
+    minX = Math.min(minX, candidate.x - candidate.r - 30);
+    maxX = Math.max(maxX, candidate.x + candidate.r + 30);
+    minY = Math.min(minY, candidate.y - candidate.r - 34);
+    maxY = Math.max(maxY, candidate.y + candidate.r + 48);
+  });
+  const graphW = Math.max(1, maxX - minX);
+  const graphH = Math.max(1, maxY - minY);
+  const usableH = H * 0.61;
+  const k = clamp(Math.min((W - 42) / graphW, (usableH - 34) / graphH), 0.56, 1.28);
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  const next = { x: W / 2 - cx * k, y: usableH / 2 + 14 - cy * k, k };
+  targetView = { ...next };
+  if (immediate) view = { ...next };
 }
 
 // Position nodes by generation for initial layout. Adjust offsets manually for better composition.
@@ -929,7 +1246,7 @@ function resize() {
   const rect = cv.getBoundingClientRect();
   W = rect.width;
   H = rect.height;
-  DPR = Math.max(1, window.devicePixelRatio || 1);
+  DPR = clamp(window.devicePixelRatio || 1, 1, 2);
   cv.width = W * DPR;
   cv.height = H * DPR;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -939,6 +1256,9 @@ function resize() {
     firstFitDone = true;
   } else {
     fitToGraph(true);
+  }
+  if (membraneOpen && selected && isMobilePond()) {
+    fitToMembrane(selected, true);
   }
 }
 
@@ -1060,15 +1380,39 @@ function draw() {
   ctx.save();
   ctx.translate(view.x, view.y);
   ctx.scale(view.k, view.k);
+  const membraneActive = Boolean(membraneOpen && selected && activeViewMode === 'constellation');
+  const focusNodes = membraneActive ? membraneNodes(selected) : [];
+  const focusSet = new Set(focusNodes);
+
+  if (focusNodes.length) {
+    const centerX = focusNodes.reduce((sum, node) => sum + node.x, 0) / focusNodes.length;
+    const centerY = focusNodes.reduce((sum, node) => sum + node.y, 0) / focusNodes.length;
+    const radius = clamp(
+      Math.max(...focusNodes.map((node) => Math.hypot(node.x - centerX, node.y - centerY) + node.r)) + 38,
+      104,
+      360
+    );
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(244,206,115,0.028)';
+    ctx.fill();
+    ctx.setLineDash([3, 9]);
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(244,206,115,0.34)';
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
   // draw links
   for (const l of visualLinks) {
     const dim = query && !matches(l.source) && !matches(l.target);
+    const connectedToMembrane = !membraneActive || (focusSet.has(l.source) && focusSet.has(l.target));
     ctx.beginPath();
     ctx.moveTo(l.source.x, l.source.y);
     ctx.lineTo(l.target.x, l.target.y);
     ctx.strokeStyle = relationColor(l.type);
     ctx.lineWidth = l.type === 'half' ? 2.1 : l.type === 'sibling' ? 1.8 : 1.6;
-    ctx.globalAlpha = dim ? 0.08 : l.type === 'half' ? 0.52 : l.type === 'sibling' ? 0.52 : 0.68;
+    ctx.globalAlpha = !connectedToMembrane ? 0.06 : dim ? 0.08 : l.type === 'half' ? 0.52 : l.type === 'sibling' ? 0.52 : 0.68;
     if (l.type === 'half' || l.type === 'adoptive') ctx.setLineDash([5, 7]);
     else if (l.type === 'sibling' || l.type === 'step') ctx.setLineDash([2, 7]);
     else ctx.setLineDash([]);
@@ -1085,7 +1429,7 @@ function draw() {
     const dim = query && !matches(n);
     const palette = ['#7ee4d2', '#75b8ff', '#f4ce73', '#ff9eb2', '#c8b0ff', '#8d72ff', '#89d8ff'];
     const fill = palette[n.gen % palette.length];
-    ctx.globalAlpha = dim ? 0.18 : 1;
+    ctx.globalAlpha = membraneActive && !focusSet.has(n) ? 0.1 : dim ? 0.18 : 1;
     ctx.beginPath();
     ctx.arc(n.x, n.y, n.r + 8, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(124,92,255,0.08)';
@@ -1169,8 +1513,27 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-// Show details in panel and sheet. Also update trail.
-function selectNode(n) {
+// Show details in panel and enter the selected mobile membrane.
+function selectNode(n, options = {}) {
+  const { openMembrane = true, remember = true } = options;
+  const prior = selected;
+  const useMembrane = Boolean(isMobilePond() && activeViewMode === 'constellation' && n && openMembrane);
+
+  if (useMembrane) {
+    if (!membraneOpen) {
+      familyViewSnapshot = { view: { ...view }, targetView: { ...targetView } };
+      membraneTrail.length = 0;
+    } else if (remember && prior && prior !== n) {
+      membraneTrail.push({
+        nodeId: prior.id,
+        view: { ...view },
+        targetView: { ...targetView }
+      });
+      if (membraneTrail.length > 8) membraneTrail.shift();
+    }
+    membraneOpen = true;
+  }
+
   selected = n;
   personSelect.value = n ? n.id : '';
   if (n) {
@@ -1178,10 +1541,43 @@ function selectNode(n) {
       selectionTrail.push(n);
       if (selectionTrail.length > 5) selectionTrail.shift();
     }
-    flyToNode(n, clamp(view.k * 1.05, 0.8, 1.4));
+    if (useMembrane) fitToMembrane(n);
+    else if (!isMobilePond()) flyToNode(n, clamp(view.k * 1.05, 0.8, 1.4));
   } else {
     selectionTrail.length = 0;
+    membraneOpen = false;
+    membraneTrail.length = 0;
   }
+  document.getElementById('app').dataset.membrane = membraneOpen ? 'open' : 'closed';
+  updatePanel();
+  updateSheet();
+  updateMatrixSelection();
+}
+
+function exitMembrane() {
+  membraneOpen = false;
+  membraneTrail.length = 0;
+  document.getElementById('app').dataset.membrane = 'closed';
+  if (familyViewSnapshot) {
+    view = { ...familyViewSnapshot.view };
+    targetView = { ...familyViewSnapshot.targetView };
+  } else {
+    fitToGraph(false);
+  }
+  familyViewSnapshot = null;
+  updateSheet();
+}
+
+function backMembrane() {
+  const prior = membraneTrail.pop();
+  if (!prior) {
+    exitMembrane();
+    return;
+  }
+  selected = byId[prior.nodeId] || selected;
+  personSelect.value = selected?.id || '';
+  view = { ...prior.view };
+  targetView = { ...prior.targetView };
   updatePanel();
   updateSheet();
   updateMatrixSelection();
@@ -1288,7 +1684,8 @@ function updateMatrixSelection() {
   });
 }
 
-function setViewMode(mode) {
+function setViewMode(mode, options = {}) {
+  const { openSelected = true } = options;
   activeViewMode = mode === 'matrix' ? 'matrix' : 'constellation';
   const graphActive = activeViewMode === 'constellation';
   stage.hidden = !graphActive;
@@ -1300,15 +1697,26 @@ function setViewMode(mode) {
   matrixTab.setAttribute('aria-selected', String(!graphActive));
   constellationTab.tabIndex = graphActive ? 0 : -1;
   matrixTab.tabIndex = graphActive ? -1 : 0;
-  updateSheet();
+  if (!graphActive) {
+    membraneOpen = false;
+    document.getElementById('app').dataset.membrane = 'closed';
+  }
   if (graphActive) {
     requestAnimationFrame(() => {
       resize();
-      if (selected && window.matchMedia('(max-width: 1180px)').matches) {
+      if (selected && isMobilePond() && openSelected) {
+        familyViewSnapshot = { view: { ...view }, targetView: { ...targetView } };
+        membraneTrail.length = 0;
+        membraneOpen = true;
+        document.getElementById('app').dataset.membrane = 'open';
+        fitToMembrane(selected);
+        updateSheet();
+      } else if (selected && window.matchMedia('(max-width: 1180px)').matches) {
         flyToNode(selected, 0.8);
       }
     });
   }
+  updateSheet();
 }
 
 function updateSearchUI() {
@@ -1350,7 +1758,8 @@ function updateSheet() {
     sheet.innerHTML = '';
     return;
   }
-  if (!selected) {
+  const compactPond = isMobilePond();
+  if (!selected || (compactPond && !membraneOpen)) {
     sheet.classList.remove('show');
     sheet.innerHTML = '';
     return;
@@ -1361,19 +1770,28 @@ function updateSheet() {
     const label = REL_LABEL[rel.type] || rel.type;
     return `<button class="chip" type="button" data-id="${escapeHtml(rel.other.id)}"><span style="background:${color}" class="dot"></span>${escapeHtml(label)} · ${escapeHtml(rel.other.name)}</button>`;
   }).join('');
-  let trailStr = '';
-  if (selectionTrail.length > 1) {
-    const trail = selectionTrail.map(n => escapeHtml(n.name)).join(' → ');
-    trailStr = `<div class="trail"><span>${trail}</span></div>`;
-  }
+  const backLabel = membraneTrail.length ? '← Back' : '← Family';
+  const familyButton = membraneTrail.length
+    ? '<button id="membraneExit" type="button">Family</button>'
+    : '';
   sheet.innerHTML = `
-    <div class="eyebrow">Familiar demo data</div>
-    <h2 class="person-name">${escapeHtml(selected.name)}</h2>
+    <div class="membrane-head">
+      <div>
+        <div class="eyebrow">Active family membrane</div>
+        <h2 class="person-name">${escapeHtml(selected.name)}</h2>
+      </div>
+      <div class="membrane-nav">
+        <button id="membraneBack" type="button">${backLabel}</button>
+        ${familyButton}
+      </div>
+    </div>
     <div class="person-meta">generation ${escapeHtml(selected.gen + 1)} · ${escapeHtml(selected.role)}</div>
-    <div class="field"><b>Note</b>${escapeHtml(selected.note)}</div>
+    <div class="field note"><b>Note</b>${escapeHtml(selected.note)}</div>
     <div class="field"><b>Connections</b><div class="chips">${chips || '<div class="empty">No recorded connections.</div>'}</div></div>
-    ${trailStr}`;
+  `;
   sheet.classList.add('show');
+  sheet.querySelector('#membraneBack')?.addEventListener('click', backMembrane);
+  sheet.querySelector('#membraneExit')?.addEventListener('click', exitMembrane);
   sheet.querySelectorAll('.chip').forEach(el => {
     el.addEventListener('click', () => {
       const target = byId[el.getAttribute('data-id')];
@@ -1394,6 +1812,7 @@ cv.addEventListener('pointerdown', (e) => {
   const p = { x: e.clientX - rect.left, y: e.clientY - rect.top };
   const n = pick(p.x, p.y);
   moved = false;
+  pointerStart = p;
   cv.setPointerCapture(e.pointerId);
   if (n) {
     dragNode = n;
@@ -1409,6 +1828,7 @@ cv.addEventListener('pointermove', (e) => {
   const rect = cv.getBoundingClientRect();
   const p = { x: e.clientX - rect.left, y: e.clientY - rect.top };
   if (dragNode) {
+    if (!moved && Math.hypot(p.x - pointerStart.x, p.y - pointerStart.y) < 8) return;
     const w = toWorld(p.x, p.y);
     dragNode.x = w.x;
     dragNode.y = w.y;
@@ -1418,6 +1838,7 @@ cv.addEventListener('pointermove', (e) => {
     return;
   }
   if (panning) {
+    if (!moved && Math.hypot(p.x - pointerStart.x, p.y - pointerStart.y) < 8) return;
     const dx = p.x - last.x;
     const dy = p.y - last.y;
     view.x += dx;
@@ -1484,7 +1905,8 @@ personSelect.addEventListener('change', () => {
 
 // Button actions.
 document.getElementById('fit').addEventListener('click', () => {
-  fitToGraph(false);
+  if (membraneOpen && selected && isMobilePond()) fitToMembrane(selected);
+  else fitToGraph(false);
 });
 document.getElementById('freeze').addEventListener('click', (e) => {
   physicsFrozen = !physicsFrozen;
@@ -1511,6 +1933,13 @@ document.getElementById('zoomIn').addEventListener('click', () => {
   targetView.y = center.y - w.y * nextK;
 });
 
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && membraneOpen) {
+    event.preventDefault();
+    backMembrane();
+  }
+});
+
 // Window resize handler.
 window.addEventListener('resize', () => {
   resize();
@@ -1524,8 +1953,15 @@ document.getElementById('guvHome').hidden = !normalizedPath.endsWith('/aster-gra
 positionNodesByGeneration();
 resize();
 buildMatrix();
-setViewMode('constellation');
-selectNode(byId.luke);
+setViewMode('constellation', { openSelected: false });
+selectNode(byId.luke, { openMembrane: false, remember: false });
+if (isMobilePond()) {
+  window.setTimeout(() => {
+    physicsFrozen = true;
+    if (membraneOpen && selected) fitToMembrane(selected);
+    else fitToGraph(false);
+  }, 900);
+}
 requestAnimationFrame(loop);
 </script>
 </body>

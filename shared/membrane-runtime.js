@@ -1,4 +1,5 @@
 import {
+  getFocusedGraph,
   getFrontier,
   getNeighbors,
   getNode,
@@ -160,6 +161,8 @@ export class MembraneRuntime {
     this.history = [];
     this.outerSnapshot = null;
     this.selectedId = this.dataset.rootId;
+    this.pondFocusId = this.dataset.rootId;
+    this.pondTrail = [this.dataset.rootId];
     this.keyboardIndex = 0;
     this.view = { x: 0, y: 0, scale: 1 };
     this.pointer = null;
@@ -182,7 +185,7 @@ export class MembraneRuntime {
     this.bind();
     this.layoutNodes();
     this.resize();
-    requestAnimationFrame(() => this.fit());
+    this.refitPondSnapshot();
     this.frame = requestAnimationFrame((time) => this.draw(time));
   }
 
@@ -342,13 +345,15 @@ export class MembraneRuntime {
     this.history = [];
     this.outerSnapshot = null;
     this.selectedId = this.dataset.rootId;
+    this.pondFocusId = this.dataset.rootId;
+    this.pondTrail = [this.dataset.rootId];
     this.keyboardIndex = 0;
     this.view = { x: 0, y: 0, scale: 1 };
     this.membraneElement.hidden = true;
     this.layoutNodes();
     this.renderFieldMeta();
     this.persistDiscovery();
-    requestAnimationFrame(() => this.fit());
+    this.refitPondSnapshot();
   }
 
   mergeDataset(input, options = {}) {
@@ -360,6 +365,7 @@ export class MembraneRuntime {
     this.persistDiscovery();
     this.renderFieldMeta();
     if (this.activeId) this.renderActive();
+    this.refitPondSnapshot();
   }
 
   setNodeLoading(nodeId, loading = true) {
@@ -401,9 +407,11 @@ export class MembraneRuntime {
     this.activeId = null;
     this.history = [];
     this.outerSnapshot = null;
+    this.pondFocusId = this.dataset.rootId;
+    this.pondTrail = [this.dataset.rootId];
     this.membraneElement.hidden = true;
     this.persistDiscovery();
-    this.fit();
+    this.refitPondSnapshot();
     this.announce("The pond returned to its first visible membrane.");
   }
 
@@ -420,6 +428,7 @@ export class MembraneRuntime {
       this.canvasWidth = width;
       this.canvasHeight = height;
       this.dpr = dpr;
+      this.refitPondSnapshot();
     }
   }
 
@@ -504,7 +513,83 @@ export class MembraneRuntime {
   }
 
   visibleGraph() {
+    if (this.dataset.fieldMode === "focus-ring") {
+      return getFocusedGraph(
+        this.dataset,
+        this.discovered,
+        this.pondFocusId,
+        this.pondTrail,
+        this.canvasWidth <= 760 ? 3 : 6
+      );
+    }
     return getVisibleGraph(this.dataset, this.discovered, 12);
+  }
+
+  refitPondSnapshot() {
+    requestAnimationFrame(() => {
+      if (this.destroyed) return;
+      if (this.dataset.fieldMode === "focus-ring") this.layoutFocusRing();
+      this.fit();
+      if (this.activeId) this.outerSnapshot = { ...this.view };
+    });
+  }
+
+  layoutFocusRing() {
+    const graph = getFocusedGraph(
+      this.dataset,
+      this.discovered,
+      this.pondFocusId,
+      this.pondTrail,
+      this.canvasWidth <= 760 ? 3 : 6
+    );
+    const focusId = this.pondFocusId || this.dataset.rootId;
+    const routeSource = this.activeId
+      ? [...this.history.map((frame) => frame.nodeId), this.activeId]
+      : this.pondTrail;
+    const route = routeSource
+      .filter((id, index, values) => id && values.indexOf(id) === index)
+      .filter((id) => graph.visibleNodes.some((node) => node.id === id));
+
+    if (!route.includes(this.dataset.rootId)) route.unshift(this.dataset.rootId);
+    if (!route.includes(focusId)) route.push(focusId);
+
+    this.positions.set(focusId, { x: 0, y: 0 });
+    const ancestors = route.filter((id) => id !== focusId).reverse();
+    ancestors.forEach((id, index) => {
+      this.positions.set(id, { x: 0, y: 300 + index * 215 });
+    });
+
+    const routeIds = new Set(route);
+    const localNodes = [
+      ...graph.visibleNodes.filter((node) => !routeIds.has(node.id)),
+      ...graph.ghostNodes
+    ];
+    if (!localNodes.length) return;
+
+    const radius = localNodes.length > 8 ? 285 : 255;
+    if (focusId === this.dataset.rootId) {
+      localNodes.forEach((node, index) => {
+        const angle = -Math.PI / 2 + (index / localNodes.length) * Math.PI * 2;
+        this.positions.set(node.id, {
+          x: Math.cos(angle) * radius,
+          y: Math.sin(angle) * radius
+        });
+      });
+      return;
+    }
+
+    const start = (145 * Math.PI) / 180;
+    const span = (250 * Math.PI) / 180;
+    localNodes.forEach((node, index) => {
+      const angle =
+        localNodes.length === 1
+          ? -Math.PI / 2
+          : start + (index / (localNodes.length - 1)) * span;
+      this.positions.set(node.id, {
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius
+      });
+    });
   }
 
   renderedNodes() {
@@ -693,11 +778,22 @@ export class MembraneRuntime {
     if (!this.activeId) {
       this.outerSnapshot = { ...this.view };
       this.history = [];
+      if (nodeId === this.dataset.rootId) {
+        this.pondTrail = [this.dataset.rootId];
+      } else if (nodeId !== this.pondFocusId) {
+        const adjacentToFocus = getNeighbors(this.dataset, this.pondFocusId).some(
+          (relation) => relation.target.id === nodeId
+        );
+        this.pondTrail = adjacentToFocus
+          ? [...this.pondTrail.filter(Boolean), nodeId]
+          : [this.dataset.rootId, nodeId];
+      }
     } else if (this.activeId !== nodeId) {
       this.history.push({ nodeId: this.activeId, tab: this.activeTab });
     }
 
     this.activeId = nodeId;
+    this.pondFocusId = nodeId;
     this.activeTab = "inside";
     this.selectedId = nodeId;
     this.awdOutput = "";
@@ -714,7 +810,10 @@ export class MembraneRuntime {
         }
       }
     }
-    if (token === this.enterToken && this.activeId === nodeId) this.renderActive();
+    if (token === this.enterToken && this.activeId === nodeId) {
+      this.renderActive();
+      if (this.dataset.fieldMode === "focus-ring") this.refitPondSnapshot();
+    }
   }
 
   back() {
@@ -726,13 +825,33 @@ export class MembraneRuntime {
     }
     this.enterToken += 1;
     this.activeId = frame.nodeId;
+    this.pondFocusId = frame.nodeId;
     this.activeTab = frame.tab || "inside";
     this.awdOutput = "";
     this.renderActive();
+    if (this.dataset.fieldMode === "focus-ring") this.refitPondSnapshot();
   }
 
   exitToPond() {
     if (!this.activeId) return;
+    const departingId = this.activeId;
+    if (this.history.length) {
+      this.pondTrail = [
+        ...this.history.map((frame) => frame.nodeId),
+        departingId
+      ].filter((id, index, values) => id && values.indexOf(id) === index);
+    } else if (!this.pondTrail.includes(departingId)) {
+      this.pondTrail =
+        departingId === this.dataset.rootId
+          ? [this.dataset.rootId]
+          : [this.dataset.rootId, departingId];
+    }
+    this.pondFocusId = departingId;
+    if (this.dataset.fieldMode === "focus-ring") {
+      this.layoutFocusRing();
+      this.fit();
+      this.outerSnapshot = { ...this.view };
+    }
     this.enterToken += 1;
     this.activeId = null;
     this.activeTab = "inside";
@@ -1079,6 +1198,7 @@ export class MembraneRuntime {
     ctx.clearRect(0, 0, width, height);
     this.drawBackground(ctx, width, height);
     const graph = this.visibleGraph();
+    this.labelBoxes = [];
     this.drawBonds(ctx, graph.bonds);
     const pulse = this.reducedMotion ? 0 : Math.sin(time / 1250) * 0.025;
     for (const node of graph.ghostNodes) this.drawNode(ctx, node, true, pulse);
@@ -1159,6 +1279,53 @@ export class MembraneRuntime {
     ctx.closePath();
   }
 
+  placeLabel(ctx, label, candidates) {
+    const metrics = ctx.measureText(label);
+    const width = metrics.width;
+    const height = Math.max(
+      12,
+      (metrics.actualBoundingBoxAscent || 9) + (metrics.actualBoundingBoxDescent || 3)
+    );
+    const placements = candidates.map((candidate) => {
+      let x = candidate.x;
+      let y = candidate.y;
+      const align = candidate.align || "center";
+      const baseline = candidate.baseline || "top";
+
+      if (align === "left") x = Math.min(Math.max(12, x), this.canvasWidth - width - 12);
+      if (align === "right") x = Math.max(Math.min(this.canvasWidth - 12, x), width + 12);
+      if (align === "center") {
+        x = Math.max(width / 2 + 12, Math.min(this.canvasWidth - width / 2 - 12, x));
+      }
+      if (baseline === "top") y = Math.max(12, Math.min(this.canvasHeight - height - 12, y));
+      if (baseline === "bottom") y = Math.max(height + 12, Math.min(this.canvasHeight - 12, y));
+      if (baseline === "middle") {
+        y = Math.max(height / 2 + 12, Math.min(this.canvasHeight - height / 2 - 12, y));
+      }
+
+      const left = align === "left" ? x : align === "right" ? x - width : x - width / 2;
+      const top = baseline === "top" ? y : baseline === "bottom" ? y - height : y - height / 2;
+      return {
+        x,
+        y,
+        align,
+        baseline,
+        box: { left: left - 4, top: top - 3, right: left + width + 4, bottom: top + height + 3 }
+      };
+    });
+    const overlaps = (box) =>
+      (this.labelBoxes || []).some(
+        (placed) =>
+          box.left < placed.right &&
+          box.right > placed.left &&
+          box.top < placed.bottom &&
+          box.bottom > placed.top
+      );
+    const placement = placements.find(({ box }) => !overlaps(box)) || placements.at(-1);
+    this.labelBoxes.push(placement.box);
+    return placement;
+  }
+
   drawNode(ctx, node, ghost, pulse) {
     const position = this.positions.get(node.id);
     if (!position) return;
@@ -1207,10 +1374,62 @@ export class MembraneRuntime {
     ctx.textBaseline = "middle";
     ctx.fillText(ghost ? "?" : initials(node.title), x, y + 1);
 
-    ctx.fillStyle = ghost ? "rgba(157, 171, 202, 0.72)" : "rgba(240, 244, 255, 0.94)";
-    ctx.font = `600 ${Math.max(10, 12 * Math.min(1.12, this.view.scale))}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-    ctx.textBaseline = "top";
-    ctx.fillText(ghost ? "unopened path" : truncate(node.title), x, y + radius + 9);
+    const focusRing = this.dataset.fieldMode === "focus-ring";
+    const label = ghost && focusRing
+      ? ""
+      : ghost
+        ? "unopened path"
+        : truncate(node.title, focusRing ? 18 : 24);
+    if (label) {
+      ctx.fillStyle = ghost ? "rgba(157, 171, 202, 0.72)" : "rgba(240, 244, 255, 0.94)";
+      ctx.font = `600 ${Math.max(10, 12 * Math.min(1.12, this.view.scale))}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+      const candidates = [];
+      if (focusRing && node.id !== this.pondFocusId) {
+        const focusPosition = this.positions.get(this.pondFocusId);
+        const dx = position.x - (focusPosition?.x || 0);
+        const dy = position.y - (focusPosition?.y || 0);
+        const length = Math.hypot(dx, dy) || 1;
+        const unitX = dx / length;
+        const unitY = dy / length;
+
+        if (Math.abs(unitX) > 0.2) {
+          const requestedX = x + Math.sign(unitX) * (radius + 9);
+          const textWidth = ctx.measureText(label).width;
+          const wouldClip =
+            unitX > 0
+              ? requestedX + textWidth > this.canvasWidth - 12
+              : requestedX - textWidth < 12;
+          if (!wouldClip) {
+            candidates.push({
+              x: requestedX,
+              y: y + unitY * radius * 0.2,
+              align: unitX > 0 ? "left" : "right",
+              baseline: "middle"
+            });
+          }
+        } else {
+          candidates.push({
+            x,
+            y: y + Math.sign(unitY || 1) * (radius + 9),
+            align: "center",
+            baseline: unitY < 0 ? "bottom" : "top"
+          });
+        }
+        candidates.push(
+          { x, y: y - radius - 9, align: "center", baseline: "bottom" },
+          { x, y: y + radius + 9, align: "center", baseline: "top" }
+        );
+      } else {
+        candidates.push(
+          { x, y: y + radius + 9, align: "center", baseline: "top" },
+          { x, y: y - radius - 9, align: "center", baseline: "bottom" }
+        );
+      }
+      const placement = this.placeLabel(ctx, label, candidates);
+      ctx.textAlign = placement.align;
+      ctx.textBaseline = placement.baseline;
+      ctx.fillText(label, placement.x, placement.y);
+    }
     ctx.restore();
   }
 }

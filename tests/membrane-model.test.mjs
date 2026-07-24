@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  getFocusedGraph,
   getFrontier,
   getNeighbors,
   getVisibleGraph,
@@ -80,4 +81,37 @@ test("dynamic expansion preserves the session pond metadata", () => {
 
 test("restored discovery cannot resurrect nodes from another dataset", () => {
   assert.deepEqual(restoreDiscovered(fixture, ["b", "unknown"]), ["a", "b"]);
+});
+
+test("focused graph keeps the route and local ring without unrelated surfaced siblings", () => {
+  const expanded = {
+    id: "focused",
+    rootId: "root",
+    initiallyVisible: ["root", "sibling", "focus", "child"],
+    nodes: [
+      { id: "root", title: "Root" },
+      { id: "sibling", title: "Older sibling ring" },
+      { id: "focus", title: "Current membrane" },
+      { id: "child", title: "Current child" },
+      { id: "lead", title: "Unopened lead" }
+    ],
+    bonds: [
+      { from: "root", to: "sibling", label: "links" },
+      { from: "root", to: "focus", label: "links" },
+      { from: "focus", to: "child", label: "links" },
+      { from: "focus", to: "lead", label: "links" }
+    ]
+  };
+  const graph = getFocusedGraph(
+    expanded,
+    ["root", "sibling", "focus", "child"],
+    "focus",
+    ["root", "focus"],
+    2
+  );
+  assert.deepEqual(
+    graph.visibleNodes.map((node) => node.id),
+    ["root", "focus", "child"]
+  );
+  assert.deepEqual(graph.ghostNodes.map((node) => node.id), ["lead"]);
 });

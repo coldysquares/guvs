@@ -63,6 +63,19 @@
     "description": "Inspect connected compartments, phase states, and hyphal flux in an interactive systems map."
   },
   {
+    "title": "Wiki Constellation",
+    "fullName": "Wikipedia Link Explorer",
+    "slug": "wiki-constellation",
+    "type": [
+      "GUV",
+      "explorer",
+      "live index"
+    ],
+    "status": "working",
+    "path": "wiki-constellation/",
+    "description": "Turn any English Wikipedia article into a draggable constellation of its outgoing page links."
+  },
+  {
     "title": "Saperli Popette",
     "fullName": "Saperli Popette",
     "slug": "saperli-popette",

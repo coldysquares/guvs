@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07101b" />
+  <meta
+    name="description"
+    content="Explore Wikipedia through POND Graf as a growing, sourced membrane field without losing the route back."
+  />
+  <title>POND Graf — Wiki Lens</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50' font-size='48'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../shared/membrane-runtime.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="wiki-app">
+    <header class="wiki-bar">
+      <div class="wiki-brand">
+        <a class="wiki-home" href="../" aria-label="Back to POND Graf">← POND</a>
+        <div class="wiki-title">
+          <span aria-hidden="true">✦</span>
+          <div>
+            <h1>POND Graf</h1>
+            <p>Wiki lens · live public source</p>
+          </div>
+        </div>
+      </div>
+
+      <form id="wikiSearch" class="wiki-search" role="search">
+        <label class="sr-only" for="wikiQuery">Search English Wikipedia</label>
+        <input
+          id="wikiQuery"
+          name="q"
+          type="search"
+          maxlength="120"
+          autocomplete="off"
+          enterkeyhint="search"
+          placeholder="Person, place, work, or idea…"
+        />
+        <button type="submit">Grow pond</button>
+      </form>
+
+      <div class="wiki-source" title="Live summaries and outbound links from the MediaWiki Action API">
+        <span aria-hidden="true"></span>
+        English Wikipedia
+      </div>
+    </header>
+
+    <div class="wiki-starters" aria-label="Example Wikipedia searches">
+      <a class="lens-link" href="../?lens=family">Family lens</a>
+      <a class="lens-link" href="../?lens=pitch">Pitch lens</a>
+      <span>Try</span>
+      <button type="button" data-query="Paul Thomas Anderson">Paul Thomas Anderson</button>
+      <button type="button" data-query="Mycelium">Mycelium</button>
+      <button type="button" data-query="Giant unilamellar vesicle">GUV</button>
+      <button type="button" data-query="Spirited Away">Spirited Away</button>
+      <p>Each line means “this article links to that page”—never causality or endorsement.</p>
+    </div>
+
+    <main id="membraneApp" aria-label="POND Graf live Wikipedia membrane explorer"></main>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

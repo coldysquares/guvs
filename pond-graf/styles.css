@@ -124,7 +124,7 @@ a {
 
 .aster-lenses {
   display: grid;
-  grid-template-columns: repeat(2, minmax(110px, 1fr));
+  grid-template-columns: repeat(3, minmax(94px, 1fr));
   gap: 5px;
   padding: 5px;
   border: 1px solid var(--aster-line);
@@ -133,6 +133,7 @@ a {
 }
 
 .aster-lens {
+  display: block;
   min-width: 0;
   min-height: 48px;
   padding: 7px 14px;
@@ -141,6 +142,8 @@ a {
   background: transparent;
   color: var(--aster-muted);
   cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
   text-align: left;
 }
 
@@ -201,7 +204,7 @@ a {
 
 @media (max-width: 760px) {
   .aster-bar {
-    min-height: 64px;
+    min-height: 112px;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px;
     padding:
@@ -247,7 +250,8 @@ a {
   }
 
   .aster-lenses {
-    grid-template-columns: repeat(2, minmax(68px, 1fr));
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     padding: 4px;
     border-radius: 14px;
   }
@@ -278,6 +282,6 @@ a {
   }
 
   .aster-lenses {
-    grid-template-columns: repeat(2, 61px);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

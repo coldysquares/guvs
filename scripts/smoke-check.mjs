@@ -74,12 +74,13 @@ async function checkRegistry() {
     const registry = JSON.parse(text);
     const titles = new Set(registry.map((entry) => entry.title));
     const expected = [
+      "POND Graf",
       "PSR",
       "AWD",
       "Zero-Waste Router",
       "Aster Graf",
       "Fungi Cell Map",
-      "Wiki Graf",
+      "Wiki Constellation",
       "Saperli Popette"
     ];
     const missing = expected.filter((title) => !titles.has(title));
@@ -108,13 +109,15 @@ if (expectUnified) {
   await checkTitle("Unified PSR route serves PSR", target(guvsBase, "psr/"), "PSR — Post-Slop Reagent");
   await checkTitle("Unified AWD route serves AWD", target(guvsBase, "awd/"), "AWD — AI Waste Deleter");
   await checkTitle("Unified Router route serves Router", target(guvsBase, "router/"), "Zero-Waste Router");
-  await checkTitle("Unified Aster route serves Aster", target(guvsBase, "aster-graf/"), "Aster Graf — Membrane Explorer");
+  await checkTitle("Unified Aster route preserves Aster V2", target(guvsBase, "aster-graf/"), "Aster Graf — Skywalker Family");
   await checkTitle("Unified Fungi route serves Fungi", target(guvsBase, "fungi-cell-map/"), "Fungi Cell Map");
   await checkTitle(
-    "Unified Wiki route serves Wiki Graf",
+    "Unified Wiki route preserves Wiki Constellation",
     target(guvsBase, "wiki-constellation/"),
-    "Wiki Graf — Live Source Explorer"
+    "Wiki Constellation — Wikipedia Link Explorer"
   );
+  await checkTitle("Unified POND Graf route serves the membrane engine", target(guvsBase, "pond-graf/"), "POND Graf — Membrane Explorer");
+  await checkTitle("Unified POND Wiki lens serves the live membrane explorer", target(guvsBase, "pond-graf/wiki/"), "POND Graf — Wiki Lens");
   await checkTitle("Unified Saperli route serves Saperli", target(guvsBase, "saperli-popette/"), "Saperli Popette");
   await checkApiRoute("Unified /api/chat exists", target(guvsBase, "api/chat"));
   await checkApiRoute("Unified /api/groq exists", target(guvsBase, "api/groq"));

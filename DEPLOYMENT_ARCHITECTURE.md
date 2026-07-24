@@ -34,6 +34,8 @@ Last architecture pass: 2026-07-24.
 
 The standalone AWD and Saperli projects preserve stable direct URLs, independent environment variables, and rollback histories. The unified project is the coherent browse-and-try front door.
 
+POND Graf is additive: `/aster-graf/` and `/wiki-constellation/` retain their V2 interfaces, while `/pond-graf/` owns the shared V3 membrane engine and `/pond-graf/wiki/` owns its live public-source lens.
+
 ## Why Vercel is the bounded host
 
 GitHub Pages remains a useful static fallback, but it cannot execute the API handlers and does not provide this repository with one server-backed branch-preview surface. Vercel already owns the server-backed GUV routes and serves the current static HTML without a framework rewrite.
@@ -43,7 +45,7 @@ GitHub Pages remains a useful static fallback, but it cannot execute the API han
 `scripts/build-site.mjs` treats `registry.json` as the deployment allowlist:
 
 - Copies the root homepage and registry.
-- Copies the explicit `shared/` membrane runtime used by registered lenses.
+- Copies the explicit `shared/` membrane runtime used by POND Graf’s registered lenses.
 - Copies every registered app and its ordinary static assets.
 - Skips hidden files, backup files, app-local `api/` folders, and app-local `vercel.json` files.
 - Does not copy unregistered repository folders into `dist/`.

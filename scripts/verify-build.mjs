@@ -31,7 +31,7 @@ function requireCondition(condition, message) {
   if (!condition) failures.push(message);
 }
 
-requireCondition(registry.length === 7, `Expected 7 registered GUVs, found ${registry.length}.`);
+requireCondition(registry.length === 8, `Expected 8 registered GUVs, found ${registry.length}.`);
 requireCondition(
   !registry.some((entry) => entry.slug === "substrate-001"),
   "Substrate 001 entered the GUV registry."
@@ -55,15 +55,26 @@ for (const sharedPath of [
 
 const asterHtml = await readFile(join(distRoot, "aster-graf", "index.html"), "utf8");
 const wikiHtml = await readFile(join(distRoot, "wiki-constellation", "index.html"), "utf8");
+const pondHtml = await readFile(join(distRoot, "pond-graf", "index.html"), "utf8");
+const pondWikiHtml = await readFile(join(distRoot, "pond-graf", "wiki", "index.html"), "utf8");
 requireCondition(
-  asterHtml.includes("../shared/membrane-runtime.css") &&
-    asterHtml.includes('type="module" src="./app.js"'),
-  "Aster does not load the shared membrane runtime."
+  asterHtml.includes("<title>Aster Graf — Skywalker Family</title>"),
+  "The preserved Aster Graf route no longer serves the V2 family interface."
 );
 requireCondition(
-  wikiHtml.includes("../shared/membrane-runtime.css") &&
-    wikiHtml.includes('type="module" src="./app.js"'),
-  "Wiki Graf does not load the shared membrane runtime."
+  wikiHtml.includes("<title>Wiki Constellation — Wikipedia Link Explorer</title>"),
+  "The preserved Wiki Constellation route no longer serves the V2 interface."
+);
+requireCondition(
+  pondHtml.includes("../shared/membrane-runtime.css") &&
+    pondHtml.includes('type="module" src="./app.js"') &&
+    pondHtml.includes('href="./wiki/"'),
+  "POND Graf does not load the shared runtime or expose all three lenses."
+);
+requireCondition(
+  pondWikiHtml.includes("../../shared/membrane-runtime.css") &&
+    pondWikiHtml.includes('type="module" src="./app.js"'),
+  "The POND Graf Wiki lens does not load the shared membrane runtime."
 );
 
 const builtFiles = await walk(distRoot);
@@ -83,6 +94,6 @@ if (failures.length) {
   process.exitCode = 1;
 } else {
   console.log(
-    `PASS GUVs artifact: ${registry.length} registered apps, shared membrane runtime present, Substrate and app-local server metadata excluded.`
+    `PASS GUVs artifact: ${registry.length} registered apps, V2 Aster/Wiki preserved, POND Graf runtime present, Substrate and app-local server metadata excluded.`
   );
 }

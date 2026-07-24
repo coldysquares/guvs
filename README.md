@@ -6,10 +6,10 @@ Giant Unilamellar Vesicles: small membrane-bound browser tools for semantic test
 
 Production front door:
 
-- The root Vercel project `guvs` serves the registry and all seven registered GUVs at `https://guvs.vercel.app/`.
+- The root Vercel project `guvs` serves the registry and all eight registered GUVs at `https://guvs.vercel.app/`.
 - Root Vercel Functions provide `/api/chat`, `/api/groq`, and `/api/wiki`.
 - The build is registry-driven: only registered app paths enter the public `dist/` artifact.
-- Aster Graf and Wiki Graf share the plain-JavaScript membrane runtime in `shared/`.
+- POND Graf uses the plain-JavaScript membrane runtime in `shared/`; the existing Aster Graf and Wiki Constellation remain independent preserved GUVs.
 - `substrate-001/` is intentionally not a GUV and is excluded from the registry and unified artifact. Its source remains untouched for a separate publication site.
 
 Compatibility surfaces:
@@ -35,8 +35,9 @@ The build creates `dist/` from `registry.json`. It copies the shared membrane ru
 - `shared/membrane-model.js`, `shared/membrane-runtime.js`, and `shared/membrane-runtime.css` are the reusable P.O.N.D./membrane engine.
 - Root `api/` contains the unified deployment's Vercel Functions.
 - App-local `api/` folders remain canonical for standalone app deployments.
-- `aster-graf/` supplies the family and pitch fixture lenses; neither lens owns rendering logic.
-- `wiki-constellation/` adapts live Wikipedia results into the shared data contract; `api/wiki.js` owns its bounded lookup.
+- `aster-graf/` preserves the V2 Skywalker constellation and relationship matrix.
+- `wiki-constellation/` preserves the V2 live Wikipedia link explorer.
+- `pond-graf/` owns the V3 Family, Pitch, and live Wiki lenses; `api/wiki.js` owns the bounded public-source lookup.
 - `substrate-001/` remains source-only here until its standalone media/magazine site receives a separately approved project and publishing plan.
 
 ## Safe workflow

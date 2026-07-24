@@ -41,9 +41,9 @@ function pitchNode({
 }
 
 export const pitchDataset = {
-  id: "aster-pitch-v3",
+  id: "pond-pitch-v3",
   title: "STaeT pitch pond",
-  kicker: "Aster lens / argument + provenance",
+  kicker: "POND lens / argument + provenance",
   description:
     "The same membrane engine renders an explorable pitch: thesis, problem, experience, proof, guardrails, and ask.",
   sourceLabel: "Local pitch artifact",

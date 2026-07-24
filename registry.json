@@ -1,30 +1,44 @@
 [
   {
-    "title": "Aster Graf",
-    "fullName": "Membrane explorer · family + pitch lenses",
-    "slug": "aster-graf",
+    "title": "POND Graf",
+    "fullName": "Protocellular explorer · family + pitch + live source lenses",
+    "slug": "pond-graf",
     "type": [
       "GUV",
-      "explorer",
-      "provenance"
+      "membrane",
+      "explorer"
     ],
     "status": "working",
-    "path": "aster-graf/",
-    "description": "Enter connected membranes, inspect claims beside their evidence, reveal paths, and return without losing the surrounding pond.",
+    "path": "pond-graf/",
+    "description": "Enter connected membranes, inspect evidence, follow exact paths, use bounded AWD operations, and return without losing the surrounding pond.",
     "featured": true
   },
   {
-    "title": "Wiki Graf",
-    "fullName": "Wikipedia live-source lens",
+    "title": "Aster Graf",
+    "fullName": "Skywalker family · constellation + relationship matrix",
+    "slug": "aster-graf",
+    "type": [
+      "GUV",
+      "graph",
+      "matrix"
+    ],
+    "status": "working",
+    "path": "aster-graf/",
+    "description": "Explore the Skywalker family as a touchable constellation and readable relationship matrix.",
+    "featured": true
+  },
+  {
+    "title": "Wiki Constellation",
+    "fullName": "Wikipedia Link Explorer",
     "slug": "wiki-constellation",
     "type": [
       "GUV",
       "explorer",
-      "public source"
+      "live index"
     ],
     "status": "working",
     "path": "wiki-constellation/",
-    "description": "Grow a sourced research pond one article at a time while preserving every explored ring and the exact route back."
+    "description": "Map one Wikipedia article, enter a linked page, then step back without losing the trail."
   },
   {
     "title": "PSR",

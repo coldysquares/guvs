@@ -18,9 +18,9 @@ function record(id, label, note, status = "supported") {
 }
 
 export const familyDataset = {
-  id: "aster-family-v3",
+  id: "pond-family-v3",
   title: "Skywalker family pond",
-  kicker: "Aster lens / people + provenance",
+  kicker: "POND lens / people + provenance",
   description:
     "Enter one person, inspect what qualifies the claim, then follow a supported family path.",
   sourceLabel: "Curated fictional demonstration",

@@ -7,14 +7,30 @@
   const sendBtn = $("#sendBtn");
   const overlay = $("#overlay");
   const keyInput = $("#keyInput");
+  const voiceSelect = $("#voiceSelect");
+  const previewVoiceBtn = $("#previewVoice");
   const micBtn = $("#micBtn");
   const status = $("#status");
   const hintToast = $("#hintToast");
 
   const STORAGE_KEY = "saperli_key";
+  const VOICE_STORAGE_KEY = "saperli_voice_uri";
   const MODEL = "llama-3.3-70b-versatile";
   const API_ENDPOINT = "/api/chat";
   const MAX_HISTORY_MESSAGES = 16;
+  const FEMININE_FRENCH_VOICE_NAMES = [
+    "alice", "amelie", "amélie", "audrey", "aurelie", "aurélie",
+    "celine", "céline", "chantal", "charlotte", "chloe", "chloé",
+    "claire", "elise", "élise", "eloise", "éloïse", "florence",
+    "julie", "juliette", "lea", "léa", "manon", "marie", "pauline",
+    "sandrine", "sandy", "shelley", "sylvie", "virginie", "female",
+    "femme", "woman"
+  ];
+  const MASCULINE_FRENCH_VOICE_NAMES = [
+    "antoine", "henri", "jacques", "jean", "louis", "mathieu",
+    "nicolas", "paul", "pierre", "remi", "rémi", "thomas", "male",
+    "homme", "man"
+  ];
 
   let apiKey = localStorage.getItem(STORAGE_KEY) || "";
   let history = [];
@@ -95,9 +111,10 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
 
   function showOverlay() {
     keyInput.value = "";
+    populateVoicePicker();
     overlay.classList.add("show");
     overlay.setAttribute("aria-hidden", "false");
-    setTimeout(() => keyInput.focus(), 50);
+    setTimeout(() => voiceSelect?.focus(), 50);
   }
 
   function hideOverlay() {
@@ -217,18 +234,97 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
     input.style.height = Math.min(input.scrollHeight, 120) + "px";
   }
 
-  function pickFrenchVoice() {
-    if (!("speechSynthesis" in window)) return null;
-    const voices = window.speechSynthesis.getVoices() || [];
-    const french = voices.filter((v) => String(v.lang || "").toLowerCase().startsWith("fr"));
-    const names = ["amelie", "amélie", "audrey", "aurelie", "aurélie", "celine", "céline", "chloe", "chloé", "claire", "julie", "lea", "léa", "marie"];
-    return french.find((v) => names.some((name) => String(v.name || "").toLowerCase().includes(name))) || french[0] || voices[0] || null;
+  function normalizeVoiceText(value) {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
   }
 
-  function speak(text) {
+  function voiceId(voice) {
+    return String(voice?.voiceURI || `${voice?.name || ""}::${voice?.lang || ""}`);
+  }
+
+  function frenchVoices() {
+    if (!("speechSynthesis" in window)) return [];
+    return (window.speechSynthesis.getVoices() || [])
+      .filter((voice) => normalizeVoiceText(voice.lang).startsWith("fr"))
+      .sort((a, b) => String(a.name).localeCompare(String(b.name), "fr"));
+  }
+
+  function includesVoiceName(voice, names) {
+    const name = normalizeVoiceText(voice?.name);
+    return names.some((candidate) => name.includes(normalizeVoiceText(candidate)));
+  }
+
+  function pickFrenchVoice() {
+    const voices = frenchVoices();
+    const savedVoiceId = localStorage.getItem(VOICE_STORAGE_KEY) || "";
+    if (savedVoiceId) {
+      const saved = voices.find((voice) => voiceId(voice) === savedVoiceId);
+      if (saved) return saved;
+    }
+
+    const preferred = voices.find((voice) => includesVoiceName(voice, FEMININE_FRENCH_VOICE_NAMES));
+    if (preferred) return preferred;
+
+    return voices.find((voice) => !includesVoiceName(voice, MASCULINE_FRENCH_VOICE_NAMES)) || null;
+  }
+
+  function populateVoicePicker() {
+    if (!voiceSelect || !previewVoiceBtn) return;
+
+    const voices = frenchVoices();
+    const savedVoiceId = localStorage.getItem(VOICE_STORAGE_KEY) || "";
+    voiceSelect.replaceChildren();
+
+    const automatic = document.createElement("option");
+    automatic.value = "";
+    automatic.textContent = "Automatic — feminine French";
+    voiceSelect.appendChild(automatic);
+
+    voices.forEach((voice) => {
+      const option = document.createElement("option");
+      option.value = voiceId(voice);
+      option.textContent = `${voice.name} — ${voice.lang}`;
+      voiceSelect.appendChild(option);
+    });
+
+    if (savedVoiceId && voices.some((voice) => voiceId(voice) === savedVoiceId)) {
+      voiceSelect.value = savedVoiceId;
+    } else {
+      voiceSelect.value = "";
+      if (savedVoiceId && voices.length) localStorage.removeItem(VOICE_STORAGE_KEY);
+    }
+
+    voiceSelect.disabled = !voices.length;
+    previewVoiceBtn.disabled = !voices.length;
+    if (!voices.length) automatic.textContent = "French voices are still loading…";
+  }
+
+  function waitForFrenchVoices(timeoutMs = 1400) {
+    const current = frenchVoices();
+    if (current.length || !("speechSynthesis" in window)) return Promise.resolve(current);
+
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        window.speechSynthesis.removeEventListener?.("voiceschanged", finish);
+        populateVoicePicker();
+        resolve(frenchVoices());
+      };
+      window.speechSynthesis.addEventListener?.("voiceschanged", finish, { once: true });
+      setTimeout(finish, timeoutMs);
+    });
+  }
+
+  async function speak(text) {
     if (!("speechSynthesis" in window)) return setStatus("Speech synthesis is not available here.", true);
     const clean = String(text || "").trim();
     if (!clean) return;
+    await waitForFrenchVoices();
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(clean);
     const voice = pickFrenchVoice();
@@ -236,7 +332,8 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
       u.voice = voice;
       u.lang = voice.lang || "fr-FR";
     } else {
-      u.lang = "fr-FR";
+      setStatus("Choose an installed French voice in Settings.", true);
+      return;
     }
     u.rate = 0.94;
     u.pitch = 1.12;
@@ -426,6 +523,14 @@ Ways to respond:
   micBtn.onclick = () => dictating ? stopDictation() : startDictation();
   $("#settingsBtn").onclick = showOverlay;
   $("#closeSettings").onclick = () => { hideOverlay(); $("#settingsBtn").focus(); };
+  voiceSelect?.addEventListener("change", () => {
+    if (voiceSelect.value) localStorage.setItem(VOICE_STORAGE_KEY, voiceSelect.value);
+    else localStorage.removeItem(VOICE_STORAGE_KEY);
+    setStatus("Saperli's voice choice is saved on this device.");
+  });
+  previewVoiceBtn?.addEventListener("click", () => {
+    speak("Bonjour, je suis Saperli Popette. On parle français ?");
+  });
   $("#saveKey").onclick = saveKey;
   $("#clearKey").onclick = clearKey;
   keyInput.addEventListener("keydown", (event) => { if (event.key === "Enter") saveKey(); });
@@ -439,7 +544,11 @@ Ways to respond:
     }
   });
 
-  if ("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged = pickFrenchVoice;
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.onvoiceschanged = populateVoicePicker;
+    populateVoicePicker();
+    waitForFrenchVoices();
+  }
   syncViewportHeight();
   window.visualViewport?.addEventListener("resize", syncViewportHeight);
   window.addEventListener("orientationchange", syncViewportHeight);

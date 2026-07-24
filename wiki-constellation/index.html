@@ -3,34 +3,31 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#090b15" />
-  <title>Wiki Constellation — Wikipedia Link Explorer</title>
+  <meta name="theme-color" content="#07101b" />
+  <meta
+    name="description"
+    content="Explore Wikipedia as a growing, sourced membrane field without losing the route back."
+  />
+  <title>Wiki Graf — Live Source Explorer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50' font-size='48'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../shared/membrane-runtime.css" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <div id="app">
-    <header class="masthead">
-      <nav class="collection-nav" aria-label="Collection navigation">
-        <a href="../" aria-label="Back to all GUVs">← GUVs</a>
-        <span>GUV / explorer / live index</span>
-      </nav>
-
-      <div class="heading-row">
-        <div>
-          <p class="eyebrow">Walk one sourced ring at a time</p>
-          <h1><span aria-hidden="true">✦</span> Wiki Constellation</h1>
-          <p class="dek">
-            Enter any person, place, work, or idea. Its English Wikipedia article
-            becomes the origin star; the pages it links to become the surrounding field.
-          </p>
-        </div>
-        <div class="source-badge" title="Live results from the MediaWiki Action API">
-          <span class="pulse" aria-hidden="true"></span>
-          English Wikipedia
+  <div class="wiki-app">
+    <header class="wiki-bar">
+      <div class="wiki-brand">
+        <a class="wiki-home" href="../" aria-label="Back to all GUVs">← GUVs</a>
+        <div class="wiki-title">
+          <span aria-hidden="true">✦</span>
+          <div>
+            <h1>Wiki Graf</h1>
+            <p>Public-source lens · shared membrane engine</p>
+          </div>
         </div>
       </div>
 
-      <form id="searchForm" class="search-form" role="search">
+      <form id="wikiSearch" class="wiki-search" role="search">
         <label class="sr-only" for="wikiQuery">Search English Wikipedia</label>
         <input
           id="wikiQuery"
@@ -39,126 +36,29 @@
           maxlength="120"
           autocomplete="off"
           enterkeyhint="search"
-          placeholder="Search an article…"
+          placeholder="Person, place, work, or idea…"
         />
-        <button id="searchButton" class="primary-button" type="submit">Map it</button>
+        <button type="submit">Grow pond</button>
       </form>
 
-      <div class="starter-row" role="group" aria-label="Example searches">
-        <span>Try</span>
-        <button class="starter" type="button" data-query="Paul Thomas Anderson">Paul Thomas Anderson</button>
-        <button class="starter" type="button" data-query="Mycelium">Mycelium</button>
-        <button class="starter" type="button" data-query="Giant unilamellar vesicle">Giant unilamellar vesicle</button>
-        <button class="starter" type="button" data-query="Spirited Away">Spirited Away</button>
+      <div class="wiki-source" title="Live summaries and outbound links from the MediaWiki Action API">
+        <span aria-hidden="true"></span>
+        English Wikipedia
       </div>
     </header>
 
-    <main class="workspace">
-      <section id="stage" aria-label="Interactive Wikipedia link constellation">
-        <canvas
-          id="graph"
-          tabindex="0"
-          aria-describedby="graphInstructions"
-        ></canvas>
+    <div class="wiki-starters" aria-label="Example Wikipedia searches">
+      <span>Try</span>
+      <button type="button" data-query="Paul Thomas Anderson">Paul Thomas Anderson</button>
+      <button type="button" data-query="Mycelium">Mycelium</button>
+      <button type="button" data-query="Giant unilamellar vesicle">GUV</button>
+      <button type="button" data-query="Spirited Away">Spirited Away</button>
+      <p>Each line means “this article links to that page”—never causality or endorsement.</p>
+    </div>
 
-        <div class="stage-topline">
-          <div class="stage-route">
-            <button id="backLayer" class="layer-button" type="button" hidden>← Back one layer</button>
-            <p id="graphStatus" role="status" aria-live="polite">Preparing the constellation…</p>
-          </div>
-          <div class="graph-actions" role="group" aria-label="Graph controls">
-            <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
-            <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
-            <button id="freeze" type="button" aria-pressed="false">Freeze</button>
-            <button id="fit" type="button">Fit</button>
-          </div>
-        </div>
-
-        <div id="loadingState" class="stage-message">
-          <span class="loader" aria-hidden="true"></span>
-          <strong>Mapping Wikipedia links</strong>
-          <span>This usually takes a moment.</span>
-        </div>
-
-        <div id="errorState" class="stage-message" hidden>
-          <strong>That constellation did not resolve.</strong>
-          <span id="errorMessage">Try another article title.</span>
-          <button id="retryButton" type="button">Try again</button>
-        </div>
-
-        <section id="focusMembrane" class="focus-membrane" aria-live="polite" aria-label="Active article membrane">
-          <div class="focus-heading">
-            <div>
-              <div id="focusKind" class="panel-kicker">Selected star</div>
-              <h2 id="focusTitle">Choose a star</h2>
-            </div>
-            <button id="closeFocus" class="focus-close" type="button" aria-label="Exit the active article membrane">×</button>
-          </div>
-          <p id="focusNote">Tap a star to bring its source and next path inside the active view.</p>
-          <div class="focus-actions">
-            <button id="enterFocus" class="enter-button" type="button">Enter article</button>
-            <a id="focusLink" class="article-link" href="#" target="_blank" rel="noopener noreferrer">Source ↗</a>
-          </div>
-          <p class="focus-provenance">A line records an outgoing Wikipedia link—not kinship, causality, agreement, or endorsement.</p>
-        </section>
-
-        <p id="graphInstructions" class="graph-hint">
-          Drag the field · tap a star to enter its membrane · Enter article grows the next layer
-        </p>
-      </section>
-
-      <aside id="inspector" aria-label="Selected article details">
-        <section class="origin-card">
-          <div class="panel-kicker">Current origin</div>
-          <h2 id="originTitle">Loading…</h2>
-          <p id="originExtract" class="origin-extract"></p>
-          <a id="originLink" class="article-link" href="#" target="_blank" rel="noopener noreferrer">
-            Open origin article ↗
-          </a>
-        </section>
-
-        <section id="selectionCard" class="selection-card">
-          <div id="selectionKind" class="panel-kicker">Selected star</div>
-          <h2 id="selectionTitle">Choose a star</h2>
-          <p id="selectionNote" class="selection-note">
-            Tap any star, or use the linked-article index below.
-          </p>
-          <a
-            id="selectionLink"
-            class="article-link"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            hidden
-          >
-            Open on Wikipedia ↗
-          </a>
-          <div class="selection-actions">
-            <button id="enterSelection" class="enter-button" type="button">Enter this article</button>
-            <button id="backSelection" class="layer-button" type="button" hidden>← Back one layer</button>
-          </div>
-        </section>
-
-        <section class="index-card">
-          <div class="index-heading">
-            <div>
-              <div class="panel-kicker">Linked-article index</div>
-              <p id="linkCount">0 pages</p>
-            </div>
-            <label class="sr-only" for="linkFilter">Filter linked articles</label>
-            <input id="linkFilter" type="search" placeholder="Filter…" autocomplete="off" />
-          </div>
-          <div id="linkList" class="link-list"></div>
-        </section>
-
-        <p class="provenance-note">
-          Each line means “the origin article links to this page.” It does not assert
-          kinship, causality, agreement, or endorsement.
-        </p>
-      </aside>
-    </main>
+    <main id="membraneApp" aria-label="Wikipedia membrane explorer"></main>
   </div>
 
-  <script src="./app.js"></script>
+  <script type="module" src="./app.js"></script>
 </body>
 </html>

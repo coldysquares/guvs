@@ -224,6 +224,78 @@ export function getVisibleGraph(datasetInput, discoveredIds, frontierLimit = 10)
   return { visibleNodes, ghostNodes, bonds, frontier };
 }
 
+function discoveredPath(dataset, discovered, startId, endId) {
+  if (!startId || !endId || !discovered.has(startId) || !discovered.has(endId)) return [];
+  if (startId === endId) return [startId];
+
+  const queue = [startId];
+  const previous = new Map([[startId, null]]);
+
+  while (queue.length) {
+    const current = queue.shift();
+    for (const relation of getNeighbors(dataset, current)) {
+      const targetId = relation.target.id;
+      if (!discovered.has(targetId) || previous.has(targetId)) continue;
+      previous.set(targetId, current);
+      if (targetId === endId) {
+        const path = [endId];
+        let cursor = current;
+        while (cursor) {
+          path.unshift(cursor);
+          cursor = previous.get(cursor);
+        }
+        return path;
+      }
+      queue.push(targetId);
+    }
+  }
+
+  return [];
+}
+
+export function getFocusedGraph(
+  datasetInput,
+  discoveredIds,
+  focusId,
+  trailIds = [],
+  frontierLimit = 3
+) {
+  const dataset = normalizeDataset(datasetInput);
+  const discovered = new Set(discoveredIds || []);
+  const focus = discovered.has(focusId) ? focusId : dataset.rootId;
+  const suppliedTrail = unique(trailIds).filter((id) => discovered.has(id));
+  const path =
+    suppliedTrail.includes(focus) && suppliedTrail.includes(dataset.rootId)
+      ? suppliedTrail
+      : discoveredPath(dataset, discovered, dataset.rootId, focus);
+  const visibleIds = new Set([dataset.rootId, focus, ...path].filter(Boolean));
+  const frontier = [];
+  const seenFrontier = new Set();
+
+  for (const relation of getNeighbors(dataset, focus)) {
+    if (discovered.has(relation.target.id)) {
+      visibleIds.add(relation.target.id);
+      continue;
+    }
+    if (seenFrontier.has(relation.target.id) || frontier.length >= frontierLimit) continue;
+    seenFrontier.add(relation.target.id);
+    frontier.push({ ...relation, fromId: focus });
+  }
+
+  const frontierIds = new Set(frontier.map((item) => item.target.id));
+  const renderedIds = new Set([...visibleIds, ...frontierIds]);
+  const visibleNodes = dataset.nodes.filter((node) => visibleIds.has(node.id));
+  const ghostNodes = dataset.nodes.filter((node) => frontierIds.has(node.id));
+  const bonds = dataset.bonds.filter(
+    (bond) =>
+      renderedIds.has(bond.from) &&
+      renderedIds.has(bond.to) &&
+      (visibleIds.has(bond.from) || visibleIds.has(bond.to))
+  );
+
+  return { visibleNodes, ghostNodes, bonds, frontier };
+}
+
 export function restoreDiscovered(datasetInput, storedIds = []) {
   const dataset = normalizeDataset(datasetInput);
   const validIds = new Set(dataset.nodes.map((node) => node.id));

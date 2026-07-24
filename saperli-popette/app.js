@@ -25,6 +25,11 @@
   let finalDictationText = "";
   let toastTimer = null;
 
+  function syncViewportHeight() {
+    const height = window.visualViewport?.height || window.innerHeight;
+    document.documentElement.style.setProperty("--app-height", `${Math.round(height)}px`);
+  }
+
   const welcomeWithKey = `Bonjour! Je suis déjà réveillée dans le petit sous-bois numérique. On parle de quoi? [HINT:
 Saperli is saying: She is awake and ready to chat.
 Useful words:
@@ -435,6 +440,9 @@ Ways to respond:
   });
 
   if ("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged = pickFrenchVoice;
+  syncViewportHeight();
+  window.visualViewport?.addEventListener("resize", syncViewportHeight);
+  window.addEventListener("orientationchange", syncViewportHeight);
   setupSpeechRecognition();
 
   const normalizedPath = window.location.pathname.replace(/\/index\.html$/, "").replace(/\/$/, "");

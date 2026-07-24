@@ -1,5 +1,32 @@
 [
   {
+    "title": "Aster Graf",
+    "fullName": "Skywalker family · constellation + relationship matrix",
+    "slug": "aster-graf",
+    "type": [
+      "GUV",
+      "graph",
+      "matrix"
+    ],
+    "status": "working",
+    "path": "aster-graf/",
+    "description": "Explore the Skywalker family as a touchable constellation and readable relationship matrix.",
+    "featured": true
+  },
+  {
+    "title": "Wiki Constellation",
+    "fullName": "Wikipedia Link Explorer",
+    "slug": "wiki-constellation",
+    "type": [
+      "GUV",
+      "explorer",
+      "live index"
+    ],
+    "status": "working",
+    "path": "wiki-constellation/",
+    "description": "Map one Wikipedia article, enter a linked page, then step back without losing the trail."
+  },
+  {
     "title": "PSR",
     "fullName": "Post-Slop Reagent",
     "slug": "psr",
@@ -10,7 +37,7 @@
     ],
     "status": "working",
     "path": "psr/",
-    "description": "Generates dense unrelated concept triplets and logs how AI systems define, bridge, cite, splice, or hallucinate."
+    "description": "Generate unrelated concept triplets; test, score, and archive how an AI connects them."
   },
   {
     "title": "AWD",
@@ -36,20 +63,6 @@
     "status": "working",
     "path": "router/",
     "description": "Routes messy AI/browser work into cleaner downstream output paths."
-  },
-  {
-    "title": "Aster Graf",
-    "fullName": "Skywalker family · constellation + relationship matrix",
-    "slug": "aster-graf",
-    "type": [
-      "GUV",
-      "graph",
-      "matrix"
-    ],
-    "status": "working",
-    "path": "aster-graf/",
-    "description": "Explore a recognizable family as both a living constellation and a readable relationship substrate.",
-    "featured": true
   },
   {
     "title": "Fungi Cell Map",

@@ -50,7 +50,15 @@
   }
   .meta { font-size: 12px; color: var(--dim); margin-top: 6px; }
   .err { color: var(--bad); }
-  .rules { color: var(--dim); font-size: 11px; line-height: 1.7; border-top: 1px solid var(--line); margin-top: 28px; padding-top: 16px; }
+  .rules {
+    margin-top: 28px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    color: var(--dim);
+    font-size: 11px;
+    line-height: 1.7;
+  }
   .rules b { color: var(--ink); font-weight: 500; }
   details summary { cursor: pointer; color: var(--dim); font-size: 12px; margin-top: 16px; }
 
@@ -58,12 +66,40 @@
   textarea { min-height: 112px; font-size: 16px; }
   button, .chip { min-height: 44px; }
   button:focus-visible, .chip:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 3px solid rgba(111,158,111,.55); outline-offset: 2px; }
-  .rules summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--ink); }
-  .rules-body { padding-top: 8px; }
+  .rules summary {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    color: var(--ink);
+    cursor: pointer;
+    list-style: none;
+  }
+  .rules summary::-webkit-details-marker { display: none; }
+  .rules summary::after { content: "+"; color: var(--accent); font-size: 18px; }
+  .rules[open] summary::after { content: "−"; }
+  .rules-body { padding: 4px 0 12px; }
   @media (max-width: 520px) {
+    body {
+      padding: 12px max(14px, env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+    }
+    .guv-nav { margin-bottom: 10px; }
+    h1 { font-size: 13px; }
+    .sub { margin-bottom: 13px; }
+    label { margin-top: 10px; }
+    textarea { min-height: 94px; }
+    .counter { margin-top: 2px; }
     .chips { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
     .chip { width: 100%; padding-inline: 8px; }
-    #go { width: 100%; }
+    #go { width: 100%; min-height: 48px; }
+    .response-head { min-height: 40px; margin-top: 10px; }
+    .out { min-height: 92px; }
+    body.has-output .out {
+      border-color: rgba(111,158,111,.62);
+      box-shadow: 0 0 0 1px rgba(111,158,111,.12);
+    }
+    .rules { margin-top: 18px; }
   }
   @media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition-duration: .01ms !important; } }
 
@@ -195,7 +231,9 @@
 
   function refreshGo() {
     const t = task.value.trim();
-    go.disabled = !(t.length > 0 && t.length <= MAX_INPUT);
+    const busy = go.dataset.busy === "true";
+    go.disabled = busy || !(t.length > 0 && t.length <= MAX_INPUT);
+    go.textContent = busy ? "Working…" : t.length ? "Send" : "Type a task first";
   }
   function refreshCounter() {
     const n = task.value.length;
@@ -204,7 +242,10 @@
     refreshGo();
   }
 
-  task.addEventListener("input", refreshCounter);
+  task.addEventListener("input", () => {
+    document.body.classList.remove("has-output");
+    refreshCounter();
+  });
   task.addEventListener("keydown", (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !go.disabled) {
       event.preventDefault();
@@ -227,12 +268,15 @@
     const userTask = task.value.trim();
     if (!userTask) return;
 
+    document.body.classList.add("has-output");
     out.textContent = "…";
     out.classList.remove("empty");
     out.setAttribute("aria-busy", "true");
     meta.textContent = "";
     copyOutput.disabled = true;
+    go.dataset.busy = "true";
     go.disabled = true;
+    go.textContent = "Working…";
     const t0 = performance.now();
 
     try {
@@ -266,11 +310,13 @@
       meta.textContent =
         `${ms} ms · in ${usage.prompt_tokens ?? "?"} tok · out ${usage.completion_tokens ?? "?"} tok` +
         (usage.completion_tokens >= MAX_TOKENS ? " · HIT CAP" : "");
+      out.scrollIntoView({ block: "nearest", behavior: "smooth" });
     } catch (e) {
       out.textContent = "Network error";
       meta.innerHTML = `<span class="err">${escapeHtml(String(e))}</span>`;
     } finally {
       out.removeAttribute("aria-busy");
+      delete go.dataset.busy;
       refreshGo();
     }
   });

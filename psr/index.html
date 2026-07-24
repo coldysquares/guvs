@@ -191,6 +191,30 @@
       margin-top: 12px;
     }
 
+    .advanced-tools {
+      margin-top: 8px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(16, 19, 25, .72);
+    }
+
+    .advanced-tools > summary {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      list-style: none;
+    }
+
+    .advanced-tools > summary::-webkit-details-marker { display: none; }
+    .advanced-tools > summary::after { content: "+"; color: var(--accent); font-size: 18px; }
+    .advanced-tools[open] > summary::after { content: "−"; }
+    .advanced-tools .controls { margin: 0; padding: 0 10px 10px; }
+
     .prompt-label {
       color: var(--muted);
       font-size: 12px;
@@ -332,6 +356,7 @@
       .controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
       .controls button { width: 100%; margin: 0; padding-inline: 10px; }
       .controls > .primary { grid-column: 1 / -1; }
+      .controls > .secondary-wide { grid-column: 1 / -1; }
       .form-grid { grid-template-columns: 1fr; }
       .meta { gap: 6px; }
       .pill { max-width: 100%; overflow-wrap: anywhere; }
@@ -399,13 +424,61 @@
     .guv-nav a:focus-visible { outline: 3px solid rgba(214,255,107,.5); outline-offset: 2px; }
     @media (max-width: 600px) {
       .guv-nav span { display: none; }
-      .process {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        overflow: visible;
-        padding-bottom: 0;
-        scroll-snap-type: none;
+      .intro-shell { padding: 14px 16px; }
+      .intro-shell h1 { font-size: 42px; }
+      .intro-shell header { gap: 5px; }
+      .intro-shell header p {
+        display: -webkit-box;
+        overflow: hidden;
+        font-size: 12px;
+        line-height: 1.35;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
       }
-      .process li { scroll-snap-align: none; }
+      .intro-shell header::after {
+        content: "Generate → test → score → export";
+        color: var(--accent);
+        font-size: 10px;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+      }
+      .intro-shell .process { display: none; }
+      .intro-shell .stat-row {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 5px;
+        margin-top: 10px;
+      }
+      .intro-shell .stat {
+        min-width: 0;
+        padding: 8px 6px;
+        border-radius: 11px;
+      }
+      .intro-shell .stat b { font-size: 16px; }
+      .intro-shell .stat span {
+        display: block;
+        overflow: hidden;
+        font-size: 8px;
+        line-height: 1.15;
+        text-overflow: ellipsis;
+      }
+      .generate-shell { padding-top: 14px; }
+      .generate-shell h2 { margin-bottom: 8px; }
+      .generate-shell .meta {
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+      }
+      .generate-shell .pill { font-size: 10px; }
+      .generate-shell #domains,
+      .generate-shell #generatedAt { display: none; }
+      .generate-shell #output {
+        min-height: 84px;
+        margin: 10px 0;
+        padding: 12px;
+        font-size: clamp(24px, 8vw, 34px);
+      }
+      .generate-shell .controls { margin: 8px 0; }
+      .generate-shell .controls button { min-height: 46px; font-size: 11px; }
+      .generate-shell .prompt-box { margin-top: 8px; }
     }
 
   </style>
@@ -417,10 +490,10 @@
       <a id="guvHome" href="../" hidden>← GUVs</a>
       <span>Generate → test → document → archive</span>
     </nav>
-    <section class="shell">
+    <section class="shell intro-shell">
       <header>
         <h1>PSR</h1>
-        <p><b>Post-Slop Reagent</b>: a small GUV for exposing how AI systems react when dense, unrelated concepts are introduced into the prompt substrate. It pairs naturally with AWD as a test reagent: generate, expose, observe, score, export.</p>
+        <p><b>Post-Slop Reagent.</b> Generate unrelated concept triplets; test, score, and archive how an AI connects them.</p>
         <ol class="process" aria-label="PSR workflow">
           <li><b>1</b> Generate reagent</li>
           <li><b>2</b> Test elsewhere</li>
@@ -432,13 +505,13 @@
       <div class="stat-row">
         <div class="stat"><b id="totalCases">0</b><span>saved cases</span></div>
         <div class="stat"><b id="totalGenerated">0</b><span>generated this session</span></div>
-        <div class="stat"><b id="citationRate">0%</b><span>citation-present rate</span></div>
-        <div class="stat"><b id="hallucinationRate">0%</b><span>hallucination-risk rate</span></div>
+        <div class="stat"><b id="citationRate">0%</b><span>citation rate</span></div>
+        <div class="stat"><b id="hallucinationRate">0%</b><span>risk rate</span></div>
       </div>
     </section>
 
     <section class="grid">
-      <div class="shell">
+      <div class="shell generate-shell">
         <h2>Generate</h2>
 
         <div class="meta">
@@ -453,10 +526,16 @@
           <button class="primary" id="generate">generate reagent</button>
           <button id="copyTriplet">copy triplet</button>
           <button id="copyCleanPrompt">copy audit prompt</button>
-          <button id="openAwd">open bounded test in AWD</button>
-          <button class="warn" id="copyWildPrompt">copy bridge prompt</button>
-          <button id="chaos">chaos × 10</button>
+          <button class="secondary-wide" id="openAwd">open bounded test in AWD</button>
         </div>
+
+        <details class="advanced-tools">
+          <summary>More experiments</summary>
+          <div class="controls">
+            <button class="warn" id="copyWildPrompt">copy bridge prompt</button>
+            <button id="chaos">chaos × 10</button>
+          </div>
+        </details>
 
         <details class="prompt-box">
           <summary class="prompt-label">AI Search prompt preview</summary>

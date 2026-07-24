@@ -6,6 +6,9 @@
     },
     "api/groq.js": {
       "maxDuration": 30
+    },
+    "api/wiki.js": {
+      "maxDuration": 15
     }
   },
   "buildCommand": "npm run build",

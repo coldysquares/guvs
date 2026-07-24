@@ -4,20 +4,19 @@ Giant Unilamellar Vesicles: small membrane-bound browser tools for semantic test
 
 ## Hosting shape
 
-Observed current production:
+Production front door:
 
-- The GUVs registry and static apps publish from `main` through GitHub Pages at `https://coldysquares.github.io/guvs/`.
-- AWD and Saperli also have standalone Vercel projects because they own server-side API routes.
-
-Candidate replacement front door:
-
-- One root Vercel project, provisionally named `guvs`, connected to this repository with Root Directory `.`.
-- The root project serves the registry and all six registered GUVs from one deployment.
-- Root Vercel Functions provide `/api/chat` and `/api/groq`.
+- The root Vercel project `guvs` serves the registry and all seven registered GUVs at `https://guvs.vercel.app/`.
+- Root Vercel Functions provide `/api/chat`, `/api/groq`, and `/api/wiki`.
+- The build is registry-driven: only registered app paths enter the public `dist/` artifact.
 - `substrate-001/` is intentionally not a GUV and is excluded from the registry and unified artifact. Its source remains untouched for a separate publication site.
-- The existing standalone AWD and Saperli projects remain compatible direct-entry surfaces.
 
-The candidate is implemented in source but is not an active production project until it receives an approved Vercel project creation and cutover. See `DEPLOYMENT_ARCHITECTURE.md`.
+Compatibility surfaces:
+
+- AWD and Saperli retain standalone Vercel projects because they also own direct-entry server-backed surfaces.
+- GitHub Pages remains a static fallback, but cannot execute the API routes used by AWD, Saperli, or Wiki Constellation.
+
+See `DEPLOYMENT_ARCHITECTURE.md` for route ownership and rollback boundaries.
 
 ## Production build
 
@@ -34,6 +33,7 @@ The build creates `dist/` from `registry.json`. It copies only registered applic
 - Each GUV lives in its own folder, usually as `<slug>/index.html` plus local assets/scripts.
 - Root `api/` contains the unified deployment's Vercel Functions.
 - App-local `api/` folders remain canonical for standalone app deployments.
+- `wiki-constellation/` owns the browser interface; `api/wiki.js` owns its bounded Wikipedia lookup.
 - `substrate-001/` remains source-only here until its standalone media/magazine site receives a separately approved project and publishing plan.
 
 ## Safe workflow

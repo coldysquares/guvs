@@ -24,11 +24,27 @@
     button:hover { filter:brightness(1.08); }
     button:focus-visible { outline:3px solid rgba(140,255,193,.5); outline-offset:2px; }
     .note { margin:18px 0 0; color:var(--muted); font-size:12px; }
+    .route-status { min-height:18px; margin:10px 0 0; color:var(--accent); font-size:12px; }
     .guv-nav { min-height:40px; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
     .guv-nav a { min-height:40px; display:inline-flex; align-items:center; padding:8px 11px; border:1px solid var(--line); border-radius:999px; color:var(--muted); text-decoration:none; }
     .guv-nav a:hover { color:var(--ink); border-color:var(--accent); }
     .guv-nav a:focus-visible { outline:3px solid rgba(140,255,193,.5); outline-offset:2px; }
-    @media(max-width:620px){ .actions{grid-template-columns:1fr} main{border-radius:16px} .guv-nav span{display:none} }
+    @media(max-width:620px){
+      body {
+        place-items:start center;
+        padding:12px max(12px,env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
+      }
+      main { padding:16px; border-radius:18px; }
+      .guv-nav { margin-bottom:10px; }
+      .guv-nav span{display:none}
+      h1 { font-size:clamp(31px,10vw,42px); }
+      .dek { margin:8px 0 16px; font-size:12px; line-height:1.4; }
+      textarea { min-height:108px; }
+      .actions { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:12px; }
+      .actions .primary { grid-column:1 / -1; min-height:52px; }
+      .actions button:not(.primary) { min-height:46px; font-size:12px; }
+      .note { margin-top:12px; font-size:11px; line-height:1.4; }
+    }
     @media(prefers-reduced-motion:reduce){ *,*::before,*::after{transition-duration:.01ms!important} }
   </style>
 </head>
@@ -46,15 +62,18 @@
       <button class="route-button" type="button" onclick="route('chatgpt')" disabled>Open ChatGPT</button>
       <button class="route-button" type="button" onclick="route('claude')" disabled>Open Claude</button>
     </div>
+    <p class="route-status" id="routeStatus" role="status" aria-live="polite">Type one bounded task to unlock the clean routes.</p>
     <p class="note">AWD keeps the task inside the GUV collection. External routes open a fresh temporary surface and clear this field.</p>
   </main>
   <script>
     const ta = document.getElementById('prompt');
     const count = document.getElementById('char-count');
+    const routeStatus = document.getElementById('routeStatus');
     const routeButtons = [...document.querySelectorAll('.route-button')];
     function refresh() {
       count.textContent = `${ta.value.length} / 280`;
       routeButtons.forEach((button) => { button.disabled = !ta.value.trim(); });
+      if (ta.value.trim()) routeStatus.textContent = '';
     }
     ta.addEventListener('input', refresh);
     ta.addEventListener('keydown', (event) => {
@@ -75,6 +94,7 @@ USER DELTA: ${text}`;
       const target = dest === 'claude' ? `https://claude.ai/new?q=${encoded}` : `https://chatgpt.com/?q=${encoded}&temporary-chat=true`;
       window.open(target, '_blank', 'noopener,noreferrer');
       ta.value = '';
+      routeStatus.textContent = `Opened a fresh ${dest === 'claude' ? 'Claude' : 'ChatGPT'} route.`;
       refresh();
     }
 

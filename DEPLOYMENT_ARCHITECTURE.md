@@ -7,10 +7,13 @@ Last architecture pass: 2026-07-24.
 ## Direct observations
 
 - `https://guvs.vercel.app/` is the public GUVs production front door.
+- GitHub repository `coldysquares/guvs`, branch `main`, is the canonical production source.
+- A merge to `main` triggers production deployments for Vercel projects `guvs`, `awd`, and `saperli-popette`.
 - The root Vercel project is linked locally as project `guvs`.
 - The root build runs `npm run build` and serves `dist/`.
 - Root Vercel Functions own the unified `/api/chat`, `/api/groq`, and `/api/wiki` routes.
 - Standalone AWD and Saperli Vercel projects remain available as direct-entry surfaces.
+- Standalone AWD team aliases are Vercel SSO-protected; authenticated checks use the linked AWD directory and `vercel curl`.
 - GitHub Pages can serve the static collection but cannot execute the API routes.
 
 ## Production surfaces
@@ -18,8 +21,8 @@ Last architecture pass: 2026-07-24.
 | Surface | Repo path | Production owner | State |
 | --- | --- | --- | --- |
 | GUVs registry and registered apps | `/` and registry paths | Vercel project `guvs` | active |
-| AWD direct entry | `/awd` | Vercel project `awd` | active |
-| Saperli direct entry | `/saperli-popette` | Vercel project `saperli-popette` | active |
+| AWD direct entry | `/awd` | Vercel project `awd` | active; team alias SSO-protected |
+| Saperli direct entry | `/saperli-popette` | Vercel project `saperli-popette` | active and public |
 | GitHub Pages static copy | registered static paths | GitHub Pages from `main` | fallback |
 
 ## Unified routes
@@ -35,6 +38,8 @@ Last architecture pass: 2026-07-24.
 The standalone AWD and Saperli projects preserve stable direct URLs, independent environment variables, and rollback histories. The unified project is the coherent browse-and-try front door.
 
 POND Graf is additive: `/aster-graf/` and `/wiki-constellation/` retain their V2 interfaces, while `/pond-graf/` owns the shared V3 membrane engine and `/pond-graf/wiki/` owns its live public-source lens.
+
+`awd/vercel.json` and `saperli-popette/vercel.json` isolate each standalone build from the root `dist/` build. Their local `.vercel` links target the matching Vercel projects and remain untracked.
 
 ## Why Vercel is the bounded host
 
@@ -76,15 +81,18 @@ The Wiki adapter:
 - times out slow upstream requests;
 - caches successful responses at the Vercel edge.
 
-## Change sequence
+## Canonical Git → Vercel transaction
 
-1. Build and validate `dist/` locally.
-2. Verify the changed GUV locally on desktop and mobile.
-3. Commit and push only the scoped files.
-4. Deploy the feature branch as a Vercel Preview.
-5. Run `GUVS_BASE_URL=<preview> GUVS_EXPECT_UNIFIED=1 npm run smoke`.
-6. Repeat the changed-route browser check on the Preview.
-7. Promote the exact verified Preview only after explicit approval.
+1. Start a scoped branch from current `origin/main`; keep the primary checkout clean.
+2. Run `npm run verify` and the relevant local desktop/mobile checks.
+3. Commit only scoped files, push the branch, and open a pull request against `main`.
+4. Require successful Vercel previews for `guvs`, `awd`, and `saperli-popette`.
+5. Smoke-test the exact preview commit. Use authenticated `vercel curl` for protected preview or AWD aliases.
+6. Merge the pull request only after explicit approval and green checks.
+7. Let the Vercel Git integration deploy the resulting `main` SHA to production for all three projects.
+8. Run the public production smoke suite plus bounded real POST checks, then record the `main` SHA and deployment IDs.
+
+Routine production does not use `vercel --prod`, manual alias reassignment, or manual Preview promotion. Those are recovery actions and require separate explicit approval.
 
 ## Rollback
 

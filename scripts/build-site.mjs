@@ -73,6 +73,7 @@ await rm(outputRoot, { recursive: true, force: true });
 await mkdir(outputRoot, { recursive: true });
 await copyFile(join(repoRoot, "index.html"), join(outputRoot, "index.html"));
 await copyFile(registryPath, join(outputRoot, "registry.json"));
+await copyTree(join(repoRoot, "shared"), join(outputRoot, "shared"));
 
 for (const item of registry) {
   const { normalized, absolute } = safeRegistryPath(item.path);

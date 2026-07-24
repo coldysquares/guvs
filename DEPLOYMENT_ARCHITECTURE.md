@@ -2,7 +2,7 @@
 
 Status: unified Vercel front door active.
 
-Last architecture pass: 2026-07-23.
+Last architecture pass: 2026-07-24.
 
 ## Direct observations
 
@@ -43,6 +43,7 @@ GitHub Pages remains a useful static fallback, but it cannot execute the API han
 `scripts/build-site.mjs` treats `registry.json` as the deployment allowlist:
 
 - Copies the root homepage and registry.
+- Copies the explicit `shared/` membrane runtime used by registered lenses.
 - Copies every registered app and its ordinary static assets.
 - Skips hidden files, backup files, app-local `api/` folders, and app-local `vercel.json` files.
 - Does not copy unregistered repository folders into `dist/`.

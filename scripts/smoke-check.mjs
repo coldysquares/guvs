@@ -79,7 +79,7 @@ async function checkRegistry() {
       "Zero-Waste Router",
       "Aster Graf",
       "Fungi Cell Map",
-      "Wiki Constellation",
+      "Wiki Graf",
       "Saperli Popette"
     ];
     const missing = expected.filter((title) => !titles.has(title));
@@ -108,12 +108,12 @@ if (expectUnified) {
   await checkTitle("Unified PSR route serves PSR", target(guvsBase, "psr/"), "PSR — Post-Slop Reagent");
   await checkTitle("Unified AWD route serves AWD", target(guvsBase, "awd/"), "AWD — AI Waste Deleter");
   await checkTitle("Unified Router route serves Router", target(guvsBase, "router/"), "Zero-Waste Router");
-  await checkTitle("Unified Aster route serves Aster", target(guvsBase, "aster-graf/"), "Aster Graf — Skywalker Family");
+  await checkTitle("Unified Aster route serves Aster", target(guvsBase, "aster-graf/"), "Aster Graf — Membrane Explorer");
   await checkTitle("Unified Fungi route serves Fungi", target(guvsBase, "fungi-cell-map/"), "Fungi Cell Map");
   await checkTitle(
-    "Unified Wiki route serves Wiki Constellation",
+    "Unified Wiki route serves Wiki Graf",
     target(guvsBase, "wiki-constellation/"),
-    "Wiki Constellation — Wikipedia Link Explorer"
+    "Wiki Graf — Live Source Explorer"
   );
   await checkTitle("Unified Saperli route serves Saperli", target(guvsBase, "saperli-popette/"), "Saperli Popette");
   await checkApiRoute("Unified /api/chat exists", target(guvsBase, "api/chat"));

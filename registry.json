@@ -1,30 +1,30 @@
 [
   {
     "title": "Aster Graf",
-    "fullName": "Skywalker family · constellation + relationship matrix",
+    "fullName": "Membrane explorer · family + pitch lenses",
     "slug": "aster-graf",
     "type": [
       "GUV",
-      "graph",
-      "matrix"
+      "explorer",
+      "provenance"
     ],
     "status": "working",
     "path": "aster-graf/",
-    "description": "Explore the Skywalker family as a touchable constellation and readable relationship matrix.",
+    "description": "Enter connected membranes, inspect claims beside their evidence, reveal paths, and return without losing the surrounding pond.",
     "featured": true
   },
   {
-    "title": "Wiki Constellation",
-    "fullName": "Wikipedia Link Explorer",
+    "title": "Wiki Graf",
+    "fullName": "Wikipedia live-source lens",
     "slug": "wiki-constellation",
     "type": [
       "GUV",
       "explorer",
-      "live index"
+      "public source"
     ],
     "status": "working",
     "path": "wiki-constellation/",
-    "description": "Map one Wikipedia article, enter a linked page, then step back without losing the trail."
+    "description": "Grow a sourced research pond one article at a time while preserving every explored ring and the exact route back."
   },
   {
     "title": "PSR",

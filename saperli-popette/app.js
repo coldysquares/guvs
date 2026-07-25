@@ -1,3 +1,9 @@
+import {
+  parseSupportHint,
+  parseTranslationReply,
+  recentConversationContext
+} from "./language-tools.js";
+
 (() => {
   "use strict";
   const $ = (s) => document.querySelector(s);
@@ -9,7 +15,18 @@
   const keyInput = $("#keyInput");
   const micBtn = $("#micBtn");
   const status = $("#status");
-  const hintToast = $("#hintToast");
+  const translateBtn = $("#translateBtn");
+  const translationModePanel = $("#translationMode");
+  const cancelTranslationBtn = $("#cancelTranslation");
+  const draftProof = $("#draftProof");
+  const draftMeaning = $("#draftMeaning");
+  const draftNote = $("#draftNote");
+  const speakDraftBtn = $("#speakDraft");
+  const dismissDraftBtn = $("#dismissDraft");
+  const supportOverlay = $("#supportOverlay");
+  const supportContent = $("#supportContent");
+  const closeSupportBtn = $("#closeSupport");
+  const supportSpeakBtn = $("#supportSpeak");
 
   const STORAGE_KEY = "saperli_key";
   const MODEL = "llama-3.3-70b-versatile";
@@ -23,7 +40,10 @@
   let dictating = false;
   let baseDictationText = "";
   let finalDictationText = "";
-  let toastTimer = null;
+  let translationMode = false;
+  let translatedDraft = "";
+  let supportSpeechText = "";
+  let supportReturnFocus = null;
 
   function syncViewportHeight() {
     const height = window.visualViewport?.height || window.innerHeight;
@@ -66,7 +86,7 @@ Behavior:
 - Treat (?) as the user's uncertainty marker. Infer the likely intended French and naturally recast it. Do not treat (?) as literal content.
 - Repair the user's French freely, but never repair, infer, or complete their factual claims. When a family relationship, date, origin, identity, or causal connection is not established, ask a brief clarifying question.
 - Acknowledge the meaning first, naturally reuse the corrected phrase, and avoid formal correction language.
-- Do not pretend a misunderstood word was valid vocabulary. If a word is unclear, recast the likely meaning or ask briefly.
+- If a word is unclear, reflect the most likely meaning as a gentle question. Do not lecture, scold, or repeatedly announce that something is "not a word."
 - Let a little English leak in only when it helps.
 - Ask one simple follow-up question.
 - Keep the vibe odd, friendly, mushroomy, and alive.
@@ -86,6 +106,20 @@ Ways to respond:
 ]
 
 Keep the hint practical, short, and tied to the current conversation. Do not make it feel like a worksheet.`;
+  }
+
+  function translationSystemPrompt() {
+    return `You are the private English-to-French drafting tool inside Saperli Popette.
+Translate one learner's English draft into natural, beginner-accessible conversational French.
+
+Rules:
+- Preserve the exact intended meaning, emotional tone, names, uncertainty, and level of formality.
+- Use contemporary spoken French. Do not answer the draft or continue the conversation.
+- Use the bounded conversation context only to resolve pronouns or tone.
+- If gender affects one word and context does not establish it, choose the masculine/default form and mention the feminine alternative in the note.
+- Return only valid JSON with exactly these string fields:
+{"french":"the editable French draft","meaning":"a literal English back-translation of that French","note":"one optional note of 12 words or fewer"}
+- No markdown, commentary, or additional keys.`;
   }
 
   function setStatus(msg, isError = false) {
@@ -112,22 +146,82 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
     return { display: source.replace(match[0], "").trim(), hint: match[1].trim() };
   }
 
-  function escapeHtml(text) {
-    return String(text).replace(/[&<>"']/g, (c) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
-    }[c]));
+  function hideSupport({ restoreFocus = true } = {}) {
+    supportOverlay.classList.remove("show");
+    supportOverlay.setAttribute("aria-hidden", "true");
+    supportSpeechText = "";
+    if (restoreFocus && supportReturnFocus?.isConnected) supportReturnFocus.focus();
+    supportReturnFocus = null;
   }
 
-  function showHint(hint) {
+  function addSupportHeading(text) {
+    const heading = document.createElement("h3");
+    heading.textContent = text;
+    supportContent.appendChild(heading);
+  }
+
+  function showSupport(hint, speechText) {
     if (!hint) return;
-    hintToast.innerHTML = "<strong>Hint:</strong> " + escapeHtml(hint);
-    hintToast.classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => hintToast.classList.remove("show"), 14000);
+    const parsed = parseSupportHint(hint);
+    supportContent.replaceChildren();
+    supportSpeechText = String(speechText || "").trim();
+    supportReturnFocus = document.activeElement;
+
+    if (parsed.gist) {
+      addSupportHeading("What Saperli means");
+      const gist = document.createElement("p");
+      gist.className = "support-gist";
+      gist.textContent = parsed.gist;
+      supportContent.appendChild(gist);
+    }
+
+    if (parsed.words.length) {
+      addSupportHeading("Useful words");
+      const words = document.createElement("dl");
+      words.className = "word-list";
+      for (const item of parsed.words) {
+        const term = document.createElement("dt");
+        term.textContent = item.french;
+        const meaning = document.createElement("dd");
+        meaning.textContent = item.english;
+        words.append(term, meaning);
+      }
+      supportContent.appendChild(words);
+    }
+
+    if (parsed.replies.length) {
+      addSupportHeading("Try saying");
+      const choices = document.createElement("div");
+      choices.className = "reply-choices";
+      for (const item of parsed.replies) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "reply-choice";
+
+        const french = document.createElement("strong");
+        french.textContent = item.french;
+        const english = document.createElement("span");
+        english.textContent = item.english;
+        button.append(french, english);
+
+        button.addEventListener("click", () => {
+          setTranslationMode(false);
+          clearDraftProof();
+          input.value = item.french;
+          autosizeInput();
+          hideSupport({ restoreFocus: false });
+          setStatus("French reply added. Edit it or press Send.");
+          input.focus();
+        });
+        choices.appendChild(button);
+      }
+      supportContent.appendChild(choices);
+    }
+
+    supportSpeakBtn.hidden = !supportSpeechText;
+    supportOverlay.classList.add("show");
+    supportOverlay.setAttribute("aria-hidden", "false");
+    setTimeout(() => closeSupportBtn.focus(), 30);
   }
 
   function addBubble(role, text = "", isThinking = false) {
@@ -166,9 +260,9 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
           hintBtn.type = "button";
           hintBtn.className = "action-btn";
           hintBtn.textContent = "💡";
-          hintBtn.title = "Show hint";
-          hintBtn.setAttribute("aria-label", "Show a hint for this reply");
-          hintBtn.onclick = () => showHint(parsed.hint);
+          hintBtn.title = "Understand this reply";
+          hintBtn.setAttribute("aria-label", "Understand and use this reply");
+          hintBtn.onclick = () => showSupport(parsed.hint, parsed.display);
           actions.appendChild(hintBtn);
         }
 
@@ -209,12 +303,61 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
   function setBusy(value) {
     busy = value;
     sendBtn.disabled = value;
-    sendBtn.textContent = value ? "..." : "Send";
+    translateBtn.disabled = value;
+    sendBtn.textContent = value ? "..." : (translationMode ? "Translate" : "Send");
   }
 
   function autosizeInput() {
     input.style.height = "auto";
     input.style.height = Math.min(input.scrollHeight, 120) + "px";
+  }
+
+  function clearDraftProof() {
+    translatedDraft = "";
+    draftProof.hidden = true;
+    translateBtn.hidden = translationMode;
+    draftMeaning.textContent = "";
+    draftNote.textContent = "";
+    draftNote.hidden = true;
+  }
+
+  function showDraftProof(result) {
+    translatedDraft = result.french;
+    translateBtn.hidden = true;
+    draftMeaning.textContent = result.meaning;
+    draftNote.textContent = result.note;
+    draftNote.hidden = !result.note;
+    draftProof.hidden = false;
+  }
+
+  function setTranslationMode(value) {
+    stopDictation(true);
+    translationMode = Boolean(value);
+    translationModePanel.hidden = !translationMode;
+    translateBtn.hidden = translationMode;
+    input.lang = translationMode ? "en" : "fr";
+    input.setAttribute(
+      "aria-label",
+      translationMode ? "English draft to translate into French" : "Message Saperli"
+    );
+    input.placeholder = translationMode
+      ? "Say what you mean in English..."
+      : "Speak, edit, then send...";
+    micBtn.title = translationMode ? "Dictate in English" : "Dictate in French";
+    micBtn.setAttribute(
+      "aria-label",
+      translationMode ? "Start English dictation" : "Start French dictation"
+    );
+    if (recognition) recognition.lang = translationMode ? "en-US" : "fr-FR";
+    sendBtn.textContent = busy ? "..." : (translationMode ? "Translate" : "Send");
+    if (translationMode) clearDraftProof();
+    setStatus(
+      translationMode
+        ? "Write or dictate in English. Saperli will create an editable French draft."
+        : ""
+    );
+    autosizeInput();
+    input.focus();
   }
 
   function pickFrenchVoice() {
@@ -225,7 +368,7 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
     return french.find((v) => names.some((name) => String(v.name || "").toLowerCase().includes(name))) || french[0] || voices[0] || null;
   }
 
-  function speak(text) {
+  function speak(text, { slow = false } = {}) {
     if (!("speechSynthesis" in window)) return setStatus("Speech synthesis is not available here.", true);
     const clean = String(text || "").trim();
     if (!clean) return;
@@ -238,15 +381,19 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
     } else {
       u.lang = "fr-FR";
     }
-    u.rate = 0.94;
+    u.rate = slow ? 0.76 : 0.94;
     u.pitch = 1.12;
-    u.onstart = () => setStatus("Speaking...");
+    u.onstart = () => setStatus(slow ? "Speaking slowly..." : "Speaking...");
     u.onend = () => setStatus("");
     u.onerror = () => setStatus("");
     window.speechSynthesis.speak(u);
   }
 
-  async function callChatApi(messages) {
+  async function callGroq(messages, {
+    system = systemPrompt(),
+    temperature = 0.85,
+    maxTokens = 420
+  } = {}) {
     const headers = { "Content-Type": "application/json" };
     if (apiKey && apiKey.startsWith("gsk_")) headers["x-groq-key"] = apiKey;
 
@@ -255,9 +402,9 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
       headers,
       body: JSON.stringify({
         model: MODEL,
-        messages: [{ role: "system", content: systemPrompt() }, ...messages],
-        temperature: 0.85,
-        max_tokens: 420
+        messages: [{ role: "system", content: system }, ...messages],
+        temperature,
+        max_tokens: maxTokens
       })
     });
 
@@ -273,6 +420,60 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
     }
 
     return String(data?.content || data?.choices?.[0]?.message?.content || "").trim();
+  }
+
+  function callChatApi(messages) {
+    return callGroq(messages);
+  }
+
+  async function translateDraft(text) {
+    const sourceEnglish = String(text || "").trim();
+    if (!sourceEnglish || busy) return;
+
+    stopDictation(true);
+    setBusy(true);
+    setStatus("Saperli is shaping your French...");
+
+    const context = recentConversationContext(history);
+    const request = [
+      context ? `Recent conversation context:\n${context}` : "No conversation context yet.",
+      `English draft:\n${sourceEnglish}`
+    ].join("\n\n");
+
+    try {
+      const raw = await callGroq(
+        [{ role: "user", content: request }],
+        {
+          system: translationSystemPrompt(),
+          temperature: 0.2,
+          maxTokens: 220
+        }
+      );
+      const result = parseTranslationReply(raw, sourceEnglish);
+      if (!result.french) throw new Error("Saperli could not shape that draft. Please try again.");
+
+      translationMode = false;
+      translationModePanel.hidden = true;
+      translateBtn.hidden = false;
+      input.lang = "fr";
+      input.setAttribute("aria-label", "Message Saperli");
+      input.placeholder = "Speak, edit, then send...";
+      micBtn.title = "Dictate in French";
+      micBtn.setAttribute("aria-label", "Start French dictation");
+      if (recognition) recognition.lang = "fr-FR";
+      input.value = result.french;
+      autosizeInput();
+      showDraftProof(result);
+      setStatus("French draft ready. Review it, then press Send.");
+    } catch (err) {
+      if (err.status === 401 || /groq key|api key|missing key/i.test(err.message || "")) {
+        showOverlay();
+      }
+      setStatus(err.message || "Translation failed.", true);
+    } finally {
+      setBusy(false);
+      input.focus();
+    }
   }
 
   function trimHistory() {
@@ -292,6 +493,7 @@ Keep the hint practical, short, and tied to the current conversation. Do not mak
     addBubble("user", clean);
     history.push({ role: "user", content: clean });
     trimHistory();
+    clearDraftProof();
     input.value = "";
     autosizeInput();
 
@@ -375,7 +577,10 @@ Ways to respond:
       dictating = false;
       micBtn.classList.remove("active");
       micBtn.textContent = "🎙️";
-      if (!busy) setStatus(input.value.trim() ? "Dictation stopped. Edit or press Send." : "");
+      if (!busy) {
+        const nextAction = translationMode ? "Translate" : "Send";
+        setStatus(input.value.trim() ? `Dictation stopped. Edit or press ${nextAction}.` : "");
+      }
     };
   }
 
@@ -388,7 +593,10 @@ Ways to respond:
   function stopDictation(quiet = false) {
     if (!recognition || !dictating) return;
     try { recognition.stop(); } catch {}
-    if (!quiet) setStatus("Dictation stopped. Edit or press Send.");
+    if (!quiet) {
+      const nextAction = translationMode ? "Translate" : "Send";
+      setStatus(`Dictation stopped. Edit or press ${nextAction}.`);
+    }
   }
 
   function saveKey() {
@@ -415,12 +623,30 @@ Ways to respond:
     input.focus();
   }
 
-  sendBtn.onclick = () => send(input.value);
-  input.addEventListener("input", autosizeInput);
+  sendBtn.onclick = () => translationMode ? translateDraft(input.value) : send(input.value);
+  translateBtn.onclick = () => setTranslationMode(true);
+  cancelTranslationBtn.onclick = () => setTranslationMode(false);
+  speakDraftBtn.onclick = () => speak(input.value, { slow: true });
+  dismissDraftBtn.onclick = () => {
+    clearDraftProof();
+    input.focus();
+  };
+  closeSupportBtn.onclick = () => hideSupport();
+  supportSpeakBtn.onclick = () => speak(supportSpeechText, { slow: true });
+  supportOverlay.addEventListener("click", (event) => {
+    if (event.target === supportOverlay) {
+      hideSupport();
+    }
+  });
+  input.addEventListener("input", () => {
+    autosizeInput();
+    if (translatedDraft && input.value.trim() !== translatedDraft) clearDraftProof();
+  });
   input.addEventListener("keydown", (event) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      send(input.value);
+      if (translationMode) translateDraft(input.value);
+      else send(input.value);
     }
   });
   micBtn.onclick = () => dictating ? stopDictation() : startDictation();
@@ -433,9 +659,15 @@ Ways to respond:
     if (event.target === overlay) { hideOverlay(); $("#settingsBtn").focus(); }
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && overlay.classList.contains("show")) {
-      hideOverlay();
-      $("#settingsBtn").focus();
+    if (event.key === "Escape") {
+      if (supportOverlay.classList.contains("show")) {
+        hideSupport();
+      } else if (overlay.classList.contains("show")) {
+        hideOverlay();
+        $("#settingsBtn").focus();
+      } else if (translationMode) {
+        setTranslationMode(false);
+      }
     }
   });
 
@@ -450,5 +682,5 @@ Ways to respond:
   addBubble("assistant", apiKey && apiKey.startsWith("gsk_") ? welcomeWithKey : welcomeHybrid);
   addStarters();
 
-  input.focus();
+  if (window.matchMedia?.("(pointer:fine)").matches) input.focus();
 })();

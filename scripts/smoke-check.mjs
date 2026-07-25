@@ -81,7 +81,8 @@ async function checkRegistry() {
       "Aster Graf",
       "Fungi Cell Map",
       "Wiki Constellation",
-      "Saperli Popette"
+      "Saperli Popette",
+      "Generative Studio"
     ];
     const missing = expected.filter((title) => !titles.has(title));
     const substratePresent =
@@ -119,6 +120,11 @@ if (expectUnified) {
   await checkTitle("Unified POND Graf route serves the membrane engine", target(guvsBase, "pond-graf/"), "POND Graf — Membrane Explorer");
   await checkTitle("Unified POND Wiki lens serves the live membrane explorer", target(guvsBase, "pond-graf/wiki/"), "POND Graf — Wiki Lens");
   await checkTitle("Unified Saperli route serves Saperli", target(guvsBase, "saperli-popette/"), "Saperli Popette");
+  await checkTitle(
+    "Unified Generative Studio route serves the browser studio",
+    target(guvsBase, "generative_studio/"),
+    "Generative Systems & Wollohy Studio"
+  );
   await checkApiRoute("Unified /api/chat exists", target(guvsBase, "api/chat"));
   await checkApiRoute("Unified /api/groq exists", target(guvsBase, "api/groq"));
   await checkApiRoute("Unified /api/wiki exists", target(guvsBase, "api/wiki"));

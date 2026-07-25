@@ -31,7 +31,7 @@ function requireCondition(condition, message) {
   if (!condition) failures.push(message);
 }
 
-requireCondition(registry.length === 8, `Expected 8 registered GUVs, found ${registry.length}.`);
+requireCondition(registry.length === 9, `Expected 9 registered GUVs, found ${registry.length}.`);
 requireCondition(
   !registry.some((entry) => entry.slug === "substrate-001"),
   "Substrate 001 entered the GUV registry."
@@ -58,6 +58,10 @@ const wikiHtml = await readFile(join(distRoot, "wiki-constellation", "index.html
 const pondHtml = await readFile(join(distRoot, "pond-graf", "index.html"), "utf8");
 const pondWikiHtml = await readFile(join(distRoot, "pond-graf", "wiki", "index.html"), "utf8");
 const saperliHtml = await readFile(join(distRoot, "saperli-popette", "index.html"), "utf8");
+const generativeStudioHtml = await readFile(
+  join(distRoot, "generative_studio", "index.html"),
+  "utf8"
+);
 requireCondition(
   asterHtml.includes("<title>Aster Graf — Skywalker Family</title>"),
   "The preserved Aster Graf route no longer serves the V2 family interface."
@@ -83,6 +87,10 @@ requireCondition(
     saperliHtml.includes('type="module" src="./app.js"') &&
     await exists(join(distRoot, "saperli-popette", "language-tools.js")),
   "Saperli does not include its editable translation and phrase-support interface."
+);
+requireCondition(
+  generativeStudioHtml.includes("<title>Generative Systems & Wollohy Studio</title>"),
+  "Generative Studio no longer serves its registered browser interface."
 );
 
 const builtFiles = await walk(distRoot);

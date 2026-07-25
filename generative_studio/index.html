@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generative Systems & Wollohy Studio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        :root {
+            --bg-base: #09090b;
+            --bg-panel: #18181b;
+            --bg-card: #27272a;
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --accent-seq: #10b981; 
+            --accent-art: #ec4899; 
+            --accent-amb: #eab308; 
+            --accent-vox: #a855f7;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            overflow: hidden; 
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--bg-panel);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .brand h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            text-transform: uppercase;
+        }
+
+        .brand span {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        nav {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.3rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover { color: var(--text-main); }
+        .nav-btn.active[data-target="sequencer"] { background: var(--accent-seq); color: #000; }
+        .nav-btn.active[data-target="canvas"] { background: var(--accent-art); color: #fff; }
+        .nav-btn.active[data-target="ambient"] { background: var(--accent-amb); color: #000; }
+        .nav-btn.active[data-target="vocal"] { background: var(--accent-vox); color: #fff; }
+
+        main {
+            flex: 1;
+            display: flex;
+            position: relative;
+        }
+
+        .workspace {
+            flex: 1;
+            position: relative;
+            background: #000;
+            cursor: crosshair;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #audio-init-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(9, 9, 11, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.4s ease;
+        }
+        
+        .init-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(255,255,255,0.2);
+            transition: transform 0.2s;
+        }
+        .init-btn:hover { transform: scale(1.05); }
+
+        .sidebar {
+            width: 380px;
+            background-color: var(--bg-panel);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .module-panel {
+            display: none;
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+            gap: 1.5rem;
+            animation: slideIn 0.3s ease;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .module-panel.active { display: flex; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .badge {
+            align-self: flex-start;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge.seq { background: rgba(16, 185, 129, 0.15); color: var(--accent-seq); }
+        .badge.art { background: rgba(236, 72, 153, 0.15); color: var(--accent-art); }
+        .badge.amb { background: rgba(234, 179, 8, 0.15); color: var(--accent-amb); }
+        .badge.vox { background: rgba(168, 85, 247, 0.15); color: var(--accent-vox); }
+
+        h2 { font-size: 1.5rem; font-weight: 700; }
+        .desc { font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); }
+
+        .control-group {
+            background: var(--bg-card);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .label-val { color: var(--text-main); }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: currentColor;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: currentColor;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        select, input[type="file"] {
+            font-size: 0.8rem;
+            color: var(--text-main);
+            background: rgba(0,0,0,0.2);
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            width: 100%;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .action-btn:hover { background: rgba(255, 255, 255, 0.1); }
+        .action-btn:active { transform: scale(0.97); }
+
+        .action-btn.primary { background: var(--text-main); color: var(--bg-base); border: none; }
+        .action-btn.primary:hover { background: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
+        .action-btn.danger { background: #ef4444; color: #fff; border: none; }
+        .action-btn.danger:hover { background: #f87171; box-shadow: 0 0 15px rgba(239,68,68,0.4); }
+        .recording-pulse { animation: pulse 1.5s infinite; }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 900px) {
+            main { flex-direction: column; }
+            .sidebar { width: 100%; height: 45vh; border-left: none; border-top: 1px solid var(--border); }
+            .workspace { height: 55vh; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <h1>Generative <span>Studio</span></h1>
+        </div>
+        <nav id="module-nav">
+            <button class="nav-btn" data-target="sequencer">1. Music Sequencer</button>
+            <button class="nav-btn" data-target="canvas">2. Math Art Canvas</button>
+            <button class="nav-btn" data-target="ambient">3. Ambient Chimes</button>
+            <button class="nav-btn active" data-target="vocal">4. Wollohy Vocal Studio</button>
+        </nav>
+    </header>
+
+    <main>
+        <div class="workspace" id="workspace">
+            <div id="audio-init-overlay">
+                <button class="init-btn" id="start-studio-btn">Initialize Studio (Enable Audio)</button>
+                <p style="margin-top: 1rem; color: #a1a1aa; font-size: 0.9rem;">Requires audio context permission.</p>
+            </div>
+            <canvas id="gen-canvas"></canvas>
+        </div>
+
+        <div class="sidebar">
+            <div class="module-panel" id="panel-sequencer">
+                <div>
+                    <span class="badge seq">Cellular Automata Synth</span>
+                    <h2 style="margin-top: 0.5rem">Conway Sequencer</h2>
+                </div>
+                <p class="desc">
+                    <strong>Action:</strong> Draw on the canvas to seed life. Patterns evolve to create generative, shifting melodies based on vertical positions.
+                </p>
+                <div class="control-group" style="color: var(--accent-seq)">
+                    <label>BPM (Tempo) <span class="label-val" id="val-bpm">120</span></label>
+                    <input type="range" id="param-bpm" min="60" max="240" value="120">
+                    <label style="margin-top:0.5rem">Scale Type <span class="label-val" id="val-scale">Pentatonic Minor</span></label>
+                    <input type="range" id="param-scale" min="0" max="2" value="0" step="1">
+                </div>
+                <div class="btn-grid">
+                    <button class="action-btn primary" id="btn-seq-toggle" style="grid-column: span 2;">Pause Sequence</button>
+                    <button class="action-btn" id="btn-seq-clear">Clear Grid</button>
+                    <button class="action-btn" id="btn-seq-preset">Load Glider</button>
+                </div>
+            </div>
+
+            <div class="module-panel" id="panel-canvas">
+                <div>
+                    <span class="badge art">Mathematical Brush</span>
+                    <h2 style="margin-top: 0.5rem">Attractor Canvas</h2>
+                </div>
+                <p class="desc">
+                    <strong>Action:</strong> Click and drag on the dark canvas to drop "chaos seeds". Each seed endlessly draws complex, non-repeating geometric ribbons.
+                </p>
+                <div class="control-group" style="color: var(--accent-art)">
+                    <label>Brush Spread (Rho) <span class="label-val" id="val-rho">28.0</span></label>
+                    <input type="range" id="param-rho" min="10" max="40" step="0.5" value="28">
+                    <label style="margin-top:0.5rem">Color Palette <span class="label-val" id="val-color">Neon Cyber</span></label>
+                    <input type="range" id="param-color" min="0" max="2" value="0" step="1">
+                </div>
+                <div class="btn-grid">
+                    <button class="action-btn primary" id="btn-art-export" style="grid-column: span 2;">Export Artwork (PNG)</button>
+                    <button class="action-btn" id="btn-art-clear">Clear Canvas</button>
+                    <button class="action-btn" id="btn-art-auto">Auto-Splash</button>
+                </div>
+            </div>
+
+            <div class="module-panel" id="panel-ambient">
+                <div>
+                    <span class="badge amb">Kinetic Soundscape</span>
+                    <h2 style="margin-top: 0.5rem">Ambient Chimes</h2>
+                </div>
+                <p class="desc">
+                    <strong>Action:</strong> Manage the flow of thermodynamic particles. When "hot" hits "cold", an FM chime rings. Adjust the gate to control musical density.
+                </p>
+                <div class="control-group" style="color: var(--accent-amb)">
+                    <label>Barrier Aperture <span class="label-val" id="val-gate">Closed</span></label>
+                    <input type="range" id="param-gate" min="0" max="100" value="0">
+                </div>
+                <div class="btn-grid">
+                    <button class="action-btn primary" id="btn-amb-toggle" style="grid-column: span 2;">Pause Simulation</button>
+                    <button class="action-btn" id="btn-amb-reset" style="grid-column: span 2;">Reset System Order</button>
+                </div>
+            </div>
+
+            <div class="module-panel active" id="panel-vocal">
+                <div>
+                    <span class="badge vox">Phase Canceling & Recording</span>
+                    <h2 style="margin-top: 0.5rem">Wollohy Studio</h2>
+                </div>
+                <p class="desc">
+                    <strong>Action:</strong> Upload a stereo track. Strip vocals in real-time. Apply DSP Voice Effects, record a take, and download the Rough Mix instantly.
+                </p>
+                
+                <div class="control-group" style="color: var(--accent-vox)">
+                    <label>1. Upload Stereo Mix (WAV/MP3)</label>
+                    <input type="file" id="audio-upload" accept="audio/mpeg, audio/wav, audio/ogg, audio/mp3">
+                    
+                    <label style="margin-top:0.5rem">2. Vocal DSP Chain</label>
+                    <select id="wollohy-effect-select">
+                        <option value="natural">Natural (Dry + Light EQ)</option>
+                        <option value="velvet">Velvet R&B (Lush Reverb)</option>
+                        <option value="legir">LE GIR (Formant/Pitch Drop)</option>
+                        <option value="ghost">Ghost Double (Chorus Delay)</option>
+                    </select>
+
+                    <label style="margin-top:0.5rem">Track Volume <span class="label-val" id="val-vol-track">-6 dB</span></label>
+                    <input type="range" id="param-vol-track" min="-40" max="10" value="-6">
+
+                    <label style="margin-top:0.5rem">Mic Volume <span class="label-val" id="val-vol-mic">0 dB</span></label>
+                    <input type="range" id="param-vol-mic" min="-40" max="10" value="0">
+                </div>
+
+                <div class="btn-grid">
+                    <button class="action-btn primary" id="btn-vox-play">Play Track</button>
+                    <button class="action-btn" id="btn-vox-strip" title="Removes center-panned audio (Vocals)">Strip Vocals: OFF</button>
+                    <button class="action-btn danger" id="btn-vox-record" style="grid-column: span 2; display: none;">🔴 Record New Take & Mix</button>
+                    <button class="action-btn" id="btn-vox-mic" style="grid-column: span 2;">Enable Mic to Unlock Recording</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('gen-canvas');
+        const ctx = canvas.getContext('2d', { alpha: false }); 
+        const workspace = document.getElementById('workspace');
+        
+        let currentModule = 'vocal'; // Start on Wollohy panel
+        let animationFrameId = null;
+        let isRunning = true;
+        let lastTime = 0;
+        let audioInitialized = false;
+
+        // --- Audio Master Setup (Tone.js) ---
+        let mainSynth, fmChime;
+        
+        // Wollohy Studio variables
+        let trackPlayer, micInput, trackVol, micVol, vocalStripper, voxAnalyser, splitter;
+        let masterRecorder;
+        let isStripped = false;
+        let isMicEnabled = false;
+        let isRecording = false;
+        let lastVocalSpawn = 0; // Throttle tracker
+
+        // Wollohy Effect Nodes
+        let fxNatural, fxVelvet, fxLeGir, fxGhost;
+        let currentEffectNode;
+
+        const scales = [
+            ["C3", "D#3", "F3", "G3", "A#3", "C4", "D#4", "F4", "G4", "A#4", "C5", "D#5", "F5", "G5", "A#5", "C6"], 
+            ["C3", "D3", "E3", "G3", "A3", "C4", "D4", "E4", "G4", "A4", "C5", "D5", "E5", "G5", "A5", "C6"],     
+            ["C3", "C#3", "F3", "G3", "G#3", "C4", "C#4", "F4", "G4", "G#4", "C5", "C#5", "F5", "G5", "G#5", "C6"] 
+        ];
+        let currentScaleIdx = 0;
+
+        document.getElementById('start-studio-btn').addEventListener('click', async () => {
+            await Tone.start();
+            audioInitialized = true;
+            
+            // Setup Synth for Module 1
+            mainSynth = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: "sine" },
+                envelope: { attack: 0.05, decay: 0.2, sustain: 0.2, release: 1.5 }
+            }).toDestination();
+            mainSynth.volume.value = -10;
+
+            // Setup Ambient Chimes for Module 3
+            const reverb = new Tone.Reverb({ decay: 5, wet: 0.6 }).toDestination();
+            const delay = new Tone.FeedbackDelay("8n", 0.4).connect(reverb);
+            fmChime = new Tone.PolySynth(Tone.FMSynth, {
+                harmonicity: 3, modulationIndex: 10,
+                oscillator: { type: "sine" },
+                envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 2 }
+            }).connect(delay);
+            fmChime.volume.value = -18;
+
+            // Setup Wollohy Studio routing
+            masterRecorder = new Tone.Recorder(); // For printing the rough mix
+            Tone.getDestination().connect(masterRecorder); // Capture master output
+
+            trackVol = new Tone.Volume(-6).toDestination();
+            micVol = new Tone.Volume(0).toDestination();
+            voxAnalyser = new Tone.Analyser("waveform", 512);
+            
+            trackPlayer = new Tone.Player().connect(trackVol);
+
+            // Wollohy DSP Effects Setup
+            fxNatural = new Tone.EQ3({ high: 2, mid: 1, low: -2 }); // Slight vocal pop
+            fxVelvet = new Tone.Reverb({ decay: 4, wet: 0.45 }); // Lush R&B
+            fxLeGir = new Tone.PitchShift({ pitch: -7, windowSize: 0.1 }); // Demonic/lowered
+            fxGhost = new Tone.Chorus({ frequency: 2.5, delayTime: 3.5, depth: 0.7, wet: 0.5 }).start();
+            
+            // Generate impulse responses for Reverb (required before use)
+            await fxVelvet.generate();
+            currentEffectNode = fxNatural; // Default
+
+            micInput = new Tone.UserMedia();
+            
+            // Phase cancellation network for real-time vocal stripping
+            // (Center-pan removal: Invert Right Channel, sum with Left Channel)
+            vocalStripper = new Tone.Gain(1);
+            splitter = new Tone.Split();
+            const inverter = new Tone.Gain(-1); // Invert phase
+            const mergeMono = new Tone.Gain(0.5); // Sum back to mono
+            
+            splitter.connect(mergeMono, 0, 0); // L -> Merge
+            splitter.connect(inverter, 1, 0);  // R -> Inverter
+            inverter.connect(mergeMono, 0, 0); // -R -> Merge
+            mergeMono.connect(vocalStripper);
+
+            document.getElementById('audio-init-overlay').style.opacity = '0';
+            setTimeout(() => document.getElementById('audio-init-overlay').style.display = 'none', 400);
+            
+            resizeCanvas();
+            startSimulation();
+        });
+
+        function resizeCanvas() {
+            const rect = workspace.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            
+            if (currentModule === 'sequencer') initSequencerGrid();
+            else if (currentModule === 'canvas') {
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                lorenzSeeds = []; 
+            }
+            else if (currentModule === 'ambient') initAmbientSystem();
+            else if (currentModule === 'vocal') {
+                ctx.fillStyle = '#09090b';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        let isDragging = false;
+        canvas.addEventListener('mousedown', (e) => { isDragging = true; handleInteract(e); });
+        canvas.addEventListener('mousemove', (e) => { if(isDragging) handleInteract(e); });
+        canvas.addEventListener('mouseup', () => { isDragging = false; });
+        canvas.addEventListener('mouseleave', () => { isDragging = false; });
+
+        function handleInteract(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (currentModule === 'sequencer' && audioInitialized) {
+                const col = Math.floor(x / gridScale);
+                const row = Math.floor(y / gridScale);
+                if (col >= 0 && col < seqCols && row >= 0 && row < seqRows) {
+                    seqGrid[col][row] = 1;
+                    drawSequencer();
+                }
+            } else if (currentModule === 'canvas' && audioInitialized) {
+                if(Math.random() > 0.5) spawnAttractorSeed(x, y);
+            }
+        }
+
+        let gridScale = 24, seqCols, seqRows, seqGrid = [], seqBPM = 120;
+        let scaleArr = scales[0];
+
+        function initSequencerGrid() {
+            seqCols = Math.floor(canvas.width / gridScale);
+            seqRows = Math.floor(canvas.height / gridScale);
+            seqGrid = Array(seqCols).fill(null).map(() => Array(seqRows).fill(0));
+            if (seqCols > 10 && seqRows > 10) { // Glider
+                let cx = Math.floor(seqCols/2), cy = Math.floor(seqRows/2);
+                seqGrid[cx][cy-1] = 1; seqGrid[cx+1][cy] = 1; seqGrid[cx-1][cy+1] = 1; seqGrid[cx][cy+1] = 1; seqGrid[cx+1][cy+1] = 1;
+            }
+        }
+
+        function stepSequencer() {
+            let nextGrid = Array(seqCols).fill(null).map(() => Array(seqRows).fill(0));
+            let notesToPlay = new Set(); 
+            for (let i = 0; i < seqCols; i++) {
+                for (let j = 0; j < seqRows; j++) {
+                    let neighbors = 0;
+                    for (let x = -1; x < 2; x++) {
+                        for (let y = -1; y < 2; y++) {
+                            let col = (i + x + seqCols) % seqCols;
+                            let row = (j + y + seqRows) % seqRows;
+                            neighbors += seqGrid[col][row];
+                        }
+                    }
+                    neighbors -= seqGrid[i][j];
+                    let state = seqGrid[i][j];
+                    if (state === 1 && (neighbors < 2 || neighbors > 3)) nextGrid[i][j] = 0; 
+                    else if (state === 0 && neighbors === 3) {
+                        nextGrid[i][j] = 1; 
+                        if(audioInitialized) notesToPlay.add(scaleArr[(seqRows - 1 - j) % scaleArr.length]);
+                    } else nextGrid[i][j] = state; 
+                }
+            }
+            seqGrid = nextGrid;
+            if (notesToPlay.size > 0 && audioInitialized) {
+                mainSynth.triggerAttackRelease(Array.from(notesToPlay).slice(0, 4), "16n");
+            }
+        }
+
+        function drawSequencer() {
+            ctx.fillStyle = '#09090b'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+            ctx.beginPath();
+            for(let i=0; i<=seqCols; i++) { ctx.moveTo(i * gridScale, 0); ctx.lineTo(i * gridScale, canvas.height); }
+            for(let j=0; j<=seqRows; j++) { ctx.moveTo(0, j * gridScale); ctx.lineTo(canvas.width, j * gridScale); }
+            ctx.stroke();
+            ctx.shadowBlur = 10; ctx.shadowColor = '#10b981'; ctx.fillStyle = '#10b981';
+            for (let i=0; i<seqCols; i++) for (let j=0; j<seqRows; j++) 
+                if (seqGrid[i][j] === 1) ctx.fillRect(i * gridScale + 2, j * gridScale + 2, gridScale - 4, gridScale - 4);
+            ctx.shadowBlur = 0; 
+        }
+
+        let lorenzSeeds = [], artRho = 28, artSigma = 10, artBeta = 8/3, paletteType = 0; 
+        function getPaletteColor(life) {
+            if (paletteType === 0) return `hsla(${320 - (life * 140)}, 90%, 60%, 0.4)`;
+            if (paletteType === 1) return `hsla(${life * 60}, 100%, 55%, 0.3)`;
+            return `hsla(${180 + ((1-life) * 60)}, 80%, 50%, 0.3)`;
+        }
+        function spawnAttractorSeed(x, y) {
+            // Memory Guard: Keep object count safe
+            if (lorenzSeeds.length > 30) lorenzSeeds.shift();
+            
+            lorenzSeeds.push({
+                x: (x - canvas.width/2) / 20, y: (y - canvas.height/2) / 20, z: 1.0, 
+                life: 1.0, scale: 8 + Math.random()*4, px: x, py: y 
+            });
+        }
+        function updateAndDrawArt() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const dt = 0.008; 
+            for(let i = lorenzSeeds.length - 1; i >= 0; i--) {
+                let p = lorenzSeeds[i];
+                p.x += (artSigma * (p.y - p.x)) * dt;
+                p.y += (p.x * (artRho - p.z) - p.y) * dt;
+                p.z += (p.x * p.y - artBeta * p.z) * dt;
+                p.life -= 0.002; 
+                let sx = (canvas.width / 2) + (p.x * p.scale);
+                let sy = (canvas.height / 2) + (p.z * p.scale) - (p.scale * 20); 
+                ctx.beginPath(); ctx.moveTo(p.px, p.py); ctx.lineTo(sx, sy);
+                ctx.strokeStyle = getPaletteColor(p.life); ctx.lineWidth = 1.5; ctx.stroke();
+                p.px = sx; p.py = sy;
+                if(p.life <= 0) lorenzSeeds.splice(i, 1);
+            }
+        }
+
+        let ambParticles = [], gateAperture = 0; const maxParticles = 140;
+        function initAmbientSystem() {
+            ambParticles = [];
+            for(let i=0; i<maxParticles; i++) {
+                let isLeft = i < maxParticles/2;
+                ambParticles.push({
+                    x: isLeft ? Math.random()*(canvas.width/2-30)+15 : Math.random()*(canvas.width/2-30)+(canvas.width/2+15),
+                    y: Math.random()*(canvas.height-30)+15,
+                    vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4,
+                    radius: 4, type: isLeft ? 'cold' : 'hot', cooldown: 0
+                });
+            }
+        }
+        function updateAmbientSystem() {
+            const midX = canvas.width/2, gateTop = (canvas.height - (canvas.height * (gateAperture / 100))) / 2;
+            const gateBottom = gateTop + (canvas.height * (gateAperture / 100));
+            let collisions = 0;
+            for(let i=0; i<ambParticles.length; i++) {
+                let p = ambParticles[i];
+                if (p.cooldown > 0) p.cooldown--;
+                p.x += p.vx; p.y += p.vy;
+                if (p.y-p.radius<0 || p.y+p.radius>canvas.height) p.vy = -p.vy, p.y = p.y-p.radius<0?p.radius:canvas.height-p.radius;
+                if (p.x-p.radius<0 || p.x+p.radius>canvas.width) p.vx = -p.vx, p.x = p.x-p.radius<0?p.radius:canvas.width-p.radius;
+                
+                const oldX = p.x - p.vx;
+                if (oldX < midX && p.x + p.radius >= midX && (p.y < gateTop || p.y > gateBottom)) { p.vx = -p.vx; p.x = midX - p.radius; }
+                else if (oldX > midX && p.x - p.radius <= midX && (p.y < gateTop || p.y > gateBottom)) { p.vx = -p.vx; p.x = midX + p.radius; }
+
+                for(let j=i+1; j<ambParticles.length; j++) {
+                    let p2 = ambParticles[j];
+                    let dx = p.x - p2.x, dy = p.y - p2.y, distSq = dx*dx + dy*dy, rSum = p.radius + p2.radius;
+                    if (distSq < rSum*rSum) {
+                        let nx = dx / Math.sqrt(distSq), ny = dy / Math.sqrt(distSq);
+                        let p1v = p.vx*nx + p.vy*ny, p2v = p2.vx*nx + p2.vy*ny, opt = (p1v - p2v); 
+                        p.vx -= opt*nx; p.vy -= opt*ny; p2.vx += opt*nx; p2.vy += opt*ny;
+                        if (p.type !== p2.type && p.cooldown===0 && p2.cooldown===0 && collisions<3 && audioInitialized) {
+                            let note = scales[1][(scales[1].length - 1) - Math.floor((p.y/canvas.height)*scales[1].length)];
+                            fmChime.triggerAttackRelease(note, "8n");
+                            p.cooldown = 20; p2.cooldown = 20; collisions++;
+                            ctx.beginPath(); ctx.arc(p.x+dx/2, p.y+dy/2, 10, 0, Math.PI*2);
+                            ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fill();
+                        }
+                        let overlap = 0.5 * (rSum - Math.sqrt(distSq));
+                        p.x += overlap*nx; p.y += overlap*ny; p2.x -= overlap*nx; p2.y -= overlap*ny;
+                    }
+                }
+            }
+        }
+        function drawAmbientSystem() {
+            ctx.fillStyle = 'rgba(9, 9, 11, 0.3)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const midX = canvas.width/2, gateTop = (canvas.height - (canvas.height * (gateAperture / 100))) / 2;
+            const gateBottom = gateTop + (canvas.height * (gateAperture / 100));
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(midX, 0); ctx.lineTo(midX, gateTop); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(midX, gateBottom); ctx.lineTo(midX, canvas.height); ctx.stroke();
+            ambParticles.forEach(p => {
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.cooldown > 0 ? '#fff' : (p.type === 'cold' ? '#3b82f6' : '#eab308'); ctx.fill();
+            });
+        }
+
+        function drawVocalVisualizer(timestamp) {
+            // Decoupled Background Clear: Only draw solid background if no art is active
+            if (isMicEnabled && lorenzSeeds.length > 0) {
+                updateAndDrawArt();
+            } else {
+                ctx.fillStyle = isRecording ? 'rgba(239, 68, 68, 0.1)' : 'rgba(9, 9, 11, 0.2)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            if (!audioInitialized || !voxAnalyser) return;
+
+            const values = voxAnalyser.getValue();
+            ctx.beginPath(); ctx.lineJoin = "round"; ctx.lineWidth = 3;
+            ctx.strokeStyle = isRecording ? '#ef4444' : '#a855f7'; 
+
+            for (let i = 0; i < values.length; i++) {
+                const x = (i / values.length) * canvas.width;
+                const y = (values[i] * canvas.height / 2) + (canvas.height / 2);
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.shadowBlur = 15; ctx.shadowColor = ctx.strokeStyle; ctx.stroke(); ctx.shadowBlur = 0;
+            
+            // Generative Interaction: Singing loudly triggers Math Art
+            if (isMicEnabled) {
+                const rms = Math.sqrt(values.reduce((sum, val) => sum + (val * val), 0) / values.length);
+                // CPU Throttling: Check RMS threshold and strictly limit spawn rate
+                if (rms > 0.08 && timestamp - lastVocalSpawn > 250) { 
+                    spawnAttractorSeed(
+                        canvas.width / 2 + (Math.random() - 0.5) * 300, 
+                        canvas.height / 2 + (Math.random() - 0.5) * 300
+                    );
+                    lastVocalSpawn = timestamp; 
+                }
+            }
+        }
+
+        function loop(timestamp) {
+            if (!isRunning) return;
+            if (currentModule === 'sequencer') {
+                let elapsed = timestamp - lastTime, frameInterval = 60000 / seqBPM / 4; 
+                if (elapsed >= frameInterval) { stepSequencer(); drawSequencer(); lastTime = timestamp - (elapsed % frameInterval); }
+            } else if (currentModule === 'canvas') updateAndDrawArt();
+            else if (currentModule === 'ambient') { updateAmbientSystem(); drawAmbientSystem(); }
+            else if (currentModule === 'vocal') drawVocalVisualizer(timestamp);
+            animationFrameId = requestAnimationFrame(loop);
+        }
+
+        function startSimulation() { if (!animationFrameId && audioInitialized) { isRunning = true; lastTime = performance.now(); animationFrameId = requestAnimationFrame(loop); } }
+        function stopSimulation() { if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; isRunning = false; } }
+
+        document.getElementById('module-nav').addEventListener('click', (e) => {
+            if (!e.target.classList.contains('nav-btn')) return;
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.module-panel').forEach(p => p.classList.remove('active'));
+            e.target.classList.add('active');
+            currentModule = e.target.getAttribute('data-target');
+            document.getElementById(`panel-${currentModule}`).classList.add('active');
+            stopSimulation(); resizeCanvas(); isRunning = true; startSimulation();
+        });
+
+        // Module 1, 2, 3 simple controls
+        document.getElementById('btn-seq-toggle').onclick = (e) => { isRunning = !isRunning; e.target.textContent = isRunning ? "Pause Sequence" : "Resume Sequence"; if(isRunning) startSimulation(); else stopSimulation(); };
+        document.getElementById('btn-seq-clear').onclick = () => { initSequencerGrid(); seqGrid = Array(seqCols).fill(null).map(() => Array(seqRows).fill(0)); drawSequencer(); };
+        document.getElementById('btn-seq-preset').onclick = () => { initSequencerGrid(); drawSequencer(); };
+        document.getElementById('param-bpm').oninput = (e) => { seqBPM = e.target.value; document.getElementById('val-bpm').textContent = seqBPM; };
+        document.getElementById('param-scale').oninput = (e) => { currentScaleIdx = parseInt(e.target.value); scaleArr = scales[currentScaleIdx]; document.getElementById('val-scale').textContent = ["Pentatonic Minor", "Pentatonic Major", "Phrygian Dominant"][currentScaleIdx]; };
+        document.getElementById('param-rho').oninput = (e) => { artRho = parseFloat(e.target.value); document.getElementById('val-rho').textContent = artRho.toFixed(1); };
+        document.getElementById('param-color').oninput = (e) => { paletteType = parseInt(e.target.value); document.getElementById('val-color').textContent = ["Neon Cyber", "Hellfire", "Deep Ocean"][paletteType]; };
+        document.getElementById('btn-art-clear').onclick = () => { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height); lorenzSeeds = []; };
+        document.getElementById('btn-art-auto').onclick = () => { for(let i=0; i<5; i++) spawnAttractorSeed(canvas.width/2 + (Math.random()-0.5)*200, canvas.height/2 + (Math.random()-0.5)*200); };
+        document.getElementById('btn-art-export').onclick = () => { const l = document.createElement('a'); l.download = 'generative_attractor_art.png'; l.href = canvas.toDataURL('image/png'); l.click(); };
+        document.getElementById('param-gate').oninput = (e) => { gateAperture = parseInt(e.target.value); document.getElementById('val-gate').textContent = gateAperture === 0 ? 'Closed' : gateAperture === 100 ? 'Wide Open' : `${gateAperture}% Open`; };
+        document.getElementById('btn-amb-toggle').onclick = (e) => { isRunning = !isRunning; e.target.textContent = isRunning ? "Pause Simulation" : "Resume Simulation"; if(isRunning) startSimulation(); else stopSimulation(); };
+        document.getElementById('btn-amb-reset').onclick = initAmbientSystem;
+
+        document.getElementById('audio-upload').onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file || !audioInitialized) return;
+            const arrayBuffer = await file.arrayBuffer();
+            const audioBuffer = await Tone.context.decodeAudioData(arrayBuffer);
+            trackPlayer.buffer = audioBuffer;
+            document.getElementById('btn-vox-play').textContent = "Play Track";
+            document.getElementById('btn-vox-strip').textContent = "Strip Vocals: OFF";
+            document.getElementById('btn-vox-strip').classList.remove('primary');
+            isStripped = false;
+            // Ensure track is routed properly
+            trackPlayer.disconnect();
+            trackPlayer.connect(trackVol);
+        };
+
+        // Effect Routing Switcher
+        document.getElementById('wollohy-effect-select').onchange = (e) => {
+            const val = e.target.value;
+            if(isMicEnabled) {
+                micInput.disconnect(currentEffectNode);
+                currentEffectNode.disconnect(micVol);
+                currentEffectNode.disconnect(voxAnalyser);
+            }
+
+            if (val === 'natural') currentEffectNode = fxNatural;
+            else if (val === 'velvet') currentEffectNode = fxVelvet;
+            else if (val === 'legir') currentEffectNode = fxLeGir;
+            else if (val === 'ghost') currentEffectNode = fxGhost;
+
+            if (isMicEnabled) {
+                micInput.connect(currentEffectNode);
+                currentEffectNode.connect(micVol);
+                currentEffectNode.connect(voxAnalyser);
+            }
+        };
+
+        document.getElementById('btn-vox-play').onclick = (e) => {
+            if (!trackPlayer || !trackPlayer.loaded) {
+                const orig = e.target.textContent; e.target.textContent = "Upload a track first!";
+                setTimeout(() => e.target.textContent = orig, 2000); return;
+            }
+            if (trackPlayer.state === "started") { trackPlayer.stop(); e.target.textContent = "Play Track"; } 
+            else { trackPlayer.start(); e.target.textContent = "Stop Track"; }
+        };
+
+        document.getElementById('btn-vox-strip').onclick = (e) => {
+            if (!trackPlayer || !trackPlayer.loaded) {
+                const orig = e.target.textContent; e.target.textContent = "Upload a track first!";
+                setTimeout(() => e.target.textContent = orig, 2000); return;
+            }
+            isStripped = !isStripped;
+            e.target.textContent = `Strip Vocals: ${isStripped ? "ON" : "OFF"}`;
+            e.target.classList.toggle('primary', isStripped);
+            
+            trackPlayer.disconnect();
+            if (isStripped) {
+                trackPlayer.connect(splitter);
+                vocalStripper.connect(trackVol);
+            } else {
+                vocalStripper.disconnect(trackVol);
+                trackPlayer.connect(trackVol);
+            }
+        };
+
+        document.getElementById('btn-vox-mic').onclick = async (e) => {
+            if (!audioInitialized) return;
+            try {
+                if (isMicEnabled) {
+                    micInput.close();
+                    micInput.disconnect(currentEffectNode);
+                    isMicEnabled = false;
+                    e.target.textContent = "Enable Mic to Unlock Recording";
+                    e.target.classList.remove('primary');
+                    document.getElementById('btn-vox-record').style.display = 'none';
+                } else {
+                    await micInput.open();
+                    isMicEnabled = true;
+                    // Route mic through selected effect, then to volume & visualizer
+                    micInput.connect(currentEffectNode);
+                    currentEffectNode.connect(micVol);
+                    currentEffectNode.connect(voxAnalyser);
+                    
+                    e.target.textContent = "Disable Mic";
+                    e.target.classList.add('primary');
+                    document.getElementById('btn-vox-record').style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                const orig = e.target.textContent; e.target.textContent = "Mic Permission Denied!";
+                setTimeout(() => e.target.textContent = orig, 2000);
+            }
+        };
+
+        // Browser-Native Wollohy Record & Mixdown System
+        document.getElementById('btn-vox-record').onclick = async (e) => {
+            if (!isRecording) {
+                // START RECORDING
+                isRecording = true;
+                e.target.textContent = "⏹ Stop & Download Rough Mix";
+                e.target.classList.remove('danger');
+                e.target.classList.add('primary', 'recording-pulse');
+                
+                // Reset track to beginning if loaded
+                if (trackPlayer && trackPlayer.loaded) {
+                    trackPlayer.stop();
+                    trackPlayer.start();
+                    document.getElementById('btn-vox-play').textContent = "Stop Track";
+                }
+                
+                masterRecorder.start();
+            } else {
+                // STOP RECORDING & DOWNLOAD
+                isRecording = false;
+                e.target.textContent = "Processing Mix...";
+                e.target.classList.remove('recording-pulse');
+                
+                if (trackPlayer && trackPlayer.loaded) trackPlayer.stop();
+                document.getElementById('btn-vox-play').textContent = "Play Track";
+
+                const recordingData = await masterRecorder.stop();
+                const url = URL.createObjectURL(recordingData);
+                const anchor = document.createElement("a");
+                const effectName = document.getElementById('wollohy-effect-select').value;
+                anchor.download = `Wollohy_Studio_RoughMix_${effectName}.webm`;
+                anchor.href = url;
+                anchor.click();
+
+                // Reset button
+                e.target.textContent = "🔴 Record New Take & Mix";
+                e.target.classList.add('danger');
+                e.target.classList.remove('primary');
+            }
+        };
+
+        document.getElementById('param-vol-track').oninput = (e) => {
+            if (trackVol) trackVol.volume.value = parseFloat(e.target.value);
+            document.getElementById('val-vol-track').textContent = `${e.target.value} dB`;
+        };
+        document.getElementById('param-vol-mic').oninput = (e) => {
+            if (micVol) micVol.volume.value = parseFloat(e.target.value);
+            document.getElementById('val-vol-mic').textContent = `${e.target.value} dB`;
+        };
+
+    </script>
+</body>
+</html>

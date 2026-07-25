@@ -57,6 +57,7 @@ const asterHtml = await readFile(join(distRoot, "aster-graf", "index.html"), "ut
 const wikiHtml = await readFile(join(distRoot, "wiki-constellation", "index.html"), "utf8");
 const pondHtml = await readFile(join(distRoot, "pond-graf", "index.html"), "utf8");
 const pondWikiHtml = await readFile(join(distRoot, "pond-graf", "wiki", "index.html"), "utf8");
+const saperliHtml = await readFile(join(distRoot, "saperli-popette", "index.html"), "utf8");
 requireCondition(
   asterHtml.includes("<title>Aster Graf — Skywalker Family</title>"),
   "The preserved Aster Graf route no longer serves the V2 family interface."
@@ -75,6 +76,13 @@ requireCondition(
   pondWikiHtml.includes("../../shared/membrane-runtime.css") &&
     pondWikiHtml.includes('type="module" src="./app.js"'),
   "The POND Graf Wiki lens does not load the shared membrane runtime."
+);
+requireCondition(
+  saperliHtml.includes('id="translateBtn"') &&
+    saperliHtml.includes('id="supportOverlay"') &&
+    saperliHtml.includes('type="module" src="./app.js"') &&
+    await exists(join(distRoot, "saperli-popette", "language-tools.js")),
+  "Saperli does not include its editable translation and phrase-support interface."
 );
 
 const builtFiles = await walk(distRoot);

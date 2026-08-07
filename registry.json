@@ -103,6 +103,20 @@
     "description": "Practice French with direct translation, gentle coaching, a stable voice, and locally saved conversation continuity."
   },
   {
+    "title": "HOL-001",
+    "fullName": "Generative Holorig Studio · first fun/restorative ZWEFF room",
+    "slug": "hol001",
+    "type": [
+      "GUV",
+      "holorig",
+      "audio"
+    ],
+    "status": "working v1",
+    "path": "hol001/",
+    "description": "A living audiovisual biosphere that combines sanctuary organisms, cellular sequencing, attractor ribbons, ambient chimes, and biology/chemistry/physics-inspired sound controls.",
+    "featured": true
+  },
+  {
     "title": "Generative Studio",
     "fullName": "Browser-native vocal stripping and generative math-art",
     "slug": "generative_studio",

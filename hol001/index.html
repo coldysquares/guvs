@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HOL-001 · Generative Holorig Studio</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #020612;
+      --panel: rgba(4, 8, 20, 0.84);
+      --line: rgba(89, 207, 255, 0.17);
+      --line-strong: rgba(89, 207, 255, 0.42);
+      --text: #e6eef5;
+      --muted: #8fa1b6;
+      --cyan: #40e5ff;
+      --shadow: rgba(0, 0, 0, 0.42);
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      user-select: none;
+    }
+
+    canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    button,
+    input,
+    select { font: inherit; }
+
+    button,
+    select {
+      color: var(--text);
+      background: rgba(14, 22, 38, 0.78);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 13px;
+      cursor: pointer;
+      font-weight: 750;
+    }
+
+    button:hover,
+    select:hover { border-color: var(--line-strong); }
+
+    button.primary {
+      background: rgba(49, 163, 213, 0.23);
+      border-color: rgba(64, 229, 255, 0.44);
+      box-shadow: 0 0 30px rgba(64, 229, 255, 0.10);
+    }
+
+    button.active {
+      background: rgba(64, 229, 255, 0.18);
+      border-color: rgba(64, 229, 255, 0.54);
+      color: #dffbff;
+    }
+
+    .topbar {
+      position: absolute;
+      z-index: 7;
+      left: 0;
+      right: 0;
+      top: 0;
+      padding: 22px clamp(18px, 6vw, 108px);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 22px;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+    }
+
+    .brand h1 {
+      margin: 0;
+      color: var(--cyan);
+      letter-spacing: 0.18em;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      pointer-events: auto;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .panel {
+      position: absolute;
+      z-index: 7;
+      left: 50%;
+      bottom: 26px;
+      transform: translateX(-50%);
+      width: min(1180px, calc(100vw - 36px));
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: 0 24px 80px var(--shadow);
+      border-radius: 24px;
+      padding: 18px 22px;
+      backdrop-filter: blur(20px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid rgba(89, 207, 255, 0.12);
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+    }
+
+    .tabgroup {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    .tab { font-size: 13px; padding: 9px 12px; }
+
+    .palette {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      padding: 0;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 16px;
+      align-items: end;
+    }
+
+    .control label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .control b {
+      color: var(--cyan);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-weight: 800;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--cyan);
+      cursor: pointer;
+    }
+
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 11px;
+    }
+
+    .readout {
+      position: absolute;
+      z-index: 6;
+      left: clamp(18px, 6vw, 108px);
+      top: 98px;
+      padding: 11px 14px;
+      border-radius: 16px;
+      background: rgba(4, 8, 20, 0.54);
+      border: 1px solid rgba(89, 207, 255, 0.12);
+      backdrop-filter: blur(16px);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      pointer-events: none;
+      opacity: 0.82;
+    }
+
+    .breath {
+      position: absolute;
+      z-index: 4;
+      inset: 0;
+      display: none;
+      place-items: center;
+      pointer-events: none;
+    }
+
+    .breath.on { display: grid; }
+
+    .breath-ring {
+      width: 210px;
+      height: 210px;
+      border-radius: 999px;
+      border: 1px solid rgba(64, 229, 255, 0.55);
+      display: grid;
+      place-items: center;
+      color: var(--cyan);
+      letter-spacing: 0.16em;
+      font-size: 12px;
+      text-transform: uppercase;
+      animation: breath 8s infinite ease-in-out;
+      background: rgba(64, 229, 255, 0.025);
+    }
+
+    @keyframes breath {
+      0%, 100% { transform: scale(0.92); opacity: 0.22; }
+      50% { transform: scale(1.55); opacity: 0.52; }
+    }
+
+    .zen .topbar,
+    .zen .panel,
+    .zen .readout { opacity: 0; pointer-events: none; }
+
+    .zen .panel { transform: translateX(-50%) translateY(22px); }
+
+    .toast {
+      position: absolute;
+      z-index: 20;
+      left: 50%;
+      top: 18px;
+      transform: translateX(-50%);
+      background: rgba(4, 8, 20, 0.90);
+      border: 1px solid var(--line-strong);
+      padding: 10px 14px;
+      border-radius: 999px;
+      color: var(--cyan);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.38);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .toast.show { opacity: 1; }
+
+    @media (max-width: 980px) {
+      .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .topbar { flex-direction: column; }
+    }
+
+    @media (max-width: 620px) {
+      .controls { grid-template-columns: 1fr; }
+      .panel { bottom: 12px; width: calc(100vw - 20px); padding: 14px; }
+      .tabs { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="world"></canvas>
+
+  <div id="toast" class="toast">HOL-001 awake</div>
+
+  <div id="breathLayer" class="breath">
+    <div class="breath-ring"><span id="breathLabel">inhale</span></div>
+  </div>
+
+  <header id="topbar" class="topbar">
+    <div class="brand">
+      <h1>HOL-001 // Generative Holorig Studio</h1>
+      <p>Protocellular audiovisual biosphere · biology / chemistry / physics sound ecology</p>
+    </div>
+    <div class="top-actions">
+      <button id="breatheBtn">Breathe</button>
+      <button id="zenBtn">Zen Mode</button>
+      <button id="audioBtn" class="primary">Awaken Holorig</button>
+    </div>
+  </header>
+
+  <div id="readout" class="readout">Sanctuary field stable · click/drag to seed organisms</div>
+
+  <footer id="panel" class="panel">
+    <div class="tabs">
+      <div class="tabgroup">
+        <button class="tab active" data-mode="sanctuary">1. Sanctuary</button>
+        <button class="tab" data-mode="cellular">2. Cellular Sequencer</button>
+        <button class="tab" data-mode="attractor">3. Attractor Canvas</button>
+        <button class="tab" data-mode="chimes">4. Ambient Chimes</button>
+        <button class="tab" data-mode="synthesis">5. Synthesis</button>
+      </div>
+      <div class="palette">
+        <span>Palette:</span>
+        <button class="swatch" data-theme="cyan" style="background:#40e5ff" title="Cyan Ocean"></button>
+        <button class="swatch" data-theme="emerald" style="background:#44e2a8" title="Bioluminescent Emerald"></button>
+        <button class="swatch" data-theme="purple" style="background:#b778ff" title="Amethyst Nebula"></button>
+        <button class="swatch" data-theme="gold" style="background:#ffc94a" title="Starlight Gold"></button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="control">
+        <label><span>Temperature</span><b id="tempVal">42%</b></label>
+        <input id="temp" type="range" min="0" max="100" value="42" />
+      </div>
+      <div class="control">
+        <label><span>Pressure</span><b id="pressureVal">63%</b></label>
+        <input id="pressure" type="range" min="0" max="100" value="63" />
+      </div>
+      <div class="control">
+        <label><span>pH / Brightness</span><b id="phVal">7.2</b></label>
+        <input id="ph" type="range" min="4" max="10" step=".1" value="7.2" />
+      </div>
+      <div class="control">
+        <label><span>Entropy</span><b id="entropyVal">28%</b></label>
+        <input id="entropy" type="range" min="0" max="100" value="28" />
+      </div>
+      <div class="control">
+        <label><span>Gravity</span><b id="gravityVal">36%</b></label>
+        <input id="gravity" type="range" min="0" max="100" value="36" />
+      </div>
+      <div class="control">
+        <label><span>Entrainment</span><b id="entrainVal">Theta</b></label>
+        <select id="entrain">
+          <option value="theta">Theta (6 Hz)</option>
+          <option value="alpha">Alpha (10 Hz)</option>
+          <option value="delta">Delta (3 Hz)</option>
+          <option value="off">Off</option>
+        </select>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const canvas = document.getElementById("world");
+    const ctx = canvas.getContext("2d");
+    let width = 0, height = 0, dpr = 1, frame = 0;
+
+    function resize() {
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    const ui = {
+      temp: document.getElementById("temp"),
+      pressure: document.getElementById("pressure"),
+      ph: document.getElementById("ph"),
+      entropy: document.getElementById("entropy"),
+      gravity: document.getElementById("gravity"),
+      entrain: document.getElementById("entrain"),
+      tempVal: document.getElementById("tempVal"),
+      pressureVal: document.getElementById("pressureVal"),
+      phVal: document.getElementById("phVal"),
+      entropyVal: document.getElementById("entropyVal"),
+      gravityVal: document.getElementById("gravityVal"),
+      entrainVal: document.getElementById("entrainVal"),
+      readout: document.getElementById("readout"),
+      toast: document.getElementById("toast")
+    };
+
+    let mode = "sanctuary";
+    let hue = 190;
+    let audioReady = false;
+    let isZen = false;
+    let isBreathing = false;
+    let breathTimer = null;
+
+    const field = {
+      temperature: .42,
+      pressure: .63,
+      ph: 7.2,
+      entropy: .28,
+      gravity: .36,
+      diffusion: .64,
+      quorum: 4
+    };
+
+    function updateField() {
+      field.temperature = Number(ui.temp.value) / 100;
+      field.pressure = Number(ui.pressure.value) / 100;
+      field.ph = Number(ui.ph.value);
+      field.entropy = Number(ui.entropy.value) / 100;
+      field.gravity = Number(ui.gravity.value) / 100;
+      ui.tempVal.textContent = Math.round(field.temperature * 100) + "%";
+      ui.pressureVal.textContent = Math.round(field.pressure * 100) + "%";
+      ui.phVal.textContent = field.ph.toFixed(1);
+      ui.entropyVal.textContent = Math.round(field.entropy * 100) + "%";
+      ui.gravityVal.textContent = Math.round(field.gravity * 100) + "%";
+      ui.entrainVal.textContent = ({theta: "Theta", alpha: "Alpha", delta: "Delta", off: "Off"})[ui.entrain.value];
+      if (audioReady) applyAudioField();
+    }
+    ["temp", "pressure", "ph", "entropy", "gravity", "entrain"].forEach(id => document.getElementById(id).addEventListener("input", updateField));
+    updateField();
+
+    function toast(text) {
+      ui.toast.textContent = text;
+      ui.toast.classList.add("show");
+      setTimeout(() => ui.toast.classList.remove("show"), 1100);
+    }
+
+    document.querySelectorAll(".tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        mode = btn.dataset.mode;
+        ui.readout.textContent = readoutForMode(mode);
+        if (mode === "cellular" && cellsAliveCount() < 8) seedGlider();
+        if (mode === "chimes" && particles.length < 80) seedParticles();
+        if (mode === "attractor" && attractors.length < 2) seedAttractors();
+        toast(mode.toUpperCase());
+      });
+    });
+
+    function readoutForMode(m) {
+      return {
+        sanctuary: "Sanctuary field stable · click/drag to seed organisms",
+        cellular: "Cellular automata drive melody · living cells become notes",
+        attractor: "Chaos attractors bend pan, pitch, filter, and ribbon geometry",
+        chimes: "Thermal particles exchange energy · hot/cold collisions ring chimes",
+        synthesis: "All engines cross-coupled · quorum clusters trigger harmony"
+      }[m] || "Holorig awake";
+    }
+
+    document.querySelectorAll(".swatch").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const colors = {cyan: [190, "#40e5ff"], emerald: [152, "#44e2a8"], purple: [270, "#b778ff"], gold: [44, "#ffc94a"]};
+        [hue, color] = colors[btn.dataset.theme];
+        document.documentElement.style.setProperty("--cyan", color);
+        organisms.forEach(o => o.hue = hue + (Math.random() * 18 - 9));
+      });
+    });
+
+    document.getElementById("zenBtn").addEventListener("click", () => {
+      isZen = !isZen;
+      document.body.classList.toggle("zen", isZen);
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape" && isZen) { isZen = false; document.body.classList.remove("zen"); }
+      if (e.key >= "1" && e.key <= "5") document.querySelectorAll(".tab")[Number(e.key) - 1].click();
+    });
+    document.getElementById("breatheBtn").addEventListener("click", () => {
+      isBreathing = !isBreathing;
+      const layer = document.getElementById("breathLayer");
+      const label = document.getElementById("breathLabel");
+      layer.classList.toggle("on", isBreathing);
+      clearInterval(breathTimer);
+      if (isBreathing) breathTimer = setInterval(() => { label.textContent = label.textContent === "inhale" ? "exhale" : "inhale"; }, 4000);
+      else label.textContent = "inhale";
+    });
+
+    let limiter, master, reverb, delay, filter, organismSynth, chimeSynth, padSynth, bassSynth, binauralGain, binauralLeft, binauralRight;
+    const scaleMinor = ["C3", "Eb3", "F3", "G3", "Bb3", "C4", "Eb4", "F4", "G4", "Bb4", "C5"];
+    const scaleMajor = ["C3", "D3", "E3", "G3", "A3", "C4", "D4", "E4", "G4", "A4", "C5"];
+
+    async function initAudio() {
+      if (audioReady) return;
+      await Tone.start();
+      limiter = new Tone.Limiter(-1).toDestination();
+      master = new Tone.Volume(-12).connect(limiter);
+      reverb = new Tone.Reverb({ roomSize: .88, wet: .84 }).connect(master);
+      delay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: .18, wet: .26 }).connect(reverb);
+      filter = new Tone.Filter({ frequency: 1200, type: "lowpass" }).connect(delay);
+      organismSynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 1.8, decay: 1.4, sustain: .42, release: 4.8 }}).connect(filter);
+      chimeSynth = new Tone.PolySynth(Tone.FMSynth, { harmonicity: 1.5, modulationIndex: 7, envelope: { attack: .02, decay: 2, sustain: .02, release: 3.2 }}).connect(delay);
+      padSynth = new Tone.PolySynth(Tone.AMSynth, { harmonicity: .5, envelope: { attack: 4, decay: 2, sustain: .35, release: 8 }}).connect(reverb);
+      bassSynth = new Tone.MonoSynth({ oscillator: { type: "sine" }, envelope: { attack: .2, decay: .8, sustain: .25, release: 2.4 }}).connect(filter);
+      binauralGain = new Tone.Volume(-28).connect(reverb);
+      binauralLeft = new Tone.Oscillator({ frequency: 146.83 - 3, type: "sine" }).connect(new Tone.Panner(-1).connect(binauralGain));
+      binauralRight = new Tone.Oscillator({ frequency: 146.83 + 3, type: "sine" }).connect(new Tone.Panner(1).connect(binauralGain));
+      binauralLeft.start(); binauralRight.start();
+      Tone.Transport.bpm.value = 72 + field.temperature * 58;
+      Tone.Transport.scheduleRepeat(time => stepMusic(time), "8n");
+      Tone.Transport.start();
+      audioReady = true;
+      applyAudioField();
+      document.getElementById("audioBtn").textContent = "Holorig Active";
+      document.getElementById("audioBtn").classList.add("active");
+      toast("HOL-001 awake");
+    }
+    document.getElementById("audioBtn").addEventListener("click", initAudio);
+
+    function applyAudioField() {
+      Tone.Transport.bpm.rampTo(54 + field.temperature * 86, 1.2);
+      reverb.wet.rampTo(.45 + field.pressure * .5, 1.2);
+      delay.wet.rampTo(.12 + field.diffusion * .34, 1.2);
+      filter.frequency.rampTo(420 + (field.ph - 4) / 6 * 2600 + organisms.length * 40, 1.4);
+      master.volume.rampTo(-22 + field.temperature * 8, 1.2);
+      const val = ui.entrain.value;
+      if (val === "off") binauralGain.volume.rampTo(-90, .6);
+      else {
+        binauralGain.volume.rampTo(-32 + field.pressure * 5, .8);
+        const beat = val === "alpha" ? 10 : val === "delta" ? 3 : 6;
+        binauralLeft.frequency.rampTo(146.83 - beat / 2, .4);
+        binauralRight.frequency.rampTo(146.83 + beat / 2, .4);
+      }
+    }
+
+    function noteFromY(y, scale = scaleMinor) {
+      return scale[Math.max(0, Math.min(scale.length - 1, Math.floor((1 - y / height) * scale.length)))];
+    }
+
+    function stepMusic(time) {
+      if (!audioReady) return;
+      if (mode === "cellular" || mode === "synthesis") {
+        const x = cellular.step % cellular.w;
+        let triggered = 0;
+        for (let y = 0; y < cellular.h; y++) {
+          if (cellular.grid[y][x]) {
+            chimeSynth.triggerAttackRelease(scaleMinor[Math.floor((1 - y / cellular.h) * scaleMinor.length)], "16n", time, .12 + field.pressure * .12);
+            if (++triggered > 4) break;
+          }
+        }
+        if (triggered >= 3) bassSynth.triggerAttackRelease("C2", "8n", time, .1);
+      }
+      if ((mode === "sanctuary" || mode === "synthesis") && organisms.length) {
+        const o = organisms[Math.floor(Math.random() * organisms.length)];
+        organismSynth.triggerAttackRelease(noteFromY(o.y), "2n", time, .06);
+      }
+      if ((mode === "attractor" || mode === "synthesis") && attractors.length && Math.random() < .28 + field.gravity * .22) {
+        padSynth.triggerAttackRelease(["C3", "G3", "Bb3", "Eb4"], "1m", time, .035);
+      }
+      cellular.step++;
+    }
+
+    const organisms = [], ripples = [], dust = [], particles = [], attractors = [];
+    const cellular = { w: 42, h: 26, grid: [], next: [], step: 0 };
+    function initCellular() {
+      cellular.grid = Array.from({ length: cellular.h }, () => Array(cellular.w).fill(0));
+      cellular.next = Array.from({ length: cellular.h }, () => Array(cellular.w).fill(0));
+    }
+    initCellular();
+
+    function seedGlider(cx = 8, cy = 8) {
+      [[1,0],[2,1],[0,2],[1,2],[2,2]].forEach(([dx, dy]) => cellular.grid[(cy + dy) % cellular.h][(cx + dx) % cellular.w] = 1);
+    }
+    function cellsAliveCount() { return cellular.grid.flat().filter(Boolean).length; }
+    function stepCellular() {
+      for (let y = 0; y < cellular.h; y++) for (let x = 0; x < cellular.w; x++) {
+        let n = 0;
+        for (let yy = -1; yy <= 1; yy++) for (let xx = -1; xx <= 1; xx++) {
+          if (!xx && !yy) continue;
+          n += cellular.grid[(y + yy + cellular.h) % cellular.h][(x + xx + cellular.w) % cellular.w];
+        }
+        const alive = cellular.grid[y][x];
+        cellular.next[y][x] = alive ? (n === 2 || n === 3 ? 1 : 0) : (n === 3 || (field.entropy > .72 && Math.random() < .002) ? 1 : 0);
+      }
+      [cellular.grid, cellular.next] = [cellular.next, cellular.grid];
+      if (cellsAliveCount() < 5 && Math.random() < .1) seedGlider(Math.floor(Math.random() * cellular.w), Math.floor(Math.random() * cellular.h));
+    }
+
+    for (let i = 0; i < 90; i++) dust.push({ x: Math.random() * width, y: Math.random() * height, vx: (Math.random() - .5) * .12, vy: (Math.random() - .5) * .12, s: Math.random() * 1.9 + .3, a: Math.random() * .38 + .08, p: Math.random() * Math.PI * 2 });
+
+    class Organism {
+      constructor(x, y) { this.x = x; this.y = y; this.vx = (Math.random() - .5) * .4; this.vy = (Math.random() - .5) * .4; this.n = 0; this.max = 420 + Math.random() * 260; this.hue = hue + (Math.random() * 20 - 10); this.radius = 80 + Math.random() * 80; this.alive = true; }
+      update() {
+        const temp = .45 + field.temperature * 1.55;
+        const grav = field.gravity * .005;
+        this.vx += (width/2 - this.x) * grav * .01 + (Math.random() - .5) * field.entropy * .025;
+        this.vy += (height/2 - this.y) * grav * .01 + (Math.random() - .5) * field.entropy * .025;
+        this.x += this.vx * temp; this.y += this.vy * temp;
+        if (this.x < 60 || this.x > width - 60) this.vx *= -1;
+        if (this.y < 60 || this.y > height - 60) this.vy *= -1;
+        this.n += .3 + field.temperature * .35;
+        if (this.n > this.max) this.alive = false;
+      }
+      draw() {
+        const life = this.n / this.max;
+        const alpha = Math.sin(life * Math.PI);
+        const c = 6.2 + field.pressure * 2;
+        const divergence = (137.5 + (field.ph - 7) * 2.2) * Math.PI / 180;
+        const angle = this.n * divergence;
+        const r = c * Math.sqrt(this.n);
+        const px = this.x + r * Math.cos(angle);
+        const py = this.y + r * Math.sin(angle);
+        const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+        grad.addColorStop(0, `hsla(${this.hue},90%,62%,${alpha * .085})`);
+        grad.addColorStop(1, "transparent");
+        ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(px, py, Math.min(4.2, life * 4.6 + .8), 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${this.hue},88%,72%,${alpha * .92})`;
+        ctx.shadowBlur = 18; ctx.shadowColor = `hsla(${this.hue},100%,70%,${alpha})`; ctx.fill(); ctx.shadowBlur = 0;
+      }
+    }
+    for (let i = 0; i < 5; i++) organisms.push(new Organism(width * (.18 + i * .16), height * (.35 + Math.random() * .3)));
+
+    class Particle {
+      constructor(x, y, hot = true) { this.x = x; this.y = y; this.hot = hot; this.vx = (Math.random() - .5) * (hot ? 1.2 : .75); this.vy = (Math.random() - .5) * (hot ? 1.2 : .75); this.hue = hot ? 44 : 212; }
+      update() { this.x += this.vx * (.5 + field.temperature * 1.8); this.y += this.vy * (.5 + field.temperature * 1.8); if (this.x < 0 || this.x > width) this.vx *= -1; if (this.y < 0 || this.y > height) this.vy *= -1; }
+      draw() { ctx.beginPath(); ctx.arc(this.x, this.y, 3.2, 0, Math.PI * 2); ctx.fillStyle = `hsla(${this.hue},100%,62%,.85)`; ctx.shadowBlur = 14; ctx.shadowColor = `hsla(${this.hue},100%,62%,.75)`; ctx.fill(); ctx.shadowBlur = 0; ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.x - this.vx * 18, this.y - this.vy * 18); ctx.strokeStyle = `hsla(${this.hue},100%,62%,.18)`; ctx.lineWidth = 2; ctx.stroke(); }
+    }
+    function seedParticles() { for (let i = 0; i < 90; i++) particles.push(new Particle(Math.random() * width, Math.random() * height, i % 2 === 0)); }
+    seedParticles();
+
+    class Attractor {
+      constructor(x, y) { this.x = x; this.y = y; this.a = 10; this.b = 28; this.c = 8/3; this.p = {x: .1 + Math.random(), y: 0, z: 0}; this.hue = hue + (Math.random() * 80 - 40); this.trail = []; }
+      update() { const dt = .004 + field.temperature * .006; const dx = this.a * (this.p.y - this.p.x); const dy = this.p.x * (this.b - this.p.z) - this.p.y; const dz = this.p.x * this.p.y - this.c * this.p.z; this.p.x += dx * dt; this.p.y += dy * dt; this.p.z += dz * dt; this.trail.push({x: this.x + this.p.x * 10, y: this.y + this.p.z * 7 - 120}); if (this.trail.length > 220) this.trail.shift(); }
+      draw() { if (this.trail.length < 2) return; ctx.beginPath(); ctx.moveTo(this.trail[0].x, this.trail[0].y); for (let i = 1; i < this.trail.length; i++) ctx.lineTo(this.trail[i].x, this.trail[i].y); ctx.strokeStyle = `hsla(${this.hue},90%,62%,.12)`; ctx.lineWidth = 1.4; ctx.shadowBlur = 12; ctx.shadowColor = `hsla(${this.hue},90%,62%,.28)`; ctx.stroke(); ctx.shadowBlur = 0; }
+    }
+    function seedAttractors() { attractors.push(new Attractor(width * .37, height * .66), new Attractor(width * .62, height * .62)); }
+    seedAttractors();
+
+    function collideChimes() {
+      if (!(mode === "chimes" || mode === "synthesis")) return;
+      const gate = .18 + field.pressure * .5;
+      for (let i = 0; i < particles.length; i++) for (let j = i + 1; j < particles.length; j++) {
+        const a = particles[i], b = particles[j];
+        if (a.hot === b.hot) continue;
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (d < 10 + gate * 18) {
+          [a.vx, b.vx] = [b.vx, a.vx]; [a.vy, b.vy] = [b.vy, a.vy];
+          if (audioReady && Math.random() < .10 + gate * .08) chimeSynth.triggerAttackRelease(noteFromY((a.y + b.y) / 2, scaleMajor), "8n", undefined, .06 + field.pressure * .08);
+        }
+      }
+    }
+
+    function drawConnections() {
+      const maxD = 240 + field.diffusion * 120;
+      for (let i = 0; i < organisms.length; i++) for (let j = i + 1; j < organisms.length; j++) {
+        const a = organisms[i], b = organisms[j];
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (d < maxD) { const q = 1 - d / maxD; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.strokeStyle = `hsla(${hue},92%,62%,${.02 + q * .14})`; ctx.lineWidth = .7 + q * .8; ctx.stroke(); }
+      }
+      const quorum = organisms.filter(o => Math.hypot(o.x - width/2, o.y - height/2) < 220).length;
+      if (quorum >= field.quorum && audioReady && frame % 180 === 0) { padSynth.triggerAttackRelease(["C3", "G3", "Bb3", "Eb4"], "2m", undefined, .04); ripples.push({x: width/2, y: height/2, r: 20, max: 380, a: .32, h: hue}); }
+    }
+
+    function drawCellular() {
+      if (!(mode === "cellular" || mode === "synthesis")) return;
+      const cw = width / cellular.w, ch = height / cellular.h;
+      ctx.save(); ctx.globalCompositeOperation = "screen";
+      for (let y = 0; y < cellular.h; y++) for (let x = 0; x < cellular.w; x++) if (cellular.grid[y][x]) { ctx.fillStyle = `hsla(${hue},85%,50%,.26)`; ctx.shadowBlur = 10; ctx.shadowColor = `hsla(${hue},85%,55%,.5)`; ctx.fillRect(x * cw + cw * .18, y * ch + ch * .18, cw * .64, ch * .64); }
+      ctx.restore(); ctx.shadowBlur = 0;
+    }
+
+    function drawDust() {
+      for (const p of dust) { p.x += p.vx; p.y += p.vy; p.p += .026; if (p.x < 0) p.x = width; if (p.x > width) p.x = 0; if (p.y < 0) p.y = height; if (p.y > height) p.y = 0; const a = p.a * (Math.sin(p.p) * .3 + .7); ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2); ctx.fillStyle = `rgba(148,211,235,${a})`; ctx.fill(); }
+    }
+
+    function animate() {
+      frame++;
+      ctx.fillStyle = `rgba(2,6,18,${.12 + field.pressure * .08})`;
+      ctx.fillRect(0, 0, width, height);
+      drawDust();
+      if (mode === "attractor" || mode === "synthesis") attractors.forEach(a => { a.update(); a.draw(); });
+      if ((mode === "cellular" || mode === "synthesis") && frame % Math.max(4, Math.floor(18 - field.temperature * 12)) === 0) stepCellular();
+      drawCellular();
+      if (mode === "chimes" || mode === "synthesis") { particles.forEach(p => { p.update(); p.draw(); }); collideChimes(); }
+      drawConnections();
+      for (let i = ripples.length - 1; i >= 0; i--) { const r = ripples[i]; r.r += 2.5 + field.temperature * 2; r.a *= .965; ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2); ctx.strokeStyle = `hsla(${r.h || hue},90%,66%,${r.a})`; ctx.lineWidth = 1.2; ctx.stroke(); if (r.a < .015 || r.r > r.max) ripples.splice(i, 1); }
+      for (let i = organisms.length - 1; i >= 0; i--) { organisms[i].update(); organisms[i].draw(); if (!organisms[i].alive && organisms.length > 3) organisms.splice(i, 1); }
+      if (organisms.length < 7 && frame % 480 === 0) organisms.push(new Organism(width * (.2 + Math.random() * .6), height * (.2 + Math.random() * .6)));
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    let drawing = false;
+    function seedAt(x, y) {
+      ripples.push({x, y, r: 12, max: 240, a: .7, h: hue});
+      organisms.push(new Organism(x, y));
+      if (organisms.length > 12) organisms.shift();
+      if (mode === "cellular" || mode === "synthesis") { const cx = Math.floor(x / width * cellular.w), cy = Math.floor(y / height * cellular.h); for (let yy = -1; yy <= 1; yy++) for (let xx = -1; xx <= 1; xx++) if (Math.random() < .7) cellular.grid[(cy + yy + cellular.h) % cellular.h][(cx + xx + cellular.w) % cellular.w] = 1; }
+      if (mode === "attractor" || mode === "synthesis") { attractors.push(new Attractor(x, y)); if (attractors.length > 5) attractors.shift(); }
+      if (mode === "chimes" || mode === "synthesis") { for (let i = 0; i < 8; i++) particles.push(new Particle(x + (Math.random() - .5) * 40, y + (Math.random() - .5) * 40, i % 2 === 0)); if (particles.length > 160) particles.splice(0, particles.length - 160); }
+    }
+    window.addEventListener("pointerdown", e => { if (e.target.closest("button,input,select")) return; initAudio(); drawing = true; seedAt(e.clientX, e.clientY); });
+    window.addEventListener("pointermove", e => { if (drawing && frame % 4 === 0) seedAt(e.clientX, e.clientY); });
+    window.addEventListener("pointerup", () => drawing = false);
+    window.addEventListener("pointercancel", () => drawing = false);
+    setTimeout(() => toast("Holorig ready"), 500);
+  </script>
+</body>
+</html>

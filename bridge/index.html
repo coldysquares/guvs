@@ -1,69 +1,275 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f1115"><title>The Bridge</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<title>The Bridge</title>
 <style>
-:root{--bg:#0f1115;--card:#171a20;--card2:#20242c;--text:#f5f5f5;--muted:#9ca3af;--line:#2f3540;--accent:#c4b5fd}
+:root{--bg:#0f1115;--card:#171a20;--card2:#20242c;--text:#f5f5f5;--muted:#9ca3af;--line:#303641;--accent:#c4b5fd;--good:#a7f3d0;--warn:#fde68a}
 *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
 body{min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
-main{max-width:680px;margin:auto;padding:18px 14px 32px}
-header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.title{font-size:30px;font-weight:800;letter-spacing:-.04em}.sub{font-size:13px;color:var(--muted);margin-top:2px}.year{border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--accent);font-size:12px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:14px 0}.stat{background:#12151a;border:1px solid var(--line);border-radius:12px;padding:9px 4px;text-align:center}.stat b{display:block;font-size:17px}.stat span{font-size:8px;color:var(--muted);letter-spacing:.06em}
-.card{border:1px solid var(--line);background:var(--card);border-radius:18px;padding:18px;box-shadow:0 16px 40px rgba(0,0,0,.3)}
-.chapter{font-size:11px;color:var(--accent);font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
-.scene{font-size:18px;line-height:1.5;white-space:pre-line}
-.choices{display:grid;gap:10px;margin-top:18px}button{appearance:none;width:100%;border:1px solid #373e49;background:var(--card2);color:var(--text);border-radius:14px;padding:14px;font-size:16px;font-weight:650;text-align:left}button:active{transform:scale(.99);background:#292f39}
-.controls{display:flex;gap:8px;margin-top:12px}.controls button{font-size:13px;text-align:center;padding:10px}.foot{text-align:center;color:var(--muted);font-size:11px;margin-top:12px}
+main{max-width:720px;margin:auto;padding:16px 12px 34px}
+header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.title{font-size:30px;font-weight:850;letter-spacing:-.045em}.sub{font-size:13px;color:var(--muted);margin-top:2px}
+.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--accent);font-size:12px;white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:13px 0 8px}
+.stat{background:#12151a;border:1px solid var(--line);border-radius:12px;padding:9px 5px;text-align:center}
+.stat b{display:block;font-size:17px}.stat span{font-size:8px;color:var(--muted);letter-spacing:.06em}
+.micro{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}
+.micro div{border:1px solid var(--line);border-radius:11px;padding:8px;text-align:center;font-size:12px;color:var(--muted)}
+.micro b{display:block;color:var(--text);font-size:14px;margin-bottom:2px}
+.goal{border:1px solid #3d3850;background:#17141f;border-radius:14px;padding:11px 12px;margin-bottom:10px}
+.goalhead{font-size:10px;letter-spacing:.11em;color:var(--accent);font-weight:800}.goaltext{font-size:13px;line-height:1.35;margin-top:5px}
+.card{border:1px solid var(--line);background:var(--card);border-radius:18px;padding:17px;box-shadow:0 16px 40px rgba(0,0,0,.28)}
+.chapter{font-size:11px;color:var(--accent);font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:9px}
+.scene{font-size:17px;line-height:1.48;white-space:pre-line}
+.event{margin:12px 0 0;border-left:3px solid var(--accent);padding:9px 11px;background:#14171c;border-radius:0 10px 10px 0;font-size:14px;line-height:1.4}
+.choices{display:grid;gap:9px;margin-top:16px}
+button{appearance:none;width:100%;border:1px solid #373e49;background:var(--card2);color:var(--text);border-radius:14px;padding:13px 14px;font-size:15px;font-weight:680;text-align:left;line-height:1.3}
+button small{display:block;color:var(--muted);font-size:11px;font-weight:500;margin-top:4px}
+button:active{transform:scale(.99);background:#292f39}
+button[disabled]{opacity:.38}
+.controls{display:flex;gap:8px;margin-top:11px}.controls button{font-size:13px;text-align:center;padding:10px}
+.foot{text-align:center;color:var(--muted);font-size:11px;margin-top:11px}
+.good{color:var(--good)}.warn{color:var(--warn)}
+.progress{height:6px;background:#11141a;border-radius:999px;overflow:hidden;margin-top:8px}.progress i{display:block;height:100%;background:var(--accent);width:0}
+.end{font-size:20px;font-weight:760;line-height:1.42}
 </style></head>
 <body><main>
-<header><div><div class="title">THE BRIDGE</div><div class="sub">A playable five-year life experiment.</div></div><div class="year" id="year"></div></header>
+<header><div><div class="title">THE BRIDGE</div><div class="sub">Five years. Twenty turns. Build a life that can actually hold you.</div></div><div class="pill" id="date"></div></header>
+
 <div class="stats">
-<div class="stat"><b id="stability"></b><span>STABILITY</span></div><div class="stat"><b id="agency"></b><span>AGENCY</span></div><div class="stat"><b id="energy"></b><span>ENERGY</span></div><div class="stat"><b id="meaning"></b><span>MEANING</span></div>
+<div class="stat"><b id="stability"></b><span>STABILITY</span></div>
+<div class="stat"><b id="agency"></b><span>AGENCY</span></div>
+<div class="stat"><b id="energy"></b><span>ENERGY</span></div>
+<div class="stat"><b id="meaning"></b><span>MEANING</span></div>
+<div class="stat"><b id="cash"></b><span>CASH</span></div>
+<div class="stat"><b id="runway"></b><span>RUNWAY</span></div>
 </div>
-<div class="card"><div class="chapter" id="chapter"></div><div class="scene" id="scene"></div><div class="choices" id="choices"></div>
-<div class="controls"><button onclick="back()">↶ Back</button><button onclick="restart()">↻ Restart</button></div></div><div class="foot" id="foot"></div>
+<div class="micro">
+<div><b id="burn"></b>monthly burn</div><div><b id="hours"></b>work hrs / wk</div><div><b id="place"></b>place</div>
+</div>
+
+<div class="goal">
+<div class="goalhead">THE LIFE YOU PICKED</div>
+<div class="goaltext">Modest place. Manageable burn. Nature close. Enough people around. Most days are yours. The structure does not collapse when you do nothing.</div>
+<div class="progress"><i id="prog"></i></div>
+</div>
+
+<div class="card">
+<div class="chapter" id="chapter"></div>
+<div class="scene" id="scene"></div>
+<div id="event"></div>
+<div class="choices" id="choices"></div>
+<div class="controls"><button onclick="undo()">↶ Back</button><button onclick="restart()">↻ Restart</button></div>
+</div>
+<div class="foot" id="foot"></div>
 </main>
+
 <script>
-const base={year:2026,stability:25,agency:15,energy:35,meaning:20,node:"start"};
-let s=JSON.parse(localStorage.getItem("bridge-v2")||"null")||{...base},hist=[];
-const N={
-start:{c:"September 2026",t:"Your life has been happening one day at a time for years.\n\nYou do not need to pick your destiny tonight. You need a direction strong enough that tomorrow belongs to a larger story.\n\nWhat do you decide the next five years are FOR?",q:[["Buy back control of my time.","time"],["Build a life somewhere I actually chose.","place"],["Make the creative part of me the center, not the leftover.","create"],["First, stop the collapse.","stabilize"]]},
-stabilize:{c:"Winter 2026",t:"You choose the unromantic move: stop the bleeding first.\n\nHousing. Income. Car. Bills. Debt.\n\nIt is not a philosophy. It is a floor.",f:{year:2027,stability:25,energy:5},q:[["Take a tolerable full-time job as a launchpad.","job"],["Hold out for flexible work.","flex"],["Patch together contract work.","contract"]]},
-time:{c:"The Time Thesis",t:"You decide the scarce resource is not prestige. It is control over your own hours.\n\nBy 2031, most of your waking life should belong to you.\n\nFreedom still needs funding.",f:{agency:15,meaning:10},q:[["Earn hard for 18 months, then downshift.","job"],["Build around flexible work now.","flex"],["Build something that earns more than once.","asset"]]},
-place:{c:"The Geography Thesis",t:"Providence is no longer the default answer.\n\nYou refuse to stay somewhere just because an old version of your life deposited you there.",f:{agency:15,meaning:8},q:[["Leave fast. Motion matters.","movefast"],["Build a relocation runway first.","runway"],["Aim for somewhere quieter and cheaper.","quiet"]]},
-create:{c:"The Creative Thesis",t:"Music, writing, and making things stop being decorative extras.\n\nThey do not need to make you rich. Your future simply has to leave enough room for them to stay alive.",f:{meaning:20,agency:5},q:[["Take stable work, but put hard borders around it.","jobcreative"],["Build a cheap life around lots of free time.","lowburn"],["Try to make one thing pay for itself.","asset"]]},
-job:{c:"2027 · Launchpad Job",t:"Money becomes predictable.\n\nThe danger appears quickly: a launchpad can quietly become the destination.",f:{year:2027,stability:25,agency:-8,energy:-10},q:[["Set a savings target and exit date.","runway"],["Keep the job. Maybe stability is enough.","trap"],["After six months, deliberately cut hours.","downshift"]]},
-jobcreative:{c:"2027 · The Job Has Borders",t:"You take stable work with one rule: the job is not allowed to consume the person doing it.\n\nTwo evenings and one full day stay protected.",f:{year:2027,stability:22,meaning:14,energy:-5},q:[["Use stability to build a move fund.","runway"],["Use protected time to build something.","asset"],["Keep this balance.","balanced"]]},
-flex:{c:"2027 · Thin Money, More Air",t:"The money is less impressive. Your calendar feels radically different.\n\nWhole weekdays exist that nobody owns.",f:{year:2027,stability:12,agency:22,energy:12,meaning:8},q:[["Keep expenses low and protect the freedom.","lowburn"],["Add one reliable retainer.","retainer"],["Build an income-producing project.","asset"]]},
-contract:{c:"2027 · Freedom With Weather",t:"Some months feel brilliant. Others feel like the floor disappeared.\n\nAutonomy without a buffer is another form of panic.",f:{year:2027,stability:-8,agency:25,energy:-5},q:[["Build one reliable retainer.","retainer"],["Keep improvising.","fail"],["Take temporary stable work.","job"]]},
-movefast:{c:"2027 · Fast Exit",t:"You leave Providence before the structure is ready.\n\nThe first month feels incredible because something finally changed. Then deposits, logistics, and money arrive.",f:{year:2027,stability:-20,agency:22,meaning:10},q:[["Take whatever work stabilizes the landing.","job"],["Keep betting on flexibility.","flex"],["Admit the move was early and rebuild.","rebuild"]]},
-runway:{c:"2028 · Runway",t:"You build a real buffer. Not rich. Not retired.\n\nBut a bad boss, landlord, city, or month cannot dictate your next move immediately.\n\nFor the first time, 'no' has financial backing.",f:{year:2028,stability:28,agency:24,energy:8},q:[["Relocate deliberately.","map"],["Reduce paid work.","downshift"],["Build something of my own.","asset"]]},
-downshift:{c:"2028 · Fewer Compulsory Hours",t:"You deliberately earn less in exchange for time.\n\nAt first it feels irresponsible. Then your brain learns a free Tuesday is not automatically a crisis.",f:{year:2028,agency:28,energy:24,meaning:15,stability:-4},q:[["Keep life cheap enough to sustain this.","lowburn"],["Give the free days to creative work.","maker"],["Use the time to choose where to live.","map"]]},
-retainer:{c:"2028 · One Reliable Engine",t:"One recurring client covers a meaningful chunk of monthly life.\n\nIt is not passive. It is predictable. That is enough to change the shape of the week.",f:{year:2028,stability:20,agency:18,meaning:6},q:[["Stay small. Do not scale just because you can.","lowburn"],["Build a move fund.","map"],["Use the base to make something riskier.","asset"]]},
-asset:{c:"2028 · Build Once, Benefit More Than Once",t:"You build a tiny tool, catalog, paid resource, license, or weird useful thing.\n\nMost attempts do nothing. One earns enough to matter.",f:{year:2028,stability:10,agency:24,meaning:22},q:[["Keep it intentionally small.","smallasset"],["Scale it aggressively.","scale"],["Let it subsidize a creative life.","maker"]]},
-lowburn:{c:"2029 · Deliberate Smallness",t:"You stop treating more as automatically better.\n\nEvery recurring expense has to justify the hours of your life required to pay for it.",f:{year:2029,stability:20,agency:28,energy:15,meaning:14},q:[["Pair it with a small city I like.","smallcity"],["Pair it with creative time.","maker"],["Pair it with radical solitude.","quiet"]]},
-map:{c:"2029 · Choose the Map",t:"You evaluate places by the life they make possible: cost, nature, walkability, solitude, culture, weather, noise, space.\n\nGeography is no longer inherited from work, friends, or inertia.",f:{year:2029,agency:25,meaning:14},q:[["A smaller city with nature and enough culture.","smallcity"],["A major city, but only with light work.","city"],["A quiet rural edge with remote income.","quiet"]]},
-quiet:{c:"2030 · Quiet Edge",t:"You build a mostly remote life somewhere quiet. Days are spacious. Expenses are lower.\n\nThe risk is solitude quietly becoming isolation.",f:{year:2030,stability:18,agency:30,energy:20,meaning:12},q:[["Keep a few deliberate human ties.","people"],["I genuinely want very little social life.","endquiet"]]},
-smallcity:{c:"2030 · Small City",t:"Your place is modest. Your monthly burn is manageable. Nature is close. There are enough people around that you are not stranded.\n\nOrdinary weeks begin to have a shape.",f:{year:2030,stability:18,agency:22,energy:16,meaning:16},q:[["Protect this. It does not need to get bigger.","endfree"],["Build a few real connections.","people"],["Use the stability to make more work.","maker"]]},
-city:{c:"2030 · City, Different Rules",t:"You choose density again, but this time on your terms. Live smaller. Work less. Use the city instead of letting it use you.",f:{year:2030,stability:8,agency:12,meaning:15},q:[["Worth it. Keep the structure tight.","endcity"],["Too expensive. Take the lesson somewhere smaller.","smallcity"]]},
-maker:{c:"2030 · The Work That Is Yours",t:"Music, writing, and making things become part of the weekly architecture.\n\nNot a reward after every obligation is complete. Some earns money. Some absolutely does not. It still counts.",f:{year:2030,agency:18,energy:10,meaning:30},q:[["Keep paid work small enough to protect this.","endmaker"],["Try to make it the main income source.","scale"]]},
-smallasset:{c:"2030 · Tiny Machine",t:"The thing earns a modest amount without demanding your whole week.\n\nYou resist turning it into a startup. It remains a machine for buying back time.",f:{year:2030,stability:16,agency:30,meaning:18},q:[["Use the time to make things.","endmaker"],["Use the time mostly for nothing at all.","endfree"]]},
-people:{c:"2031 · Chosen People",t:"You stop asking one inherited friend group to carry the entire meaning of belonging.\n\nA few people. Actual reciprocity. No popularity contest.",f:{year:2031,meaning:20,agency:10},q:[["See the life.","endchosen"]]},
-balanced:{c:"2031 · Enough",t:"You never escaped work entirely. You simply stopped allowing it to consume the map.\n\nThe job funds the life. The life is not the job.",f:{year:2031,stability:25,agency:10,meaning:16},q:[]},
-trap:{c:"2031 · Stable, Still Drifting",t:"You are financially safer. But the structure of life still belongs mostly to necessity.\n\nNot catastrophic. Just not the ending you were looking for.",f:{year:2031,stability:30,agency:-20,meaning:-15},q:[]},
-scale:{c:"2031 · You Built Another Boss",t:"Revenue rises. So do meetings, deadlines, support, and people who need things from you.\n\nYou reinvented the thing you were trying to escape. Excellent data. Terrible ending.",f:{year:2031,stability:20,agency:-22,energy:-25},q:[]},
-fail:{c:"2028 · The Floor Drops Out",t:"A bad month arrives, then another. Freedom becomes emergency management again.\n\nThis route fails. Failure is data.",f:{year:2028,stability:-35,energy:-20},q:[["Rebuild with stability first.","rebuild"]]},
-rebuild:{c:"Rebuild",t:"The experiment was not stupid. It was missing an ingredient.\n\nThis time you build stability before the next leap.",f:{stability:15,meaning:5},q:[["Temporary stable work, then runway.","job"],["One reliable retainer first.","retainer"]]},
-endfree:{c:"2031 · Your Time Is Yours",t:"You are not rich. You do not wake electrified by purpose every morning.\n\nBut most days are yours. You can make things, read, hike, disappear, sleep, or do absolutely nothing without the structure collapsing.\n\nThe future is no longer blank. It contains choices.",f:{year:2031,agency:18,meaning:18},q:[]},
-endmaker:{c:"2031 · A Creative Life",t:"Making things is ordinary.\n\nYou make music because Tuesday exists and Tuesday has room in it. You write because your attention is not permanently mortgaged.\n\nThe work still belongs to you.",f:{year:2031,meaning:30,agency:14},q:[]},
-endchosen:{c:"2031 · Chosen Company",t:"A place you chose. Enough money. Large stretches of solitude. Creative work. A few people you actually want around.\n\nNobody promised paradise.\n\nIt feels like your life.",f:{year:2031,meaning:25,agency:15},q:[]},
-endcity:{c:"2031 · City on Your Terms",t:"You live in a city because you chose the friction and electricity.\n\nYou are not 'there.' You are here.\n\nAnd for once, here was chosen.",f:{year:2031,agency:20,meaning:20},q:[]},
-endquiet:{c:"2031 · Quiet Life",t:"Your life is quiet enough to hear yourself think. You work remotely, minimally. You spend a lot of time alone.\n\nThe world would call it small.\n\nYou do not care.",f:{year:2031,agency:28,energy:20,meaning:16},q:[]}
+const months=["Sep","Dec","Mar","Jun"];
+const base={
+ turn:0,year:2026,q:0,stability:28,agency:18,energy:38,meaning:24,
+ cash:900,burn:3200,income:2200,hours:18,debt:12000,place:"Providence",
+ housing:"fragile",creative:4,ties:1,assetIncome:0,seed:94731,lastEvent:"",
+ ending:false
 };
-function cap(x){return Math.max(0,Math.min(100,x))}
-function fx(o){if(!o)return;if(o.year)s.year=o.year;["stability","agency","energy","meaning"].forEach(k=>{if(o[k])s[k]=cap(s[k]+o[k])})}
-function go(to){hist.push({...s});s.node=to;fx(N[to].f);render()}
-function render(){const n=N[s.node];document.getElementById("year").textContent=s.year;["stability","agency","energy","meaning"].forEach(k=>document.getElementById(k).textContent=s[k]);document.getElementById("chapter").textContent=n.c;document.getElementById("scene").textContent=n.t;const q=document.getElementById("choices");q.innerHTML="";(n.q||[]).forEach(([l,t])=>{const b=document.createElement("button");b.textContent=l;b.onclick=()=>go(t);q.appendChild(b)});if(!(n.q||[]).length){const d=document.createElement("div");d.style.cssText="margin-top:16px;color:#9ca3af;font-size:13px;line-height:1.45";d.textContent="This ending is not a verdict. It is a clue about which tradeoffs felt livable. Restart and try another route.";q.appendChild(d)}localStorage.setItem("bridge-v2",JSON.stringify(s));document.getElementById("foot").textContent="Path length: "+hist.length+" choices";scrollTo({top:0,behavior:"smooth"})}
-function back(){if(!hist.length)return;s=hist.pop();render()}function restart(){hist=[];s={...base};localStorage.removeItem("bridge-v2");render()}render();
-</script></body></html>
+let s=JSON.parse(localStorage.getItem("bridge-v3")||"null")||structuredClone(base);
+let hist=JSON.parse(localStorage.getItem("bridge-v3-hist")||"[]");
+
+function cap(v){return Math.max(0,Math.min(100,Math.round(v)))}
+function money(v){const sign=v<0?"-":"";return sign+"$"+Math.abs(Math.round(v)).toLocaleString()}
+function runway(){return Math.max(0,s.burn?Math.floor(s.cash/s.burn*10)/10:0)}
+function score(){
+ let x=0;
+ x+=Math.min(20,s.stability/5);
+ x+=Math.min(20,s.agency/5);
+ x+=Math.min(15,s.energy/6.67);
+ x+=Math.min(15,s.meaning/6.67);
+ x+=Math.min(10,runway()/0.6);
+ x+=s.hours<=25?8:s.hours<=32?4:0;
+ x+=s.burn<=2700?7:s.burn<=3000?3:0;
+ x+=s.place!=="Providence"?5:0;
+ return Math.min(100,Math.round(x));
+}
+function rand(){
+ s.seed=(s.seed*1664525+1013904223)>>>0;
+ return s.seed/4294967296;
+}
+function clampAll(){
+ ["stability","agency","energy","meaning"].forEach(k=>s[k]=cap(s[k]));
+ s.burn=Math.max(1200,Math.round(s.burn));
+ s.income=Math.max(0,Math.round(s.income));
+ s.hours=Math.max(0,Math.round(s.hours));
+ s.cash=Math.round(s.cash);
+ s.debt=Math.max(0,Math.round(s.debt));
+}
+function save(){localStorage.setItem("bridge-v3",JSON.stringify(s));localStorage.setItem("bridge-v3-hist",JSON.stringify(hist))}
+function push(){hist.push(JSON.stringify(s));if(hist.length>40)hist.shift()}
+function advance(){
+ const quarterly=(s.income+s.assetIncome-s.burn)*3;
+ s.cash+=quarterly;
+ if(quarterly<0){s.stability-=5;s.energy-=4}
+ if(quarterly>1500){s.stability+=3}
+ if(s.hours>38){s.energy-=7;s.agency-=4}
+ if(s.hours<=25){s.agency+=3}
+ if(s.creative>=8){s.meaning+=3}
+ s.turn++;
+ s.q++;
+ if(s.q>3){s.q=0;s.year++}
+ if(s.turn<20)eventRoll();
+ clampAll();
+ if(s.cash<-5000 || s.energy<=5)s.ending="collapse";
+ if(s.turn>=20 && !s.ending)s.ending="finish";
+}
+function eventRoll(){
+ s.lastEvent="";
+ const r=rand();
+ if(r<.13){
+   const hit=500+Math.round(rand()*900);s.cash-=hit;s.stability-=4;
+   s.lastEvent="A boring real-world expense appears out of nowhere. It costs "+money(hit)+". No symbolism. Just life.";
+ } else if(r<.23){
+   const gain=500+Math.round(rand()*1200);s.cash+=gain;s.energy+=3;
+   s.lastEvent="A one-off paid opportunity lands cleanly. You make "+money(gain)+" without reorganizing your whole life.";
+ } else if(r<.32){
+   s.energy+=9;s.meaning+=5;
+   s.lastEvent="You get an unexpectedly quiet stretch. Nothing catches fire. Your nervous system notices.";
+ } else if(r<.40 && s.creative>=8){
+   s.assetIncome+=100;s.meaning+=5;
+   s.lastEvent="Something you made starts producing a tiny recurring return: +$100/month. Tiny is still real.";
+ } else if(r<.48){
+   s.burn+=125;s.stability-=3;
+   s.lastEvent="Costs creep upward by $125/month. The spreadsheet goblin has entered the room.";
+ }
+}
+function doAction(id){
+ if(s.ending)return;
+ push();
+ s.lastEvent="";
+ const r=runway();
+ if(id==="stabilize"){
+   s.cash-=500;s.stability+=16;s.energy+=5;s.housing="stable";
+ }
+ if(id==="job"){
+   s.income=5200;s.hours=40;s.stability+=22;s.agency-=9;s.energy-=8;
+ }
+ if(id==="flex"){
+   s.income=Math.max(s.income,3400);s.hours=Math.max(24,Math.min(30,s.hours));s.stability+=8;s.agency+=12;s.energy+=6;
+ }
+ if(id==="retainer"){
+   s.income+=900;s.hours+=6;s.stability+=10;s.agency+=5;
+ }
+ if(id==="cutburn"){
+   s.burn-=350;s.cash-=250;s.agency+=8;s.stability+=4;
+ }
+ if(id==="rest"){
+   s.energy+=18;s.stability-=2;s.meaning+=3;
+ }
+ if(id==="create"){
+   s.creative+=5;s.meaning+=13;s.energy+=6;s.cash-=150;
+ }
+ if(id==="asset"){
+   s.cash-=600;s.energy-=5;s.meaning+=10;s.creative+=4;
+   if(rand()<.42){s.assetIncome+=250;s.stability+=7;s.agency+=8;s.lastEvent="The project catches a little traction: +$250/month recurring."}
+   else{s.lastEvent="The project earns basically nothing. You still learned what building it actually costs."}
+ }
+ if(id==="debt" && s.cash>1800){
+   const p=Math.min(1800,s.debt,s.cash-500);s.cash-=p;s.debt-=p;s.stability+=6;
+ }
+ if(id==="downshift" && r>=3){
+   s.income=Math.max(2800,s.income-1400);s.hours=Math.max(18,s.hours-15);s.agency+=18;s.energy+=14;s.stability-=4;
+ }
+ if(id==="smallcity" && s.cash>=4000 && s.stability>=45){
+   s.cash-=2600;s.burn-=500;s.place="Small city";s.agency+=20;s.energy+=10;s.meaning+=8;
+ }
+ if(id==="quiet" && s.cash>=4000 && s.stability>=45){
+   s.cash-=2400;s.burn-=650;s.place="Quiet edge";s.agency+=22;s.energy+=14;s.meaning+=6;s.ties-=1;
+ }
+ if(id==="city" && s.cash>=5000 && s.stability>=50){
+   s.cash-=3400;s.burn+=450;s.place="Big city";s.agency+=15;s.meaning+=11;s.energy-=2;
+ }
+ if(id==="ties"){
+   s.cash-=120;s.ties+=1;s.meaning+=9;s.energy-=2;
+ }
+ if(id==="protect"){
+   s.hours=Math.min(s.hours,25);s.agency+=12;s.meaning+=6;s.energy+=8;
+   if(s.income>4200)s.income-=500;
+ }
+ advance();render();
+}
+function actions(){
+ const r=runway(), a=[];
+ a.push(["stabilize","Stabilize the boring infrastructure","Housing, bills, transport, paperwork. Spend $500. Gain stability."]);
+ a.push(["job","Take a tolerable full-time launchpad job","Income jumps to about $5.2k/mo. Work becomes 40 hrs/week."]);
+ a.push(["flex","Prioritize flexible work","Aim for roughly $3.4k/mo with 24–30 compulsory hours."]);
+ a.push(["cutburn","Lower the monthly burn","Spend $250 now to cut recurring costs by about $350/mo."]);
+ a.push(["rest","Take one quarter less aggressively","Recover energy. Slightly less momentum."]);
+ a.push(["create","Protect serious creative time","Spend a little money and add ~5 creative hours/week."]);
+ a.push(["retainer","Add one predictable retainer","+$900/mo, +6 work hours/week."]);
+ a.push(["asset","Build one tiny reusable thing","Costs $600 and energy. It may or may not generate recurring income."]);
+ if(s.cash>1800 && s.debt>0)a.push(["debt","Pay down debt","Use up to $1,800 of cash. Reduce future pressure."]);
+ if(r>=3 && s.hours>28)a.push(["downshift","Deliberately downshift","Trade income for ~15 hours/week of your life back."]);
+ if(s.cash>=4000 && s.stability>=45 && s.place==="Providence"){
+   a.push(["smallcity","Move to a smaller city","Costs about $2.6k. Lower burn. More nature. Enough people."]);
+   a.push(["quiet","Move to a quiet edge","Costs about $2.4k. Lower burn more. More solitude."]);
+ }
+ if(s.cash>=5000 && s.stability>=50 && s.place!=="Big city")a.push(["city","Try a major city on your terms","Costs about $3.4k and raises burn, but adds density and stimulation."]);
+ if(s.ties<3)a.push(["ties","Invest in one actual human connection","Small cost. No networking event. One person."]);
+ if(s.hours>25)a.push(["protect","Put hard borders around work","Cap work near 25 hrs/week, with some income sacrifice."]);
+ return a;
+}
+function scene(){
+ const net=s.income+s.assetIncome-s.burn;
+ const pressure=net<0?"You are still spending more than comes in.":net<800?"The margin is thin, but the floor is holding.":"You are building real breathing room.";
+ const time=s.hours>35?"Work owns a lot of the week.":s.hours>25?"Work is present, but not total.":"Large pieces of the week are still yours.";
+ const place=s.place==="Providence"?"Providence is still the default location.":"You are living in "+s.place+" because you chose to test it.";
+ return pressure+"\n\n"+time+" "+place+"\n\nChoose what the next three months are for.";
+}
+function ending(){
+ if(s.ending==="collapse"){
+   return {c:"THE STRUCTURE BREAKS",t:"Cash or energy fell too low for the current strategy to keep working.\n\nThat is not a moral failure. It means this route asked for more than the structure could support. Back up and change one ingredient."};
+ }
+ const target = s.place!=="Providence" && s.burn<=2800 && s.hours<=25 && runway()>=4 && s.agency>=65 && s.energy>=50;
+ if(target){
+   return {c:"2031 · YOUR TIME IS YOURS",t:"You are not rich. You do not wake electrified by purpose every morning.\n\nBut most days are yours. Your burn is manageable. You live somewhere you chose. Work does not own the entire week. You can make things, read, hike, disappear, sleep, or do absolutely nothing without the structure collapsing.\n\nThe future is no longer blank. It contains choices."};
+ }
+ return {c:"2031 · A REAL, IMPERFECT LIFE",t:"You made it five years forward. Some things changed. Some did not.\n\nThe useful question is not whether you won. It is which tradeoffs made the numbers improve while the life felt more yours.\n\nReplay from the decisions that felt false."};
+}
+function render(){
+ clampAll();
+ document.getElementById("date").textContent=months[s.q]+" "+s.year;
+ ["stability","agency","energy","meaning"].forEach(k=>document.getElementById(k).textContent=s[k]);
+ document.getElementById("cash").textContent=money(s.cash);
+ document.getElementById("runway").textContent=runway().toFixed(1)+"m";
+ document.getElementById("burn").textContent=money(s.burn);
+ document.getElementById("hours").textContent=s.hours;
+ document.getElementById("place").textContent=s.place;
+ document.getElementById("prog").style.width=score()+"%";
+ const end=s.ending?ending():null;
+ document.getElementById("chapter").textContent=end?end.c:"TURN "+(s.turn+1)+" OF 20 · "+months[s.q]+" "+s.year;
+ document.getElementById("scene").innerHTML=end?'<div class="end">'+end.t.replaceAll("\n","<br>")+'</div>':scene();
+ const ev=document.getElementById("event");
+ ev.innerHTML=s.lastEvent?'<div class="event">'+s.lastEvent+'</div>':"";
+ const q=document.getElementById("choices");q.innerHTML="";
+ if(!s.ending){
+   actions().forEach(([id,label,sub])=>{const b=document.createElement("button");b.innerHTML=label+"<small>"+sub+"</small>";b.onclick=()=>doAction(id);q.appendChild(b)});
+ }else{
+   const b=document.createElement("button");b.innerHTML="↻ Play another route<small>Keep the target. Change the bridge.</small>";b.onclick=restart;q.appendChild(b);
+ }
+ const net=s.income+s.assetIncome-s.burn;
+ document.getElementById("foot").textContent=
+   "Income "+money(s.income+s.assetIncome)+"/mo · Net "+money(net)+"/mo · Debt "+money(s.debt)+" · Creative "+s.creative+"h/wk · Bridge score "+score()+"/100";
+ save();scrollTo({top:0,behavior:"smooth"});
+}
+function undo(){
+ if(!hist.length)return;
+ s=JSON.parse(hist.pop());save();render();
+}
+function restart(){
+ if(!confirm("Restart the five-year run?"))return;
+ s=structuredClone(base);hist=[];localStorage.removeItem("bridge-v3");localStorage.removeItem("bridge-v3-hist");render();
+}
+render();
+</script>
+</body></html>

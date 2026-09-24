@@ -3,7 +3,11 @@
     "title": "POND Graf",
     "fullName": "Protocellular explorer · family + pitch + live source lenses",
     "slug": "pond-graf",
-    "type": ["GUV","membrane","explorer"],
+    "type": [
+      "GUV",
+      "membrane",
+      "explorer"
+    ],
     "status": "working",
     "path": "pond-graf/",
     "description": "Enter connected membranes, inspect evidence, follow exact paths, use bounded AWD operations, and return without losing the surrounding pond.",
@@ -13,7 +17,11 @@
     "title": "Aster Graf",
     "fullName": "Skywalker family · constellation + relationship matrix",
     "slug": "aster-graf",
-    "type": ["GUV","graph","matrix"],
+    "type": [
+      "GUV",
+      "graph",
+      "matrix"
+    ],
     "status": "working",
     "path": "aster-graf/",
     "description": "Explore the Skywalker family as a touchable constellation and readable relationship matrix.",
@@ -23,7 +31,11 @@
     "title": "Wiki Constellation",
     "fullName": "Wikipedia Link Explorer",
     "slug": "wiki-constellation",
-    "type": ["GUV","explorer","live index"],
+    "type": [
+      "GUV",
+      "explorer",
+      "live index"
+    ],
     "status": "working",
     "path": "wiki-constellation/",
     "description": "Map one Wikipedia article, enter a linked page, then step back without losing the trail."
@@ -32,7 +44,11 @@
     "title": "PSR",
     "fullName": "Post-Slop Reagent",
     "slug": "psr",
-    "type": ["GUV","probe","reagent"],
+    "type": [
+      "GUV",
+      "probe",
+      "reagent"
+    ],
     "status": "working",
     "path": "psr/",
     "description": "Generate unrelated concept triplets; test, score, and archive how an AI connects them."
@@ -41,7 +57,10 @@
     "title": "AWD",
     "fullName": "AI Waste Deleter",
     "slug": "awd",
-    "type": ["GUV","workbench"],
+    "type": [
+      "GUV",
+      "workbench"
+    ],
     "status": "working",
     "path": "awd/",
     "description": "One-sentence-in, bounded-answer-out tool for deleting AI waste without threads or drift."
@@ -50,7 +69,11 @@
     "title": "Zero-Waste Router",
     "fullName": "Zero-Waste Router",
     "slug": "router",
-    "type": ["GUV","router","workbench"],
+    "type": [
+      "GUV",
+      "router",
+      "workbench"
+    ],
     "status": "working",
     "path": "router/",
     "description": "Routes messy AI/browser work into cleaner downstream output paths."
@@ -59,7 +82,9 @@
     "title": "Fungi Cell Map",
     "fullName": "Protocellular–Mycelian Internals Monitor",
     "slug": "fungi-cell-map",
-    "type": ["GUV"],
+    "type": [
+      "GUV"
+    ],
     "status": "working",
     "path": "fungi-cell-map/",
     "description": "Inspect connected compartments, phase states, and hyphal flux in an interactive systems map."
@@ -68,7 +93,11 @@
     "title": "Saperli Popette",
     "fullName": "Mycelian French conversation · translation + local continuity",
     "slug": "saperli-popette",
-    "type": ["GUV","conversation","language"],
+    "type": [
+      "GUV",
+      "conversation",
+      "language"
+    ],
     "status": "working",
     "path": "saperli-popette/",
     "description": "Practice French with direct translation, gentle coaching, a stable voice, and locally saved conversation continuity."
@@ -77,7 +106,11 @@
     "title": "HOL-001",
     "fullName": "Generative Holorig Studio · first fun/restorative ZWEFF room",
     "slug": "hol001",
-    "type": ["GUV","holorig","audio"],
+    "type": [
+      "GUV",
+      "holorig",
+      "audio"
+    ],
     "status": "working v1",
     "path": "hol001/",
     "description": "A living audiovisual biosphere that combines sanctuary organisms, cellular sequencing, attractor ribbons, ambient chimes, and biology/chemistry/physics-inspired sound controls.",
@@ -87,7 +120,11 @@
     "title": "Generative Studio",
     "fullName": "Browser-native vocal stripping and generative math-art",
     "slug": "generative_studio",
-    "type": ["GUV","studio","audio"],
+    "type": [
+      "GUV",
+      "studio",
+      "audio"
+    ],
     "status": "working",
     "path": "generative_studio/",
     "description": "Interactive Conway sequencer, Lorenz attractor canvas, and real-time phase cancellation for vocals."
@@ -96,9 +133,27 @@
     "title": "The Bridge",
     "fullName": "Playable five-year life experiment",
     "slug": "bridge",
-    "type": ["GUV","game","planning"],
+    "type": [
+      "GUV",
+      "game",
+      "planning"
+    ],
     "status": "working",
     "path": "bridge/",
     "description": "A phone-first branching text adventure for stress-testing possible futures, tradeoffs, and routes toward a life that feels chosen."
+  },
+  {
+    "title": "TED LAB 1974",
+    "fullName": "Mobile tape-and-tone electronic music laboratory",
+    "slug": "ted-lab",
+    "type": [
+      "GUV",
+      "audio",
+      "instrument"
+    ],
+    "status": "working v0.1",
+    "path": "ted-lab/",
+    "description": "A touch-first tape and oscillator lab inspired by early electronic-music classroom workflows.",
+    "featured": true
   }
 ]

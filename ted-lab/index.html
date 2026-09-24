@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#17140f"><title>TED LAB 1974</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<main>
+<header><p class="eyebrow">GREENWICH · ELECTRONIC MUSIC STUDY</p><h1>TED LAB <span>1974</span></h1><p class="lede">A tiny tape-and-tone laboratory. Modern circuitry underneath. Old rules on top.</p></header>
+<section class="card source">
+<div class="head"><h2>OSCILLATOR</h2><button id="power" class="lamp">START AUDIO</button></div>
+<div class="wave"><button data-wave="sine" class="selected">SINE</button><button data-wave="square">SQUARE</button></div>
+<label>FREQUENCY <output id="freqOut">220 Hz</output><input id="freq" type="range" min="55" max="880" value="220" step="1"></label>
+<label>LEVEL <output id="oscLevelOut">30%</output><input id="oscLevel" type="range" min="0" max="100" value="30"></label>
+</section>
+<section class="card">
+<div class="head"><h2>MIC / FOUND SOUND</h2><span id="micStatus" class="status">READY</span></div>
+<div class="transport"><button id="record">● RECORD</button><button id="stopRecord" disabled>■ STOP</button></div>
+<p class="note">Record a voice, radiator, guitar string, street noise, glass, anything.</p>
+</section>
+<section class="deck-grid">
+<article class="card deck" data-deck="A"><div class="head"><h2>TAPE A</h2><span class="counter" id="counterA">EMPTY</span></div>
+<div class="reels"><i></i><div class="tape-line"></div><i></i></div>
+<div class="transport"><button data-action="play" data-deck="A">▶ PLAY</button><button data-action="stop" data-deck="A">■ STOP</button><button data-action="reverse" data-deck="A">↶ REVERSE</button></div>
+<label>TAPE SPEED<select id="speedA"><option value=".5">3¾ IPS</option><option value="1" selected>7½ IPS</option><option value="2">15 IPS</option></select></label>
+<button class="load" data-action="load" data-deck="A">LOAD LAST RECORDING</button>
+</article>
+<article class="card deck" data-deck="B"><div class="head"><h2>TAPE B</h2><span class="counter" id="counterB">EMPTY</span></div>
+<div class="reels"><i></i><div class="tape-line"></div><i></i></div>
+<div class="transport"><button data-action="play" data-deck="B">▶ PLAY</button><button data-action="stop" data-deck="B">■ STOP</button><button data-action="reverse" data-deck="B">↶ REVERSE</button></div>
+<label>TAPE SPEED<select id="speedB"><option value=".5">3¾ IPS</option><option value="1" selected>7½ IPS</option><option value="2">15 IPS</option></select></label>
+<button class="load" data-action="load" data-deck="B">LOAD LAST RECORDING</button>
+</article>
+</section>
+<section class="card">
+<div class="head"><h2>ROOM</h2><span class="status">SIGNAL PATH</span></div>
+<label>ECHO <output id="echoOut">12%</output><input id="echo" type="range" min="0" max="70" value="12"></label>
+<label>FEEDBACK <output id="feedbackOut">18%</output><input id="feedback" type="range" min="0" max="75" value="18"></label>
+</section>
+<section class="experiment">
+<p class="eyebrow">EXPERIMENT 01 · TAPE SPEED</p><h2>Make the familiar strange.</h2>
+<ol><li>Record yourself saying one sentence.</li><li>Load it onto Tape A.</li><li>Play it at 3¾ IPS.</li><li>Reverse it. Add a little echo.</li><li>Listen for a sound you didn't intend.</li></ol>
+</section>
+<footer>TED LAB 1974 · v0.1 · built for touch</footer>
+</main><script src="./app.js"></script>
+</body></html>

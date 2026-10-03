@@ -155,5 +155,19 @@
     "path": "ted-lab/",
     "description": "A touch-first tape and oscillator lab inspired by early electronic-music classroom workflows.",
     "featured": true
+  },
+  {
+    "title": "Baseline Lab",
+    "fullName": "ZWEFF personal cognitive baseline bench",
+    "slug": "baseline-lab",
+    "type": [
+      "GUV",
+      "measurement",
+      "local-first"
+    ],
+    "status": "working v0.1",
+    "path": "baseline-lab/",
+    "description": "Run simple reaction, choice reaction, digit-symbol, and switching baselines with local-only context and exportable history.",
+    "featured": true
   }
 ]

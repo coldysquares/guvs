@@ -243,8 +243,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--ink);box-shadow:3px 3
     h.forEach(r=>{
       const d=document.createElement('div'); d.className='historyItem';
       const ctx=[r.context?.label,r.context?.stress!=null?'stress '+r.context.stress+'/10':null].filter(Boolean).join(' · ');
-      d.innerHTML='<div><div class="name">'+name(r.test)+'</div><div class="when">'+fmt(r.timestamp)+'</div></div><div class="ctx">'+(ctx||'No session label')+'</div><div class="value">'+primary(r)+'</div>';
-      el.appendChild(d);
+      const meta=document.createElement('div'), title=document.createElement('div'), when=document.createElement('div');
+      const context=document.createElement('div'), value=document.createElement('div');
+      title.className='name'; title.textContent=name(r.test); when.className='when'; when.textContent=fmt(r.timestamp);
+      context.className='ctx'; context.textContent=ctx||'No session label'; value.className='value'; value.textContent=primary(r);
+      meta.append(title,when); d.append(meta,context,value); el.appendChild(d);
     });
   }
   function showLab(title){ cleanup(); cleanup=()=>{}; $('#lab').classList.add('active'); $('#labTitle').textContent=title; $('#labBody').innerHTML=''; $('#lab').scrollIntoView({behavior:'smooth',block:'center'}); }
@@ -258,7 +261,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--ink);box-shadow:3px 3
   function runSrt(){
     showLab('Tap · simple reaction time');
     const b=$('#labBody'); b.innerHTML='<div class="hint">Two practice trials, then 10 scored trials. Tap only when the panel turns green.</div><div class="stimulus" id="stim">Tap to begin</div><div class="status" id="st"></div>';
-    const stim=$('#stim'), st=$('#st'); let trial=-2, scored=[], falseStarts=0, ready=false, waitTimer=null, closed=false, started=false, t0=0;
+    const stim=$('#stim'), st=$('#st'); let trial=-2, scored=[], falseStarts=0, ready=false, waitTimer=null, transitionTimer=null, closed=false, started=false, t0=0;
     function schedule(){
       if(closed)return;
       if(trial>=10){
@@ -266,14 +269,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--ink);box-shadow:3px 3
         return;
       }
       ready=false; stim.className='stimulus'; stim.textContent='Wait…'; st.textContent=trial<0?'Practice '+(trial+3)+' of 2':'Scored '+(trial+1)+' of 10';
-      waitTimer=setTimeout(()=>{ready=true;t0=performance.now();stim.className='stimulus go';stim.textContent='TAP'},800+Math.random()*1700);
+      waitTimer=setTimeout(()=>{waitTimer=null;ready=true;t0=performance.now();stim.className='stimulus go';stim.textContent='TAP'},800+Math.random()*1700);
     }
     stim.addEventListener('pointerdown',()=>{
       if(!started){started=true;schedule();return}
-      if(!ready){ if(waitTimer){clearTimeout(waitTimer);waitTimer=null;falseStarts++;stim.className='stimulus false';stim.textContent='Too soon';setTimeout(schedule,650)} return; }
-      const rt=performance.now()-t0; ready=false; if(trial>=0)scored.push(rt); trial++; stim.className='stimulus';stim.textContent=Math.round(rt)+' ms'; setTimeout(schedule,450);
+      if(!ready){ if(waitTimer){clearTimeout(waitTimer);waitTimer=null;falseStarts++;stim.className='stimulus false';stim.textContent='Too soon';transitionTimer=setTimeout(()=>{transitionTimer=null;schedule()},650)} return; }
+      const rt=performance.now()-t0; ready=false; if(trial>=0)scored.push(rt); trial++; stim.className='stimulus';stim.textContent=Math.round(rt)+' ms'; transitionTimer=setTimeout(()=>{transitionTimer=null;schedule()},450);
     });
-    cleanup=()=>{closed=true;clearTimeout(waitTimer)};
+    cleanup=()=>{closed=true;clearTimeout(waitTimer);clearTimeout(transitionTimer)};
   }
 
   function runCrt(){

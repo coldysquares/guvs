@@ -131,6 +131,18 @@ input:focus,select:focus,textarea:focus{border-color:var(--ink);box-shadow:3px 3
 .history{margin-top:18px}
 .historyHead{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}
 .historyList{display:grid;gap:9px}
+.trendControls{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.trendControls label{margin:0;color:var(--muted-light)}
+.trendControls select{width:auto;min-width:180px;background:var(--panel-2);color:#f6f6f2;border-color:var(--grid)}
+.trendGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.trendCard{border:1px solid var(--grid);background:rgba(18,18,22,.96);padding:16px;min-width:0}
+.trendTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:8px}
+.trendName{font-family:var(--display);font-size:23px;line-height:1;text-transform:uppercase}
+.trendLatest{font-family:var(--display);font-size:24px;line-height:1;color:var(--yellow);text-align:right}
+.trendDelta{color:var(--muted-light);font-size:9px;text-align:right;margin-top:4px}
+.spark{display:block;width:100%;height:112px;border-top:1px solid var(--grid);border-bottom:1px solid var(--grid);margin:10px 0;background:rgba(255,255,255,.015)}
+.trendFoot{display:flex;justify-content:space-between;gap:10px;color:var(--muted-light);font-size:9px}
+.trendEmpty{color:var(--muted-light);font-size:10px;padding:28px 4px;text-align:center}
 .historyItem{
   position:relative;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:12px;align-items:center;
   border:1px solid var(--grid);background:rgba(18,18,22,.96);border-radius:0;padding:14px 15px
@@ -145,6 +157,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--ink);box-shadow:3px 3
   .wrap{width:min(100% - 28px,1120px);padding-top:34px}
   .grid{grid-template-columns:1fr}.top{flex-direction:column;margin-bottom:24px}.tests{grid-template-columns:1fr}
   .fields{grid-template-columns:1fr}.historyItem{grid-template-columns:1fr auto}.historyItem .ctx{grid-column:1/-1}
+  .trendGrid{grid-template-columns:1fr}.trendControls{width:100%}.trendControls select{width:100%}
   .switchGrid{grid-template-columns:repeat(4,1fr)}.badge{align-self:flex-start}
 }
 @media(max-width:520px){
@@ -176,6 +189,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--ink);box-shadow:3px 3
         <div><label for="food">Food</label><select id="food"><option value="">—</option><option>Hungry</option><option>Ate recently</option><option>Full</option></select></div>
         <div><label for="caffeine">Caffeine</label><select id="caffeine"><option value="">—</option><option>None</option><option>Low</option><option>Moderate</option><option>High</option></select></div>
         <div><label for="nicotine">Nicotine</label><select id="nicotine"><option value="">—</option><option>None</option><option>Recent</option><option>Earlier today</option></select></div>
+        <div><label for="device">Device</label><select id="device"><option>Mac</option><option>iPhone</option><option>iPad</option><option>Android phone</option><option>Other computer</option><option>Other phone</option></select></div>
+        <div><label for="inputMode">Input</label><select id="inputMode"><option>Trackpad / mouse</option><option>Touchscreen</option><option>Keyboard</option><option>Other</option></select></div>
         <div class="full"><label for="stress">Stress <span id="stressText">5</span>/10</label><div class="stressRow"><input id="stress" type="range" min="0" max="10" value="5"><div class="stressVal" id="stressVal">5</div></div></div>
         <div class="full"><label for="notes">Notes</label><textarea id="notes" rows="3" placeholder="Anything that could affect today's baseline"></textarea></div>
       </div>
@@ -200,6 +215,18 @@ input:focus,select:focus,textarea:focus{border-color:var(--ink);box-shadow:3px 3
       </div>
 
       <div class="card pad history">
+        <div class="historyHead">
+          <div>
+            <div class="sectionTitle" style="margin:0">Results over time</div>
+            <div class="status" style="margin-top:5px">Compare like with like. Device is recorded with every new result.</div>
+          </div>
+          <div class="trendControls"><label for="trendDevice">Device</label><select id="trendDevice"><option value="all">All devices</option></select></div>
+        </div>
+        <div class="status" id="trendNotice"></div>
+        <div class="trendGrid" id="trendGrid"></div>
+      </div>
+
+      <div class="card pad history">
         <div class="historyHead"><div class="sectionTitle" style="margin:0">Local history</div><div class="actions" style="margin:0"><button class="btn ghost" id="exportCsv">CSV</button><button class="btn ghost" id="exportJson">JSON</button><button class="btn ghost danger" id="clearHistory">Clear</button></div></div>
         <div class="historyList" id="historyList"></div>
       </div>
@@ -221,11 +248,27 @@ input:focus,select:focus,textarea:focus{border-color:var(--ink);box-shadow:3px 3
   const fmt = iso => new Date(iso).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
   const name = id => ({srt:'Tap',crt:'Arrows',dsm:'Glyph Match',trail:'Switch Grid'})[id]||id;
   const primary = r => r.test==='srt' ? Math.round(r.medianMs)+' ms' : r.test==='crt' ? Math.round(r.medianMs)+' ms · '+Math.round(r.accuracy*100)+'%' : r.test==='dsm' ? r.correct+' correct' : r.test==='trail' ? (r.timeMs/1000).toFixed(2)+' s' : '—';
+  const detectDevice = () => {
+    const ua=navigator.userAgent||'', platform=navigator.platform||'';
+    if(/iPhone/i.test(ua)) return 'iPhone';
+    if(/iPad/i.test(ua)||(platform==='MacIntel'&&navigator.maxTouchPoints>1)) return 'iPad';
+    if(/Android/i.test(ua)) return 'Android phone';
+    if(/Mac/i.test(platform)||/Macintosh/i.test(ua)) return 'Mac';
+    return matchMedia('(pointer: coarse)').matches ? 'Other phone' : 'Other computer';
+  };
+  const detectInput = () => matchMedia('(pointer: coarse)').matches ? 'Touchscreen' : 'Trackpad / mouse';
+  const metricDefs = {
+    srt:{label:'Tap',value:r=>Number.isFinite(r.medianMs)?r.medianMs:null,format:v=>Math.round(v)+' ms',delta:v=>(v>=0?'+':'')+Math.round(v)+' ms'},
+    crt:{label:'Arrows',value:r=>Number.isFinite(r.medianMs)?r.medianMs:null,format:v=>Math.round(v)+' ms',delta:v=>(v>=0?'+':'')+Math.round(v)+' ms'},
+    dsm:{label:'Glyph Match',value:r=>Number.isFinite(r.correct)?r.correct:null,format:v=>Math.round(v)+' correct',delta:v=>(v>=0?'+':'')+Math.round(v)+' correct'},
+    trail:{label:'Switch Grid',value:r=>Number.isFinite(r.timeMs)?r.timeMs/1000:null,format:v=>v.toFixed(2)+' s',delta:v=>(v>=0?'+':'')+v.toFixed(2)+' s'}
+  };
 
   function readContext(){
     return {
       label:$('#label').value.trim(), sleep:$('#sleep').value, food:$('#food').value,
       caffeine:$('#caffeine').value, nicotine:$('#nicotine').value,
+      device:$('#device').value, inputMode:$('#inputMode').value,
       stress:Number($('#stress').value), notes:$('#notes').value.trim()
     };
   }
@@ -233,20 +276,58 @@ input:focus,select:focus,textarea:focus{border-color:var(--ink);box-shadow:3px 3
   function loadContext(){
     try{ current=JSON.parse(sessionStorage.getItem(CTX)||'{}') }catch{ current={} }
     $('#label').value=current.label||''; $('#sleep').value=current.sleep||''; $('#food').value=current.food||'';
-    $('#caffeine').value=current.caffeine||''; $('#nicotine').value=current.nicotine||''; $('#stress').value=current.stress ?? 5; $('#notes').value=current.notes||''; syncStress();
+    $('#caffeine').value=current.caffeine||''; $('#nicotine').value=current.nicotine||'';
+    $('#device').value=current.device||detectDevice(); $('#inputMode').value=current.inputMode||detectInput();
+    $('#stress').value=current.stress ?? 5; $('#notes').value=current.notes||''; syncStress();
   }
   function syncStress(){ $('#stressText').textContent=$('#stress').value; $('#stressVal').textContent=$('#stress').value; }
-  function addResult(r){ saveContext(); const h=hist(); h.unshift({...r,timestamp:new Date().toISOString(),context:{...current}}); saveHist(h.slice(0,250)); renderHistory(); }
+  function addResult(r){ saveContext(); const h=hist(); h.unshift({...r,timestamp:new Date().toISOString(),context:{...current}}); saveHist(h.slice(0,250)); renderHistory(); renderTrends(); }
   function renderHistory(){
     const h=hist(), el=$('#historyList'); el.innerHTML='';
     if(!h.length){ el.innerHTML='<div class="empty">No baselines yet. Run one test and save the result.</div>'; return; }
     h.forEach(r=>{
       const d=document.createElement('div'); d.className='historyItem';
-      const ctx=[r.context?.label,r.context?.stress!=null?'stress '+r.context.stress+'/10':null].filter(Boolean).join(' · ');
+      const ctx=[r.context?.label,r.context?.device||'device unknown',r.context?.inputMode,r.context?.stress!=null?'stress '+r.context.stress+'/10':null].filter(Boolean).join(' · ');
       d.innerHTML='<div><div class="name">'+name(r.test)+'</div><div class="when">'+fmt(r.timestamp)+'</div></div><div class="ctx">'+(ctx||'No session label')+'</div><div class="value">'+primary(r)+'</div>';
       el.appendChild(d);
     });
   }
+  function renderTrends(){
+    const h=hist(), grid=$('#trendGrid'), select=$('#trendDevice'), notice=$('#trendNotice');
+    const previous=select.value||'all';
+    const devices=[...new Set(h.map(r=>r.context?.device||'Unlabeled').filter(Boolean))].sort();
+    select.innerHTML='';
+    const allOpt=document.createElement('option'); allOpt.value='all'; allOpt.textContent='All devices'; select.appendChild(allOpt);
+    devices.forEach(device=>{const o=document.createElement('option');o.value=device;o.textContent=device;select.appendChild(o)});
+    select.value=[...select.options].some(o=>o.value===previous)?previous:'all';
+    const chosen=select.value;
+    const activeDevices=new Set(h.filter(r=>chosen==='all'||(r.context?.device||'Unlabeled')===chosen).map(r=>r.context?.device||'Unlabeled'));
+    notice.textContent=chosen==='all'&&activeDevices.size>1?'Mixed-device view. Use the device filter for cleaner comparisons.':'';
+    grid.innerHTML='';
+    Object.entries(metricDefs).forEach(([test,def])=>{
+      const points=h.filter(r=>r.test===test&&(chosen==='all'||(r.context?.device||'Unlabeled')===chosen))
+        .map(r=>({r,v:def.value(r)})).filter(x=>x.v!=null).sort((a,b)=>new Date(a.r.timestamp)-new Date(b.r.timestamp));
+      const card=document.createElement('div'); card.className='trendCard';
+      const top=document.createElement('div'); top.className='trendTop';
+      const left=document.createElement('div'); left.innerHTML='<div class="trendName">'+def.label+'</div><div class="when">'+points.length+' saved run'+(points.length===1?'':'s')+'</div>';
+      const right=document.createElement('div'); right.className='trendLatest';
+      if(points.length){
+        right.textContent=def.format(points.at(-1).v);
+        if(points.length>1){const d=document.createElement('div');d.className='trendDelta';d.textContent='vs prior '+def.delta(points.at(-1).v-points.at(-2).v);right.appendChild(d)}
+      } else right.textContent='—';
+      top.append(left,right); card.appendChild(top);
+      if(!points.length){const e=document.createElement('div');e.className='trendEmpty';e.textContent='No saved '+def.label+' runs for this device yet.';card.appendChild(e);grid.appendChild(card);return}
+      const NS='http://www.w3.org/2000/svg', svg=document.createElementNS(NS,'svg');svg.setAttribute('class','spark');svg.setAttribute('viewBox','0 0 360 112');svg.setAttribute('role','img');svg.setAttribute('aria-label',def.label+' results over time');
+      const vals=points.map(p=>p.v),min=Math.min(...vals),max=Math.max(...vals),range=max-min||1;
+      const xy=points.map((p,i)=>({x:points.length===1?180:16+i*(328/(points.length-1)),y:94-76*((p.v-min)/range),...p}));
+      if(xy.length>1){const line=document.createElementNS(NS,'polyline');line.setAttribute('points',xy.map(p=>p.x+','+p.y).join(' '));line.setAttribute('fill','none');line.setAttribute('stroke','currentColor');line.setAttribute('stroke-width','2');line.setAttribute('opacity','.62');svg.appendChild(line)}
+      xy.forEach(p=>{const c=document.createElementNS(NS,'circle');c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r','4.5');c.setAttribute('fill','currentColor');const t=document.createElementNS(NS,'title');const ctx=[fmt(p.r.timestamp),def.format(p.v),p.r.context?.label,p.r.context?.device,p.r.context?.inputMode,'stress '+(p.r.context?.stress??'—')+'/10','sleep '+(p.r.context?.sleep||'—')].filter(Boolean).join(' · ');t.textContent=ctx;c.appendChild(t);svg.appendChild(c)});
+      card.appendChild(svg);
+      const foot=document.createElement('div');foot.className='trendFoot';const first=document.createElement('span'),last=document.createElement('span');first.textContent=fmt(points[0].r.timestamp);last.textContent=fmt(points.at(-1).r.timestamp);foot.append(first,last);card.appendChild(foot);
+      grid.appendChild(card);
+    });
+  }
+
   function showLab(title){ cleanup(); cleanup=()=>{}; $('#lab').classList.add('active'); $('#labTitle').textContent=title; $('#labBody').innerHTML=''; $('#lab').scrollIntoView({behavior:'smooth',block:'center'}); }
   function closeLab(){ cleanup(); cleanup=()=>{}; $('#lab').classList.remove('active'); $('#labBody').innerHTML=''; }
   function showResult(r,sub){
@@ -314,11 +395,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--ink);box-shadow:3px 3
   function download(name,text,type){const blob=new Blob([text],{type}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
   $$('.start').forEach(x=>x.onclick=()=>({srt:runSrt,crt:runCrt,dsm:runDsm,trail:runTrail})[x.dataset.test]());
   $('#abort').onclick=closeLab;$('#saveContext').onclick=saveContext;$('#stress').oninput=syncStress;
-  $('#clearContext').onclick=()=>{sessionStorage.removeItem(CTX);current={};['label','sleep','notes'].forEach(id=>$('#'+id).value='');['food','caffeine','nicotine'].forEach(id=>$('#'+id).value='');$('#stress').value=5;syncStress()};
+  $('#clearContext').onclick=()=>{sessionStorage.removeItem(CTX);current={};['label','sleep','notes'].forEach(id=>$('#'+id).value='');['food','caffeine','nicotine'].forEach(id=>$('#'+id).value='');$('#device').value=detectDevice();$('#inputMode').value=detectInput();$('#stress').value=5;syncStress()};
   $('#exportJson').onclick=()=>download('zweff-baseline-history.json',JSON.stringify(hist(),null,2),'application/json');
-  $('#exportCsv').onclick=()=>{const rows=[['timestamp','test','primary','label','sleep','food','caffeine','nicotine','stress','notes'],...hist().map(r=>[r.timestamp,name(r.test),primary(r),r.context?.label||'',r.context?.sleep||'',r.context?.food||'',r.context?.caffeine||'',r.context?.nicotine||'',r.context?.stress??'',r.context?.notes||''])];download('zweff-baseline-history.csv',rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n'),'text/csv')};
-  $('#clearHistory').onclick=()=>{if(confirm('Clear all locally saved baselines?')){localStorage.removeItem(STORE);renderHistory()}};
-  loadContext();renderHistory();
+  $('#exportCsv').onclick=()=>{const rows=[['timestamp','test','primary','label','sleep','food','caffeine','nicotine','device','input','stress','notes'],...hist().map(r=>[r.timestamp,name(r.test),primary(r),r.context?.label||'',r.context?.sleep||'',r.context?.food||'',r.context?.caffeine||'',r.context?.nicotine||'',r.context?.device||'',r.context?.inputMode||'',r.context?.stress??'',r.context?.notes||''])];download('zweff-baseline-history.csv',rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n'),'text/csv')};
+  $('#clearHistory').onclick=()=>{if(confirm('Clear all locally saved baselines?')){localStorage.removeItem(STORE);renderHistory();renderTrends()}};
+  $('#trendDevice').onchange=renderTrends;
+  loadContext();renderHistory();renderTrends();
 })();
 </script>
 </body>
